@@ -1,7 +1,10 @@
 {
 	"folders": [
 		{
-			"path": "freedmen-webapp/"
+			"path": "webapp/"
+		},
+		{
+			"path": "."
 		}
 	],
 	"settings": {}
