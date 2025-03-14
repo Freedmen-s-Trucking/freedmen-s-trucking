@@ -1,20 +1,23 @@
-import { createRootRoute, Link, Outlet } from '@tanstack/react-router'
-import { TanStackRouterDevtools } from '@tanstack/router-devtools'
+import { createRootRoute, Outlet, useLocation } from "@tanstack/react-router";
+import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import Navbar from "../components/arena/navbar";
+import { useEffect } from "react";
 
-export const Route = createRootRoute({
-  component: () => (
+const Component: React.FC = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    window.HSStaticMethods.autoInit();
+  }, [location.pathname]);
+  return (
     <>
-      <div className="p-2 flex gap-2">
-        <Link to="/" className="[&.active]:font-bold">
-          Home
-        </Link>{' '}
-        <Link to="/about" className="[&.active]:font-bold">
-          About
-        </Link>
-      </div>
+      <Navbar />
       <hr />
       <Outlet />
       <TanStackRouterDevtools />
     </>
-  ),
-})
+  );
+};
+export const Route = createRootRoute({
+  component: Component,
+});
