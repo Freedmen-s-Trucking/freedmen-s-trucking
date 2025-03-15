@@ -11,6 +11,10 @@
 
 /* Adds pointer cursor to buttons */
 @layer base {
+  @tailwind base;
+  @tailwind components;
+  @tailwind utilities;
+
   button:not(:disabled),
   [role="button"]:not(:disabled) {
     cursor: pointer;

@@ -4,8 +4,6 @@ import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { routeTree } from "./route-tree.gen";
 import "./index.css";
 
-import "flowbite-react";
-
 // Create a new router instance
 const router = createRouter({ routeTree });
 

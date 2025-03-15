@@ -22,5 +22,10 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src"]
+  "include": [
+    "src",
+    "../freedman-trucking-webapp/src/components",
+    "../freedman-trucking-webapp/src/routes",
+    "../freedman-trucking-webapp/src/main.tsx"
+  ]
 }

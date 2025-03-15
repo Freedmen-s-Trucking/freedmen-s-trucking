@@ -5,7 +5,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 */
 "use client";
 
-import { Button, Navbar } from "flowbite-react";
+import { Navbar } from "flowbite-react";
 import { Image } from "../atoms/image";
 import logotiny from "../../assets/logo.png-blur.webp";
 import { useRouterState } from "@tanstack/react-router";
