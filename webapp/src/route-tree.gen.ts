@@ -13,6 +13,7 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as TrackingImport } from './routes/tracking'
 import { Route as ServicesImport } from './routes/services'
+import { Route as ScheduleDeliveryImport } from './routes/schedule-delivery'
 import { Route as ContactImport } from './routes/contact'
 import { Route as AboutImport } from './routes/about'
 import { Route as IndexImport } from './routes/index'
@@ -28,6 +29,12 @@ const TrackingRoute = TrackingImport.update({
 const ServicesRoute = ServicesImport.update({
   id: '/services',
   path: '/services',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ScheduleDeliveryRoute = ScheduleDeliveryImport.update({
+  id: '/schedule-delivery',
+  path: '/schedule-delivery',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -74,6 +81,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContactImport
       parentRoute: typeof rootRoute
     }
+    '/schedule-delivery': {
+      id: '/schedule-delivery'
+      path: '/schedule-delivery'
+      fullPath: '/schedule-delivery'
+      preLoaderRoute: typeof ScheduleDeliveryImport
+      parentRoute: typeof rootRoute
+    }
     '/services': {
       id: '/services'
       path: '/services'
@@ -97,6 +111,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
+  '/schedule-delivery': typeof ScheduleDeliveryRoute
   '/services': typeof ServicesRoute
   '/tracking': typeof TrackingRoute
 }
@@ -105,6 +120,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
+  '/schedule-delivery': typeof ScheduleDeliveryRoute
   '/services': typeof ServicesRoute
   '/tracking': typeof TrackingRoute
 }
@@ -114,16 +130,36 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
+  '/schedule-delivery': typeof ScheduleDeliveryRoute
   '/services': typeof ServicesRoute
   '/tracking': typeof TrackingRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/contact' | '/services' | '/tracking'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/contact'
+    | '/schedule-delivery'
+    | '/services'
+    | '/tracking'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/contact' | '/services' | '/tracking'
-  id: '__root__' | '/' | '/about' | '/contact' | '/services' | '/tracking'
+  to:
+    | '/'
+    | '/about'
+    | '/contact'
+    | '/schedule-delivery'
+    | '/services'
+    | '/tracking'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/contact'
+    | '/schedule-delivery'
+    | '/services'
+    | '/tracking'
   fileRoutesById: FileRoutesById
 }
 
@@ -131,6 +167,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   ContactRoute: typeof ContactRoute
+  ScheduleDeliveryRoute: typeof ScheduleDeliveryRoute
   ServicesRoute: typeof ServicesRoute
   TrackingRoute: typeof TrackingRoute
 }
@@ -139,6 +176,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   ContactRoute: ContactRoute,
+  ScheduleDeliveryRoute: ScheduleDeliveryRoute,
   ServicesRoute: ServicesRoute,
   TrackingRoute: TrackingRoute,
 }
@@ -156,6 +194,7 @@ export const routeTree = rootRoute
         "/",
         "/about",
         "/contact",
+        "/schedule-delivery",
         "/services",
         "/tracking"
       ]
@@ -168,6 +207,9 @@ export const routeTree = rootRoute
     },
     "/contact": {
       "filePath": "contact.tsx"
+    },
+    "/schedule-delivery": {
+      "filePath": "schedule-delivery.tsx"
     },
     "/services": {
       "filePath": "services.tsx"

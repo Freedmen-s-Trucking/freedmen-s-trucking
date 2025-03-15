@@ -2,24 +2,17 @@
 
 import { Dropdown, Navbar } from "flowbite-react";
 import { AppImage } from "../atoms/image";
-import logotiny from "../../assets/logo.png-blur.webp";
-import logo from "../../assets/logo.png.webp";
+import logotiny from "../../assets/logo-blur.webp";
+import logo from "../../assets/logo.webp";
 import { Link, useRouterState } from "@tanstack/react-router";
-
-const navigation = [
-  { name: "Home", href: "/" },
-  { name: "About", href: "/about" },
-  { name: "Contact", href: "/contact" },
-  { name: "Services", href: "/services" },
-  { name: "Tracking", href: "/tracking" },
-] as const;
+import { PAGE_ROUTES } from "../../utils/constants";
 
 const AppNavbar: React.FC = () => {
   const router = useRouterState();
   const inactiveClasses =
-    "block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:text-white md:hover:text-blue-700 md:p-0";
+    "block py-2 px-3 text-gray-900 rounded-sm hover:bg-red-100 md:hover:bg-transparent md:text-white md:hover:text-red-400 md:p-0";
   const activeClasses =
-    "block py-2 px-3 text-white bg-blue-700 rounded-sm md:bg-transparent md:text-blue-700 md:p-0 pointer-events-none";
+    "block py-2 px-3 text-white bg-red-400 rounded-sm md:bg-transparent md:text-red-400 md:p-0 pointer-events-none";
   return (
     <Navbar
       fluid
@@ -36,20 +29,20 @@ const AppNavbar: React.FC = () => {
         />
       </Navbar.Brand>
       <div className="flex sm:gap-5 md:order-2">
-        <button
+        <Link
+          to={"/schedule-delivery"}
           type="button"
-          className="focus:outline-hidden inline-flex items-center gap-x-2 rounded-3xl border border-white px-4 py-3 text-sm font-medium text-white hover:border-blue-700 hover:text-blue-700 focus:border-blue-700 focus:text-blue-700 disabled:pointer-events-none disabled:opacity-50 "
+          className="focus:outline-hidden inline-flex items-center gap-x-2 rounded-3xl border border-white px-4 py-3 text-sm font-medium text-white hover:border-red-400 hover:text-red-400 focus:border-red-400 focus:text-red-400 disabled:pointer-events-none disabled:opacity-50 "
         >
           schedule delivery
-        </button>
+        </Link>
       </div>
       <Dropdown
         label=""
-        // dismissOnClick={false}
         renderTrigger={() => {
           return (
             <svg
-              className="h-10 w-10 cursor-pointer rounded-full p-1 text-white hover:bg-blue-950 md:hidden"
+              className="h-10 w-10 cursor-pointer rounded-full p-1 text-white hover:bg-red-400 md:hidden"
               aria-hidden="true"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -57,17 +50,16 @@ const AppNavbar: React.FC = () => {
             >
               <path
                 stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
                 d="M1 1h15M1 7h15M1 13h15"
               />
             </svg>
           );
         }}
       >
-        {navigation.map((item, index) => (
-          // <DropdownItem key={index}>
+        {PAGE_ROUTES.map((item, index) => (
           <Link
             key={index}
             to={item.href}
@@ -79,11 +71,10 @@ const AppNavbar: React.FC = () => {
           >
             {item.name}
           </Link>
-          // </DropdownItem>
         ))}
       </Dropdown>
       <Navbar.Collapse className=" bg-white md:bg-transparent">
-        {navigation.map((item, index) => (
+        {PAGE_ROUTES.map((item, index) => (
           <Link
             key={index}
             to={item.href}

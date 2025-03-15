@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import home2Logo from "../assets/home-2.webp";
+import Hero from "../components/molecules/hero";
 import FAQ from "../components/molecules/faq";
 import AppFooter from "../components/organisms/footer";
-import Hero from "../components/molecules/hero";
 
-export const Route = createFileRoute("/contact")({
+export const Route = createFileRoute("/schedule-delivery")({
   component: RouteComponent,
 });
 
