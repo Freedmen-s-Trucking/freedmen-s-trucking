@@ -140,15 +140,15 @@ const ImportantLinksAndSubscription: React.FC = () => {
             <h3 className="mb-4 text-lg font-semibold text-white">
               Important Links
             </h3>
-            <ul className="text-sm text-white">
+            <ul className="text-sm">
               {PAGE_ROUTES.map((item, index) => (
                 <Link
                   key={index}
                   to={item.href}
-                  className={`bg-transparent py-2.5 text-white ${
+                  className={`bg-transparent py-2.5 ${
                     router.location.pathname === item.href
                       ? "pointer-events-none block rounded-sm text-red-400"
-                      : "block rounded-sm hover:text-red-400"
+                      : "block rounded-sm text-white hover:text-red-400 "
                   }`}
                 >
                   {item.name}
@@ -183,7 +183,7 @@ const ImportantLinksAndSubscription: React.FC = () => {
               key={index}
               to={item.href}
               target="_blank"
-              className="rounded-full p-2 text-black hover:bg-red-400"
+              className="m-1 rounded-full p-1 text-black hover:bg-red-400"
             >
               <item.Icon className="" />
             </Link>

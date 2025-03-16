@@ -18,8 +18,8 @@ const Testimonials: React.FC = () => {
     },
   ];
   return (
-    <div className="w-100 inset-0 mx-auto my-16 max-w-screen-xl">
-      <div className="columns-1 gap-2 px-4 py-16 sm:px-12 md:columns-2">
+    <div className="w-100 inset-0 mx-auto my-8 max-w-screen-xl md:my-16">
+      <div className="columns-1 gap-2 px-4 sm:px-12 md:columns-2">
         <div>
           <h4 className="mb-4 flex items-center justify-center gap-4 text-2xl font-bold text-white before:h-[3px] before:max-w-[60px] before:flex-1 before:bg-white after:h-[3px] after:max-w-[60px] after:flex-1 after:bg-white md:justify-start md:after:hidden">
             Testimonials

@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import herologo from "../assets/hero.webp";
 import React from "react";
 import home2Logo from "../assets/home-2.webp";
 import { AppImage } from "../components/atoms/image";
@@ -6,6 +7,7 @@ import AppFooter from "../components/organisms/footer";
 import FAQ from "../components/molecules/faq";
 import Testimonials from "../components/molecules/testimonials";
 import Hero from "../components/molecules/hero";
+import { SPECIALTIES_DATA } from "../utils/constants";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -148,32 +150,6 @@ const WhyUs: React.FC = () => {
 const OurSpecialty: React.FC = () => {
   const SPECIALTIES_TITLE = "Our Specialities";
 
-  const SPECIALTIES_DATA = [
-    {
-      title: "Box Truck",
-      description: 'Any type of 26\'L+ * 96"W * 96"H (10K lbs+) trucks with LG',
-    },
-    {
-      title: "Dry Van",
-      description: "Any type of 48'-53' trucks",
-    },
-    {
-      title: "Reefer",
-      description: "Any type of trailer",
-    },
-    {
-      title: "Power Only",
-      description: "Both Day Cabs and OTR units",
-    },
-    {
-      title: "Hotshot",
-      description: "Any type of 40'L+ (15K lbs+) trucks",
-    },
-    {
-      title: "Flatbed",
-      description: "Any type of 48'-53' (45K lbs+) trucks",
-    },
-  ];
   return (
     <div className="w-100 inset-0 mx-auto my-16 max-w-screen-xl">
       <h1 className="mb-4 text-center text-4xl font-extrabold uppercase text-[#12151A] underline underline-offset-4 md:text-5xl">
@@ -187,19 +163,24 @@ const OurSpecialty: React.FC = () => {
       <div>
         <div className="columns-1 gap-2 pt-10 md:columns-2 lg:columns-3 lg:pt-16">
           {SPECIALTIES_DATA.map((specialty, index) => (
-            <div
+            <Link
+              to="/services"
+              search={(prev: Record<string, unknown>) => ({
+                ...prev,
+                specialty: specialty.sku,
+              })}
               key={index}
-              className="h-42 mb-8 w-4/5 self-center justify-self-center rounded-3xl border-[1px] border-gray-700 bg-white/20 p-3 md:w-[350px] lg:w-[300px]"
+              className="h-42 mx-auto mb-8 block  w-4/5 self-center justify-self-center rounded-3xl border-[1px] border-gray-700 bg-white/20 p-3 md:w-[350px] lg:w-[300px]"
             >
               <div className="inline-block rounded-full border-2 border-black bg-gray-400">
                 <AppImage
                   className="m-3 h-12 w-12 md:m-4 md:h-16 md:w-16"
-                  src={`/icons/truck-${index + 1}.webp`}
+                  src={specialty.iconPath}
                   alt={specialty.title}
                 />
               </div>
               <div className="flex flex-row items-center">
-                <h2 className="text-3xl">{specialty.title}</h2>
+                <h2 className="text-3xl">{specialty.title.split("/")[0]}</h2>
                 <svg
                   className="h-10"
                   viewBox="0 0 62 62"
@@ -218,7 +199,7 @@ const OurSpecialty: React.FC = () => {
               <p className="text-sm sm:line-clamp-2 sm:h-[3em] sm:text-[0.99rem]">
                 {specialty.description}
               </p>
-            </div>
+            </Link>
           ))}
         </div>
       </div>
@@ -298,7 +279,37 @@ const Prices: React.FC = () => {
 function Index() {
   return (
     <>
-      <Hero />
+      <Hero image={herologo} className="h-screen">
+        <div className="mx-auto w-full pt-56 text-center md:mx-0 md:w-2/3 md:pt-24 md:text-start">
+          <h1 className="mb-4 text-5xl font-extrabold leading-none tracking-tight text-white md:text-6xl lg:text-6xl">
+            Same-Day Delivery, Simplified.
+          </h1>
+          <hr className="mx-auto my-3 w-1/2 md:mx-0 md:w-4/5"></hr>
+          <p className="mb-8 text-xs font-normal text-gray-300 lg:text-lg">
+            Fast, reliable, and efficient truck dispatching services tailored to
+            your needs.
+          </p>
+
+          <Link
+            to={"/schedule-delivery"}
+            className="focus:outline-hidden inline-flex items-center gap-x-2 rounded-3xl border border-white px-4 py-3 text-sm font-medium text-white hover:border-red-400 hover:text-red-400 focus:border-red-400 focus:text-red-400"
+          >
+            Schedule Delivery
+            <svg
+              width="17"
+              height="18"
+              viewBox="0 0 17 18"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="fill-current"
+            >
+              <path d="M8.5 17.5C3.8 17.5 0 13.7 0 9C0 4.3 3.8 0.5 8.5 0.5C13.2 0.5 17 4.3 17 9C17 13.7 13.2 17.5 8.5 17.5ZM8.5 1.5C4.35 1.5 1 4.85 1 9C1 13.15 4.35 16.5 8.5 16.5C12.65 16.5 16 13.15 16 9C16 4.85 12.65 1.5 8.5 1.5Z" />
+              <path d="M8.34999 13.85L7.64999 13.15L11.8 9.00002L7.64999 4.85002L8.34999 4.15002L13.2 9.00002L8.34999 13.85Z" />
+              <path d="M4 8.5H12.5V9.5H4V8.5Z" />
+            </svg>
+          </Link>
+        </div>
+      </Hero>
       <div
         className="bg-black bg-cover bg-center bg-no-repeat"
         style={{

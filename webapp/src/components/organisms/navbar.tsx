@@ -9,6 +9,7 @@ import { PAGE_ROUTES } from "../../utils/constants";
 
 const AppNavbar: React.FC = () => {
   const router = useRouterState();
+  const isOnDeliveryPage = router.location.pathname == "/schedule-delivery";
   const inactiveClasses =
     "block py-2 px-3 text-gray-900 rounded-sm hover:bg-red-100 md:hover:bg-transparent md:text-white md:hover:text-red-400 md:p-0";
   const activeClasses =
@@ -17,9 +18,9 @@ const AppNavbar: React.FC = () => {
     <Navbar
       fluid
       rounded
-      className="sticky top-0 z-50 bg-transparent p-0 md:p-0"
+      className="sticky top-0 z-50 bg-transparent p-4 py-1 md:p-0"
     >
-      <Navbar.Brand href="https://flowbite-react.com">
+      <Navbar.Brand href="/">
         <AppImage
           placeholder={logotiny}
           align="center"
@@ -28,15 +29,17 @@ const AppNavbar: React.FC = () => {
           className="h-auto w-[60px] rounded-full sm:w-[90px] md:w-[110px] lg:w-[150px]"
         />
       </Navbar.Brand>
-      <div className="flex sm:gap-5 md:order-2">
-        <Link
-          to={"/schedule-delivery"}
-          type="button"
-          className="focus:outline-hidden inline-flex items-center gap-x-2 rounded-3xl border border-white px-4 py-3 text-sm font-medium text-white hover:border-red-400 hover:text-red-400 focus:border-red-400 focus:text-red-400 disabled:pointer-events-none disabled:opacity-50 "
-        >
-          schedule delivery
-        </Link>
-      </div>
+      {isOnDeliveryPage || (
+        <div className="flex sm:gap-5 md:order-2">
+          <Link
+            to={"/schedule-delivery"}
+            type="button"
+            className="focus:outline-hidden inline-flex items-center gap-x-2 rounded-3xl border border-white px-4 py-3 text-sm font-medium text-white hover:border-red-400 hover:text-red-400 focus:border-red-400 focus:text-red-400 disabled:pointer-events-none disabled:opacity-50 "
+          >
+            schedule delivery
+          </Link>
+        </div>
+      )}
       <Dropdown
         label=""
         renderTrigger={() => {
