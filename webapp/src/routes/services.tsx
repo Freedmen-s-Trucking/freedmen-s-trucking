@@ -1,7 +1,9 @@
 import { createFileRoute, Link, useRouterState } from "@tanstack/react-router";
+import home2LogoBlured from "../assets/home-2-blur.webp";
 import home2Logo from "../assets/home-2.webp";
 import aboutUsTruck from "../assets/about-us-truck-1.webp";
-import ourservicehero from "../assets/our-services-hero.webp";
+import ourServicesHeroImg from "../assets/our-services-hero.webp";
+import ourServicesHeroImgBlured from "../assets/our-services-hero-blur.webp";
 import Hero from "../components/molecules/hero";
 import FAQ from "../components/molecules/faq";
 import AppFooter from "../components/organisms/footer";
@@ -14,6 +16,7 @@ import {
   AccordionTitle,
   Flowbite,
 } from "flowbite-react";
+import { AppImageBackground } from "../components/atoms/image-background";
 
 const ACCORDION_THEME = {
   theme: {
@@ -215,7 +218,7 @@ const WhatBoxTrunckIncludeSection: React.FC = () => {
 function RouteComponent() {
   return (
     <>
-      <Hero image={ourservicehero}>
+      <Hero image={ourServicesHeroImg} bluredImage={ourServicesHeroImgBlured}>
         <div className="mx-auto flex w-full flex-col items-center gap-4 pt-56 text-center md:mx-0 md:w-2/3 md:items-start md:pt-24 md:text-start lg:w-1/2">
           <h1 className="text-5xl font-extrabold leading-none tracking-tight text-white md:text-6xl lg:text-6xl">
             Our Services
@@ -228,18 +231,18 @@ function RouteComponent() {
           </p>
         </div>
       </Hero>
-      <div
-        className="bg-black bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.8)), url('${home2Logo}')`,
-        }}
+      <AppImageBackground
+        className="bg-scroll"
+        src={home2Logo}
+        placeholder={home2LogoBlured}
+        customGradient="linear-gradient(rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.8))"
       >
         <div className=" overflow-hidden px-4 py-8 md:px-8 md:py-16">
           <BoxTruckSection />
           <WhatBoxTrunckIncludeSection />
         </div>
         <FAQ />
-      </div>
+      </AppImageBackground>
       <AppFooter />
     </>
   );

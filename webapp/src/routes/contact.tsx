@@ -1,9 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import home2Logo from "../assets/home-2.webp";
 import FAQ from "../components/molecules/faq";
+import home2LogoBlured from "../assets/home-2-blur.webp";
 import AppFooter from "../components/organisms/footer";
 import Hero from "../components/molecules/hero";
 import contactHeroImg from "../assets/contact-us-hero.webp";
+import contactHeroImgBlured from "../assets/contact-us-hero-blur.webp";
+import { AppImageBackground } from "../components/atoms/image-background";
 
 export const Route = createFileRoute("/contact")({
   component: RouteComponent,
@@ -26,7 +29,11 @@ function RouteComponent() {
   ];
   return (
     <>
-      <Hero image={contactHeroImg} className="min-h-screen">
+      <Hero
+        image={contactHeroImg}
+        bluredImage={contactHeroImgBlured}
+        className="min-h-screen"
+      >
         <div className="flex flex-col items-center justify-center px-4 pt-20 sm:px-12 md:flex-row">
           <div className="mx-auto mb-8 w-[min(100%,350px)]  max-w-md bg-black/80 px-8 py-8 md:mx-0 md:mb-0 md:w-full">
             <h2 className="text-center text-4xl font-bold text-white md:text-start">
@@ -85,14 +92,14 @@ function RouteComponent() {
           </div>
         </div>
       </Hero>
-      <div
-        className="bg-black bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.8)), url('${home2Logo}')`,
-        }}
+      <AppImageBackground
+        className="bg-scroll"
+        src={home2Logo}
+        placeholder={home2LogoBlured}
+        customGradient="linear-gradient(rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.8))"
       >
         <FAQ />
-      </div>
+      </AppImageBackground>
       <AppFooter />
     </>
   );

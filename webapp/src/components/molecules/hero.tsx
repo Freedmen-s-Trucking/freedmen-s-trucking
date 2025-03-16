@@ -1,11 +1,13 @@
 import React from "react";
 import AppNavbar from "../organisms/navbar";
+import { AppImageBackground } from "../atoms/image-background";
 
 const Hero: React.FC<{
   className?: string;
   children: React.ReactNode;
   image: string;
-}> = ({ children, image, className }) => {
+  bluredImage?: string;
+}> = ({ children, bluredImage, image, className }) => {
   const [isScrolled, setIsScrolled] = React.useState(false);
 
   React.useEffect(() => {
@@ -23,9 +25,10 @@ const Hero: React.FC<{
 
   return (
     <>
-      <div
-        className={`hero-section w-100 inset-0 bg-cover bg-fixed bg-center bg-no-repeat ${className}`}
-        style={{ backgroundImage: `url('${image}')` }}
+      <AppImageBackground
+        src={image}
+        placeholder={bluredImage}
+        className={`hero-section w-100 inset-0 ${className}`}
       >
         <div className="mx-auto max-w-screen-xl px-4 py-8  md:px-8 md:py-12 lg:px-16">
           <div
@@ -35,7 +38,7 @@ const Hero: React.FC<{
           </div>
           {children}
         </div>
-      </div>
+      </AppImageBackground>
     </>
   );
 };

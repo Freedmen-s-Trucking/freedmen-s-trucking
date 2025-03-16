@@ -3,8 +3,10 @@ import { AppImage } from "../atoms/image";
 import logotiny from "../../assets/logo-blur.webp";
 import logo from "../../assets/logo.webp";
 import home3Logo from "../../assets/home-3.webp";
+import home3LogoBlured from "../../assets/home-3-blur.webp";
 import { PAGE_ROUTES } from "../../utils/constants";
 import { Link } from "@tanstack/react-router";
+import { AppImageBackground } from "../atoms/image-background";
 
 const ImportantLinksAndSubscription: React.FC = () => {
   const onEmailChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -199,14 +201,14 @@ const ImportantLinksAndSubscription: React.FC = () => {
 
 const AppFooter: React.FC = () => {
   return (
-    <div
-      className="bg-black bg-cover bg-no-repeat px-4 py-8 md:px-8 md:py-16"
-      style={{
-        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('${home3Logo}')`,
-      }}
+    <AppImageBackground
+      src={home3Logo}
+      placeholder={home3LogoBlured}
+      customGradient="linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7))"
+      className="px-4 py-8 md:px-8 md:py-16"
     >
       <ImportantLinksAndSubscription />
-    </div>
+    </AppImageBackground>
   );
 };
 

@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import herologo from "../assets/hero.webp";
+import homeHeroImg from "../assets/hero.webp";
+import homeHeroImgBlured from "../assets/hero-blur.webp";
 import React from "react";
+import home2LogoBlured from "../assets/home-2-blur.webp";
 import home2Logo from "../assets/home-2.webp";
 import { AppImage } from "../components/atoms/image";
 import AppFooter from "../components/organisms/footer";
@@ -8,6 +10,7 @@ import FAQ from "../components/molecules/faq";
 import Testimonials from "../components/molecules/testimonials";
 import Hero from "../components/molecules/hero";
 import { SPECIALTIES_DATA } from "../utils/constants";
+import { AppImageBackground } from "../components/atoms/image-background";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -279,7 +282,11 @@ const Prices: React.FC = () => {
 function Index() {
   return (
     <>
-      <Hero image={herologo} className="h-screen">
+      <Hero
+        image={homeHeroImg}
+        bluredImage={homeHeroImgBlured}
+        className="h-screen"
+      >
         <div className="mx-auto w-full pt-56 text-center md:mx-0 md:w-2/3 md:pt-24 md:text-start">
           <h1 className="mb-4 text-5xl font-extrabold leading-none tracking-tight text-white md:text-6xl lg:text-6xl">
             Same-Day Delivery, Simplified.
@@ -310,11 +317,11 @@ function Index() {
           </Link>
         </div>
       </Hero>
-      <div
-        className="bg-black bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.8)), url('${home2Logo}')`,
-        }}
+      <AppImageBackground
+        className="bg-scroll"
+        src={home2Logo}
+        placeholder={home2LogoBlured}
+        customGradient="linear-gradient(rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.8))"
       >
         <div className=" px-4 py-8 md:px-8 md:py-16">
           <WhyUs />
@@ -323,7 +330,7 @@ function Index() {
           <Testimonials />
         </div>
         <FAQ />
-      </div>
+      </AppImageBackground>
       <AppFooter />
     </>
   );

@@ -1,12 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
-import aboutUsHeroLogo from "../assets/about-us-hero.webp";
+import aboutUsHeroImg from "../assets/about-us-hero.webp";
+import aboutUsHeroImgBlured from "../assets/about-us-hero-blur.webp";
 import home2Logo from "../assets/home-2.webp";
+import home2LogoBlured from "../assets/home-2-blur.webp";
 import Hero from "../components/molecules/hero";
 import Testimonials from "../components/molecules/testimonials";
 import FAQ from "../components/molecules/faq";
 import AppFooter from "../components/organisms/footer";
 import aboutUsTruck from "../assets/about-us-truck-1.webp";
 import { AppImage } from "../components/atoms/image";
+import { AppImageBackground } from "../components/atoms/image-background";
 
 export const Route = createFileRoute("/about")({
   component: About,
@@ -17,7 +20,7 @@ const AboutUsSection: React.FC = () => {
       <h1 className="mb-4 text-center text-4xl font-extrabold uppercase text-[#12151A] underline decoration-2 underline-offset-[16px] md:text-5xl">
         About Us
       </h1>
-      <div className="flex flex-col gap-8 px-4 py-16 sm:px-12 md:flex-row md:justify-center md:gap-24 lg:pt-16">
+      <div className="flex flex-col gap-8 px-4 py-16 sm:px-12 md:flex-row md:items-start md:justify-center lg:gap-24 lg:pt-16">
         <div className="rounded-3xl border-2 border-black p-2">
           <AppImage src={aboutUsTruck} alt="our truck" className="w-full" />
         </div>
@@ -100,7 +103,7 @@ const AboutTeamSection: React.FC = () => {
 function About() {
   return (
     <>
-      <Hero image={aboutUsHeroLogo}>
+      <Hero image={aboutUsHeroImg} bluredImage={aboutUsHeroImgBlured}>
         <div className="mx-auto flex w-full flex-col items-center gap-4 pt-56 text-center md:mx-0 md:w-2/3 md:items-start md:pt-24 md:text-start lg:w-1/2">
           <h1 className="text-5xl font-extrabold leading-none tracking-tight text-white md:text-6xl lg:text-6xl">
             About Us
@@ -113,11 +116,11 @@ function About() {
           </p>
         </div>
       </Hero>
-      <div
-        className="bg-black bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.8)), url('${home2Logo}')`,
-        }}
+      <AppImageBackground
+        className="bg-scroll"
+        src={home2Logo}
+        placeholder={home2LogoBlured}
+        customGradient="linear-gradient(rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.8))"
       >
         <div className=" px-4 py-8 md:px-8 md:py-16">
           <AboutUsSection />
@@ -125,7 +128,7 @@ function About() {
           <Testimonials />
         </div>
         <FAQ />
-      </div>
+      </AppImageBackground>
       <AppFooter />
     </>
   );
