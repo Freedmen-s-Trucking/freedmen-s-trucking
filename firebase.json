@@ -1,7 +1,7 @@
 {
   "functions": [
     {
-      "source": "functions",
+      "source": "backends/functions",
       "codebase": "default",
       "ignore": [
         "node_modules",
@@ -30,7 +30,30 @@
       }
     ]
   },
-  "remoteconfig": {
-    "template": "remoteconfigs/src/dev/template.json"
+  "remoteconfig": {},
+  "emulators": {
+    "functions": {
+      "port": 5001
+    },
+    "firestore": {
+      "port": 8080
+    },
+    "hosting": {
+      "port": 5000
+    },
+    "storage": {
+      "port": 9199
+    },
+    "ui": {
+      "enabled": true
+    },
+    "singleProjectMode": true
+  },
+  "firestore": {
+    "rules": "backends/firestore.rules",
+    "indexes": "backends/firestore.indexes.json"
+  },
+  "storage": {
+    "rules": "backends/storage.rules"
   }
 }

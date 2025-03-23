@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import home2Logo from "../assets/home-2.webp";
+import home2Logo from "../assets/images/home-2.webp";
 import FAQ from "../components/molecules/faq";
-import home2LogoBlured from "../assets/home-2-blur.webp";
+import home2LogoBlured from "../assets/images/home-2-blur.webp";
 import AppFooter from "../components/organisms/footer";
 import Hero from "../components/molecules/hero";
-import contactHeroImg from "../assets/contact-us-hero.webp";
-import contactHeroImgBlured from "../assets/contact-us-hero-blur.webp";
+import contactHeroImg from "../assets/images/contact-us-hero.webp";
+import contactHeroImgBlured from "../assets/images/contact-us-hero-blur.webp";
 import { AppImageBackground } from "../components/atoms/image-background";
 
 export const Route = createFileRoute("/contact")({

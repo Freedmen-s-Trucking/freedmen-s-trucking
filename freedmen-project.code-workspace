@@ -1,24 +1,27 @@
 {
   "folders": [
     {
-      "path": "webapp/"
+      "path": "backends/functions",
     },
     {
-      "path": "."
-    }
+      "path": "webapp/",
+    },
+    {
+      "path": ".",
+    },
   ],
   "settings": {
     "editor.formatOnSave": true,
     "files.readonlyInclude": {
       "**/node_modules/**": true,
       "**/route-tree.gen.ts": true,
-      "**/*.lock": true
-    }
+      "**/*.lock": true,
+    },
   },
   "extensions": {
     "recommendations": [
       "bradlc.vscode-tailwindcss",
-      "joshx.workspace-terminals"
-    ]
-  }
+      "joshx.workspace-terminals",
+    ],
+  },
 }

@@ -1,5 +1,5 @@
 import { Carousel } from "flowbite-react";
-import testimonialLogo from "../../assets/testimonial-1.webp";
+import testimonialLogo from "../../assets/images/testimonial-1.webp";
 import { AppImage } from "../atoms/image";
 
 const Testimonials: React.FC = () => {

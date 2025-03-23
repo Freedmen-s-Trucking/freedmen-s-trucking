@@ -1,18 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
-import home2LogoBlured from "../assets/home-2-blur.webp";
-import home2Logo from "../assets/home-2.webp";
+import home2LogoBlured from "../assets/images/home-2-blur.webp";
+import home2Logo from "../assets/images/home-2.webp";
 import Hero from "../components/molecules/hero";
 import FAQ from "../components/molecules/faq";
 import AppFooter from "../components/organisms/footer";
-import scheduleDeliveryHeroImg from "../assets/schedule-delivery-hero.webp";
-import scheduleDeliveryHeroImgBlured from "../assets/schedule-delivery-hero-blur.webp";
+import scheduleDeliveryHeroImg from "../assets/images/schedule-delivery-hero.webp";
+import scheduleDeliveryHeroImgBlured from "../assets/images/schedule-delivery-hero-blur.webp";
 import { AppImageBackground } from "../components/atoms/image-background";
+import { useAuth } from "../hooks/auth";
 
 export const Route = createFileRoute("/schedule-delivery")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
+  const { user, signInWithGoogle } = useAuth();
+  // const
   const contacts = [
     {
       label: "Phone",
@@ -48,15 +51,37 @@ function RouteComponent() {
             <p className="py-4 text-center text-sm text-white md:text-start">
               Enter your details to get started.
             </p>
-            {contacts.map((contact, index) => (
-              <div
-                key={index}
-                className="flex w-full flex-row items-center justify-between text-white"
-              >
-                <span>{contact.label}:</span>
-                <span className="text-xs">{contact.value}</span>
+            {user.isAnonymous && (
+              <div className="flex flex-col items-center justify-center gap-4">
+                {/* <button className="w-full rounded-full bg-white px-4 py-2 font-bold text-black">
+                  Login
+                </button>
+                <button className="w-full rounded-full bg-white px-4 py-2 font-bold text-black">
+                  Sign Up
+                </button> */}
+                <button
+                  onClick={signInWithGoogle}
+                  className="flex w-full items-center justify-center gap-2 rounded-full bg-white px-4 py-2 font-bold text-black"
+                >
+                  <img
+                    src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                    alt="Google"
+                    className="h-5 w-5"
+                  />
+                  Sign in with Google
+                </button>
               </div>
-            ))}
+            )}
+            {!user.isAnonymous &&
+              contacts.map((contact, index) => (
+                <div
+                  key={index}
+                  className="flex w-full flex-row items-center justify-between text-white"
+                >
+                  <span>{contact.label}:</span>
+                  <span className="text-xs">{contact.value}</span>
+                </div>
+              ))}
           </div>
           <div className="w-full max-w-md overflow-hidden rounded-2xl bg-gradient-to-r from-[rgba(102,102,102,0.6)] to-[rgba(0,0,0,0.6)]">
             <div className="flex flex-col items-center gap-4 rounded-3xl border border-white bg-white/20 p-8">

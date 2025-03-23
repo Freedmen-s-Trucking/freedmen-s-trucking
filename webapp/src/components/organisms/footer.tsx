@@ -1,9 +1,9 @@
 import { useRouterState } from "@tanstack/react-router";
 import { AppImage } from "../atoms/image";
-import logotiny from "../../assets/logo-blur.webp";
-import logo from "../../assets/logo.webp";
-import home3Logo from "../../assets/home-3.webp";
-import home3LogoBlured from "../../assets/home-3-blur.webp";
+import logotiny from "../../assets/images/logo-blur.webp";
+import logo from "../../assets/images/logo.webp";
+import home3Logo from "../../assets/images/home-3.webp";
+import home3LogoBlured from "../../assets/images/home-3-blur.webp";
 import { PAGE_ROUTES } from "../../utils/constants";
 import { Link } from "@tanstack/react-router";
 import { AppImageBackground } from "../atoms/image-background";
@@ -98,7 +98,6 @@ const ImportantLinksAndSubscription: React.FC = () => {
         <div className="flex flex-col items-center gap-2 md:items-start">
           <AppImage
             placeholder={logotiny}
-            align="center"
             src={logo}
             alt="logo"
             className="h-auto w-[60px] rounded-full sm:w-[90px]"

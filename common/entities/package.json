@@ -1,0 +1,9 @@
+{
+  "name": "@freedman-trucking/entities",
+  "version": "1.0.0",
+  "description": "Shared entities between webapp and backend function",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}

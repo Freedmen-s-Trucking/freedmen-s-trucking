@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import home2LogoBlured from "../assets/home-2-blur.webp";
-import home2Logo from "../assets/home-2.webp";
+import home2LogoBlured from "../assets/images/home-2-blur.webp";
+import home2Logo from "../assets/images/home-2.webp";
 import Hero from "../components/molecules/hero";
 import FAQ from "../components/molecules/faq";
 import AppFooter from "../components/organisms/footer";
-import deliveryTrackingHeroImg from "../assets/track-delivery-hero.webp";
-import deliveryTrackingHeroImgBlured from "../assets/track-delivery-hero-blur.webp";
+import deliveryTrackingHeroImg from "../assets/images/track-delivery-hero.webp";
+import deliveryTrackingHeroImgBlured from "../assets/images/track-delivery-hero-blur.webp";
 import { AppImageBackground } from "../components/atoms/image-background";
 
 export const Route = createFileRoute("/tracking")({
@@ -24,7 +24,7 @@ function RouteComponent() {
         bluredImage={deliveryTrackingHeroImgBlured}
         className="h-screen  md:h-full"
       >
-        <div className="mx-auto flex w-full flex-col items-center gap-4 pt-32 text-center md:mx-0 md:w-2/3 md:items-start md:pt-24 md:text-start lg:w-1/2">
+        <div className="mx-auto flex w-full flex-col items-center gap-4 pt-32 text-center md:mx-0 md:w-2/3 md:items-start md:pt-24 md:text-start">
           <h1 className="text-4xl leading-none tracking-tight text-white lg:text-5xl">
             Track Your Delivery
           </h1>

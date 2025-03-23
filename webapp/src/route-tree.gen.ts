@@ -17,6 +17,7 @@ import { Route as ScheduleDeliveryImport } from './routes/schedule-delivery'
 import { Route as ContactImport } from './routes/contact'
 import { Route as AboutImport } from './routes/about'
 import { Route as IndexImport } from './routes/index'
+import { Route as AppDriverDashboardImport } from './routes/app/driver/dashboard'
 
 // Create/Update Routes
 
@@ -53,6 +54,12 @@ const AboutRoute = AboutImport.update({
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppDriverDashboardRoute = AppDriverDashboardImport.update({
+  id: '/app/driver/dashboard',
+  path: '/app/driver/dashboard',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -102,6 +109,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TrackingImport
       parentRoute: typeof rootRoute
     }
+    '/app/driver/dashboard': {
+      id: '/app/driver/dashboard'
+      path: '/app/driver/dashboard'
+      fullPath: '/app/driver/dashboard'
+      preLoaderRoute: typeof AppDriverDashboardImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -114,6 +128,7 @@ export interface FileRoutesByFullPath {
   '/schedule-delivery': typeof ScheduleDeliveryRoute
   '/services': typeof ServicesRoute
   '/tracking': typeof TrackingRoute
+  '/app/driver/dashboard': typeof AppDriverDashboardRoute
 }
 
 export interface FileRoutesByTo {
@@ -123,6 +138,7 @@ export interface FileRoutesByTo {
   '/schedule-delivery': typeof ScheduleDeliveryRoute
   '/services': typeof ServicesRoute
   '/tracking': typeof TrackingRoute
+  '/app/driver/dashboard': typeof AppDriverDashboardRoute
 }
 
 export interface FileRoutesById {
@@ -133,6 +149,7 @@ export interface FileRoutesById {
   '/schedule-delivery': typeof ScheduleDeliveryRoute
   '/services': typeof ServicesRoute
   '/tracking': typeof TrackingRoute
+  '/app/driver/dashboard': typeof AppDriverDashboardRoute
 }
 
 export interface FileRouteTypes {
@@ -144,6 +161,7 @@ export interface FileRouteTypes {
     | '/schedule-delivery'
     | '/services'
     | '/tracking'
+    | '/app/driver/dashboard'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -152,6 +170,7 @@ export interface FileRouteTypes {
     | '/schedule-delivery'
     | '/services'
     | '/tracking'
+    | '/app/driver/dashboard'
   id:
     | '__root__'
     | '/'
@@ -160,6 +179,7 @@ export interface FileRouteTypes {
     | '/schedule-delivery'
     | '/services'
     | '/tracking'
+    | '/app/driver/dashboard'
   fileRoutesById: FileRoutesById
 }
 
@@ -170,6 +190,7 @@ export interface RootRouteChildren {
   ScheduleDeliveryRoute: typeof ScheduleDeliveryRoute
   ServicesRoute: typeof ServicesRoute
   TrackingRoute: typeof TrackingRoute
+  AppDriverDashboardRoute: typeof AppDriverDashboardRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -179,6 +200,7 @@ const rootRouteChildren: RootRouteChildren = {
   ScheduleDeliveryRoute: ScheduleDeliveryRoute,
   ServicesRoute: ServicesRoute,
   TrackingRoute: TrackingRoute,
+  AppDriverDashboardRoute: AppDriverDashboardRoute,
 }
 
 export const routeTree = rootRoute
@@ -196,7 +218,8 @@ export const routeTree = rootRoute
         "/contact",
         "/schedule-delivery",
         "/services",
-        "/tracking"
+        "/tracking",
+        "/app/driver/dashboard"
       ]
     },
     "/": {
@@ -216,6 +239,9 @@ export const routeTree = rootRoute
     },
     "/tracking": {
       "filePath": "tracking.tsx"
+    },
+    "/app/driver/dashboard": {
+      "filePath": "app/driver/dashboard.tsx"
     }
   }
 }

@@ -1,9 +1,9 @@
 import { createFileRoute, Link, useRouterState } from "@tanstack/react-router";
-import home2LogoBlured from "../assets/home-2-blur.webp";
-import home2Logo from "../assets/home-2.webp";
-import aboutUsTruck from "../assets/about-us-truck-1.webp";
-import ourServicesHeroImg from "../assets/our-services-hero.webp";
-import ourServicesHeroImgBlured from "../assets/our-services-hero-blur.webp";
+import home2LogoBlured from "../assets/images/home-2-blur.webp";
+import home2Logo from "../assets/images/home-2.webp";
+import aboutUsTruck from "../assets/images/about-us-truck-1.webp";
+import ourServicesHeroImg from "../assets/images/our-services-hero.webp";
+import ourServicesHeroImgBlured from "../assets/images/our-services-hero-blur.webp";
 import Hero from "../components/molecules/hero";
 import FAQ from "../components/molecules/faq";
 import AppFooter from "../components/organisms/footer";

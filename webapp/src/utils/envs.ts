@@ -1,0 +1,1 @@
+export const FIREBASE_CONFIG_JSON = import.meta.env.VITE_FIREBASE_CONFIG_JSON;

@@ -1,0 +1,5 @@
+{
+  "name": "freedman-trucking",
+  "private": true,
+  "workspaces": ["webapp", "functions", "common/*"]
+}

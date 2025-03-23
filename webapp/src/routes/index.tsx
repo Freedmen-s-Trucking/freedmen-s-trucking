@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import homeHeroImg from "../assets/hero.webp";
-import homeHeroImgBlured from "../assets/hero-blur.webp";
+import homeHeroImg from "../assets/images/hero.webp";
+import homeHeroImgBlured from "../assets/images/hero-blur.webp";
 import React from "react";
-import home2LogoBlured from "../assets/home-2-blur.webp";
-import home2Logo from "../assets/home-2.webp";
+import home2LogoBlured from "../assets/images/home-2-blur.webp";
+import home2Logo from "../assets/images/home-2.webp";
 import { AppImage } from "../components/atoms/image";
 import AppFooter from "../components/organisms/footer";
 import FAQ from "../components/molecules/faq";
@@ -287,12 +287,12 @@ function Index() {
         bluredImage={homeHeroImgBlured}
         className="h-screen"
       >
-        <div className="mx-auto w-full pt-56 text-center md:mx-0 md:w-2/3 md:pt-24 md:text-start">
-          <h1 className="mb-4 text-5xl font-extrabold leading-none tracking-tight text-white md:text-6xl lg:text-6xl">
+        <div className="mx-auto w-full pt-56 text-center md:mx-0 md:w-5/6 md:pt-24 md:text-start">
+          <h1 className="mb-4 text-5xl font-extrabold leading-none tracking-tight text-white lg:text-6xl">
             Same-Day Delivery, Simplified.
           </h1>
           <hr className="mx-auto my-3 w-1/2 md:mx-0 md:w-4/5"></hr>
-          <p className="mb-8 text-xs font-normal text-gray-300 lg:text-lg">
+          <p className="mb-8 text-xs font-normal text-gray-300  md:w-3/5 lg:text-lg">
             Fast, reliable, and efficient truck dispatching services tailored to
             your needs.
           </p>
