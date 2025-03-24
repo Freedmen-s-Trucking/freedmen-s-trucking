@@ -8,34 +8,85 @@ import scheduleDeliveryHeroImg from "../assets/images/schedule-delivery-hero.web
 import scheduleDeliveryHeroImgBlured from "../assets/images/schedule-delivery-hero-blur.webp";
 import { AppImageBackground } from "../components/atoms/image-background";
 import { useAuth } from "../hooks/use-auth";
+import {
+  AddressSearchInput,
+  AddressSearchInputProps,
+} from "../components/atoms/address-search-input";
+import { UserEntity } from "@freedman-trucking/entities";
+import { Dropdown } from "flowbite-react";
+import { useState } from "react";
 
 export const Route = createFileRoute("/schedule-delivery")({
   component: RouteComponent,
 });
 
+const DeliveryPriorities = [
+  {
+    label: "Standart",
+    value: 0,
+  },
+  {
+    label: "Expedited",
+    value: 1,
+  },
+  {
+    label: "Urgent",
+    value: 1.5,
+  },
+] as const;
+const contacts = [
+  {
+    label: "Phone",
+    Value: ({
+      user,
+      ...other
+    }: { user: UserEntity } & Record<string, unknown>) => (
+      <>
+        <input {...other} readOnly type="text" value={user.phoneNumber || ""} />
+      </>
+    ),
+  },
+  {
+    label: "Email",
+    Value: ({
+      user,
+      ...other
+    }: { user: UserEntity } & Record<string, unknown>) => (
+      <>
+        <input {...other} readOnly type="email" value={user.email || ""} />
+      </>
+    ),
+  },
+  {
+    label: "Adress",
+    Value: ({
+      user,
+      ...other
+    }: { user: UserEntity } & Record<string, unknown>) => (
+      <>
+        <input {...other} readOnly type="text" value={user && "???"} />
+      </>
+    ),
+  },
+];
+
 function RouteComponent() {
   const { user, signInWithGoogle } = useAuth();
-  // const
-  const contacts = [
-    {
-      label: "Phone",
-      value: "3434 804 4604",
-    },
-    {
-      label: "Email",
-      value: "hello@domain.com", // TODO: update mail.
-    },
-    {
-      label: "Adress",
-      value: "Your address goes here", // TODO: FIXIT.
-    },
-  ];
+  const [deliveryPriority, setDeliveryPriorityInput] =
+    useState<(typeof DeliveryPriorities)[number]>();
   const estimatedCostInUSD = 0;
   const formatedEstimation = () =>
     new Intl.NumberFormat("en-US", {
       currency: "USD",
       style: "currency",
     }).format(estimatedCostInUSD);
+
+  const onPickupLocationChanged: AddressSearchInputProps["onAddressChanged"] = (
+    data,
+  ) => {
+    console.log("onPickupLocationChanged", data);
+  };
+
   return (
     <>
       <Hero
@@ -53,12 +104,6 @@ function RouteComponent() {
             </p>
             {user.isAnonymous && (
               <div className="flex flex-col items-center justify-center gap-4">
-                {/* <button className="w-full rounded-full bg-white px-4 py-2 font-bold text-black">
-                  Login
-                </button>
-                <button className="w-full rounded-full bg-white px-4 py-2 font-bold text-black">
-                  Sign Up
-                </button> */}
                 <button
                   onClick={signInWithGoogle}
                   className="flex w-full items-center justify-center gap-2 rounded-full bg-white px-4 py-2 font-bold text-black"
@@ -79,28 +124,29 @@ function RouteComponent() {
                   className="flex w-full flex-row items-center justify-between text-white"
                 >
                   <span>{contact.label}:</span>
-                  <span className="text-xs">{contact.value}</span>
+                  <contact.Value
+                    user={user.info}
+                    className="inline rounded-sm border-none bg-transparent p-0 text-end text-white focus:border-none focus:outline-none focus:ring-0"
+                  />
                 </div>
               ))}
           </div>
           <div className="w-full max-w-md overflow-hidden rounded-2xl bg-gradient-to-r from-[rgba(102,102,102,0.6)] to-[rgba(0,0,0,0.6)]">
             <div className="flex flex-col items-center gap-4 rounded-3xl border border-white bg-white/20 p-8">
-              <input
+              <AddressSearchInput
+                onAddressChanged={onPickupLocationChanged}
                 required
-                type="text"
-                autoComplete="address"
                 id="pickup-location-input"
-                maxLength={30}
-                className="block w-full rounded-xl border border-gray-300 bg-gray-200 p-3 text-center text-lg text-black focus:border-red-400 focus:outline-none focus:ring-transparent"
+                maxLength={250}
+                className="block w-full rounded-xl border border-gray-300 bg-gray-200 p-3 text-center text-sm text-black placeholder:text-lg focus:border-red-400 focus:outline-none focus:ring-transparent"
                 placeholder="Enter pickup location"
               />
-              <input
+              <AddressSearchInput
+                onAddressChanged={onPickupLocationChanged}
                 required
-                type="text"
-                autoComplete="address"
                 id="enter-delivery-input"
-                maxLength={30}
-                className="block w-full rounded-xl border border-gray-300 bg-gray-200 p-3 text-center text-lg text-black focus:border-red-400 focus:outline-none focus:ring-transparent"
+                maxLength={250}
+                className="block w-full rounded-xl border border-gray-300 bg-gray-200 p-3 text-center text-sm text-black placeholder:text-lg focus:border-red-400 focus:outline-none focus:ring-transparent"
                 placeholder="Enter delivery location"
               />
               <input
@@ -111,14 +157,30 @@ function RouteComponent() {
                 className="block w-full rounded-xl border border-gray-300 bg-gray-200 p-3 text-center text-lg text-black focus:border-red-400 focus:outline-none focus:ring-transparent"
                 placeholder="Enter package weight (lbs)"
               />
-              <input // Urgence level
-                spellCheck
-                type="radio"
-                minLength={10}
-                id="delivery-type-input" // TODO: use select.
-                className="block w-full rounded-xl border border-gray-300 bg-gray-200 p-3 text-center text-lg text-black focus:border-red-400 focus:outline-none focus:ring-transparent"
-                placeholder="Delivery Type >"
-              />
+              <Dropdown
+                label=""
+                trigger="click"
+                renderTrigger={() => (
+                  <input
+                    spellCheck
+                    minLength={10}
+                    readOnly
+                    value={deliveryPriority?.label}
+                    id="delivery-type-input"
+                    className="block w-full cursor-pointer rounded-xl border border-gray-300 bg-gray-200 p-3 text-center text-lg text-black focus:border-red-400 focus:outline-none focus:ring-transparent"
+                    placeholder="Delivery Type >"
+                  />
+                )}
+              >
+                {DeliveryPriorities.map((props) => (
+                  <Dropdown.Item
+                    key={props.label}
+                    onClick={() => setDeliveryPriorityInput(props)}
+                  >
+                    {props.label}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown>
               <input
                 spellCheck
                 readOnly

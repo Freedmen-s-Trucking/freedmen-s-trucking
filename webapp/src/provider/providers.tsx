@@ -22,18 +22,21 @@ const Providers: React.FC<{
           <StorageProvider>
             <FireStoreProvider>
               <AnalyticsProvider>
-                <Provider store={store}>
-                  <PersistGate loading={null} persistor={persistor}>
-                    <AuthProvider>
-                      <QueryClientProvider client={queryClient}>
+                <QueryClientProvider client={queryClient}>
+                  <Provider store={store}>
+                    <PersistGate loading={null} persistor={persistor}>
+                      <AuthProvider>
                         {children}
                         {isDevMode && (
-                          <ReactQueryDevtools initialIsOpen={false} />
+                          <ReactQueryDevtools
+                            initialIsOpen={false}
+                            client={queryClient}
+                          />
                         )}
-                      </QueryClientProvider>
-                    </AuthProvider>
-                  </PersistGate>
-                </Provider>
+                      </AuthProvider>
+                    </PersistGate>
+                  </Provider>
+                </QueryClientProvider>
               </AnalyticsProvider>
             </FireStoreProvider>
           </StorageProvider>

@@ -1,7 +1,8 @@
-import { useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+import { useCallback, useState } from "react";
 
 const OSM_PLACE_SEARCH_API = "https://nominatim.openstreetmap.org/search.php";
-type OSMSearchResult = {
+export type OSMSearchResult = {
   place_id: number;
   licence: string;
   osm_type: string;
@@ -19,16 +20,16 @@ type OSMSearchResult = {
 };
 
 export const useGeocoding = () => {
-  // const { isPending, error, data } = useQuery({
-  //   queryKey: ['repoData'],
-  //   queryFn: () =>
-  //     fetch('https://api.github.com/repos/TanStack/query').then((res) =>
-  //       res.json(),
-  //     ),
-  // })
-  const mutation = useMutation({
-    mutationFn: async (query: string) => {
+  const [query, setQuery] = useState("");
+
+  const { data, error, isFetching } = useQuery({
+    queryKey: ["reponseData", query],
+    initialData: [],
+    enabled: query.trim().length > 3,
+    queryFn: async () => {
       const params = new URLSearchParams({
+        countrycodes: "us",
+        layer: "address",
         format: "jsonv2",
         q: query,
       });
@@ -36,10 +37,19 @@ export const useGeocoding = () => {
       const response = await fetch(
         `${OSM_PLACE_SEARCH_API}?${params.toString()}`,
       );
+
+      if (response.status >= 400) {
+        throw new Error(response.statusText);
+      }
       const data: OSMSearchResult[] = await response.json();
       return data;
     },
   });
 
-  return { searchPlaceOSM: mutation.mutate };
+  const searchPlaceOSM = useCallback((query: string) => {
+    console.log("searchPlaceOSM", query);
+    setQuery(query.trim());
+  }, []);
+
+  return { searchPlaceOSM, isFetching, data, error, query };
 };

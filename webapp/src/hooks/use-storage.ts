@@ -1,6 +1,7 @@
 import { useCallback, useContext } from "react";
 import { StorageProvider } from "../provider/storage";
-import { ref, uploadBytes } from "firebase/storage";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { checkFalsyAndThrow } from "@/utils/functions";
 
 const useStorage = () => {
   const context = useContext(StorageProvider.Ctx);
@@ -16,30 +17,40 @@ export const useStorageOperations = () => {
   /**
    * Uploads the provided image
    */
-  const uploadDriverCertificates = useCallback(
-    async (uid: string, licenses: File[]) => {
-      if (!uid || uid.trim().length === 0) {
-        throw new Error("FStorageError:: The uid must not be empty");
-      }
+  const uploadCertificate = useCallback(
+    async (
+      uid: string,
+      license: File,
+      type: "driver-license" | "driver-insurance",
+    ) => {
+      checkFalsyAndThrow(
+        { uid, license, type },
+        "FStorageError:: The uid or license must not be empty or null or undefined",
+      );
       const userStorageRef = ref(storage, `drivers-certifications/${uid}`);
 
-      const promises: Promise<string>[] = [];
-      for (const [index, license] of Object.entries(licenses)) {
-        if (license.type.startsWith("image/")) {
-          const storageRef = ref(userStorageRef, `${index}`);
-          const res = uploadBytes(storageRef, license).then((snapshot) => {
-            console.log({ snapshot });
-            console.log("Uploaded a blob or file!");
-            return snapshot.ref.fullPath;
-          });
-          promises.push(res);
-        }
+      if (license.type.startsWith("image/")) {
+        const storageRef = ref(userStorageRef, type);
+        const res = uploadBytes(storageRef, license).then((snapshot) => {
+          console.log({ snapshot });
+          console.log("Uploaded a blob or file!");
+          return snapshot.ref.fullPath;
+        });
+        return res;
       }
 
-      return await Promise.all(promises);
+      throw new Error("FStorageError:: Invalid file type");
     },
     [storage],
   );
 
-  return { uploadDriverCertificates };
+  const fetchImage = useCallback(
+    async (path: string) => {
+      const storageRef = ref(storage, path);
+      return await getDownloadURL(storageRef);
+    },
+    [storage],
+  );
+
+  return { uploadCertificate, fetchImage };
 };

@@ -4,16 +4,18 @@ import { Dropdown, Modal, Navbar } from "flowbite-react";
 import { AppImage } from "../atoms/image";
 import logotiny from "../../assets/images/logo-blur.webp";
 import logo from "../../assets/images/logo.webp";
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { PAGE_ROUTES } from "../../utils/constants";
 import { useAuth } from "../../hooks/use-auth";
 import { HiLogout } from "react-icons/hi";
 import { useState } from "react";
 import SignUp from "../molecules/sign-up";
 import SignIn from "../molecules/sign-in";
+import { TbLayoutDashboard } from "react-icons/tb";
 
 const ProfileDropdown: React.FC = () => {
   const [authAction, setAuthAction] = useState<"login" | "signup" | null>(null);
+  const navigate = useNavigate();
   const onCloseModal = () => {
     setAuthAction(null);
   };
@@ -72,6 +74,13 @@ const ProfileDropdown: React.FC = () => {
               <div className="truncate font-medium">{user.info.email}</div>
             )}
           </div>
+          <Dropdown.Divider />
+          <Dropdown.Item
+            icon={TbLayoutDashboard}
+            onClick={() => navigate({ to: "/app/driver/dashboard" })}
+          >
+            Dashboard
+          </Dropdown.Item>
           <Dropdown.Divider />
           <Dropdown.Item icon={HiLogout} onClick={signOut}>
             Sign out
