@@ -7,7 +7,7 @@ import AppFooter from "../components/organisms/footer";
 import scheduleDeliveryHeroImg from "../assets/images/schedule-delivery-hero.webp";
 import scheduleDeliveryHeroImgBlured from "../assets/images/schedule-delivery-hero-blur.webp";
 import { AppImageBackground } from "../components/atoms/image-background";
-import { useAuth } from "../hooks/auth";
+import { useAuth } from "../hooks/use-auth";
 
 export const Route = createFileRoute("/schedule-delivery")({
   component: RouteComponent,
@@ -87,6 +87,8 @@ function RouteComponent() {
             <div className="flex flex-col items-center gap-4 rounded-3xl border border-white bg-white/20 p-8">
               <input
                 required
+                type="text"
+                autoComplete="address"
                 id="pickup-location-input"
                 maxLength={30}
                 className="block w-full rounded-xl border border-gray-300 bg-gray-200 p-3 text-center text-lg text-black focus:border-red-400 focus:outline-none focus:ring-transparent"
@@ -94,6 +96,8 @@ function RouteComponent() {
               />
               <input
                 required
+                type="text"
+                autoComplete="address"
                 id="enter-delivery-input"
                 maxLength={30}
                 className="block w-full rounded-xl border border-gray-300 bg-gray-200 p-3 text-center text-lg text-black focus:border-red-400 focus:outline-none focus:ring-transparent"
@@ -101,13 +105,15 @@ function RouteComponent() {
               />
               <input
                 required
+                type="number"
                 id="package-wheight-input"
                 maxLength={30}
                 className="block w-full rounded-xl border border-gray-300 bg-gray-200 p-3 text-center text-lg text-black focus:border-red-400 focus:outline-none focus:ring-transparent"
                 placeholder="Enter package weight (lbs)"
               />
-              <input
+              <input // Urgence level
                 spellCheck
+                type="radio"
                 minLength={10}
                 id="delivery-type-input" // TODO: use select.
                 className="block w-full rounded-xl border border-gray-300 bg-gray-200 p-3 text-center text-lg text-black focus:border-red-400 focus:outline-none focus:ring-transparent"

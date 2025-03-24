@@ -111,6 +111,7 @@ const ImportantLinksAndSubscription: React.FC = () => {
             <input
               onChange={onEmailChanged}
               type="email"
+              autoComplete="email"
               required
               id="subscription-email"
               className="block w-full border-0 border-b border-gray-300 bg-transparent px-0 pe-10 text-sm text-white focus:border-blue-500 focus:outline-none focus:ring-transparent"

@@ -1,5 +1,5 @@
-import { ChangeEvent, useCallback, useRef, useState } from "react";
-import { useAuth } from "../../hooks/auth";
+import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
+import { useAuth } from "../../hooks/use-auth";
 import { FirebaseError } from "firebase/app";
 import { UserCredential } from "firebase/auth";
 import { Link } from "@tanstack/react-router";
@@ -13,6 +13,8 @@ import {
 import { FaHouseUser } from "react-icons/fa";
 import { TbLayoutDashboard, TbTruckDelivery } from "react-icons/tb";
 import { MdOutlinePostAdd } from "react-icons/md";
+import { useDbOperations } from "../../hooks/use-firestore";
+import { useStorageOperations } from "../../hooks/use-storage";
 const PASSWORD_SECURITY_LEVELS = [
   {
     label: "weak",
@@ -114,6 +116,7 @@ const SignUpUser: React.FC<{
     try {
       setIsLoading(true);
       const res = await signUpWithEmailAndPassword(email, password);
+      setError(null);
       onComplete(res);
     } catch (error: unknown) {
       const err = error as Record<string, unknown> | null | undefined;
@@ -171,6 +174,7 @@ const SignUpUser: React.FC<{
             onChange={onEmailChanged}
             value={email}
             id="email1"
+            autoComplete="email"
             type="email"
             placeholder="jhon@domain.com"
             required
@@ -232,6 +236,7 @@ const SignUpUser: React.FC<{
               onChange={onPasswordChanged}
               value={password}
               maxLength={32}
+              autoComplete="new-password"
               id="password1"
               type="password"
               required
@@ -246,6 +251,7 @@ const SignUpUser: React.FC<{
             onChange={onConfirmPasswordChanged}
             value={confirmPassword}
             maxLength={32}
+            autoComplete="new-password"
             id="password2"
             type="password"
             required
@@ -346,11 +352,27 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
   onAdditionalInfoAdded,
 }) => {
   const MAX_CERTIFICATES = 5;
-  const [fullName, setFullName] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const {
+    user: { info: userInfo },
+  } = useAuth();
+  const [fullName, setFullName] = useState<string>(userInfo.displayName || "");
+  const [phoneNumber, setPhoneNumber] = useState<string>(
+    userInfo.phoneNumber || "",
+  );
   const [certificates, setCertificates] = useState<File[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const certificateInputRef = useRef<HTMLInputElement>(null);
+  const { insertUser, updateDriverCertificates } = useDbOperations();
+  const { uploadDriverCertificates } = useStorageOperations();
+
+  useEffect(() => {
+    if (userInfo.displayName) {
+      setFullName(userInfo.displayName);
+    }
+    if (userInfo.phoneNumber) {
+      setPhoneNumber(userInfo.phoneNumber);
+    }
+  }, [userInfo]);
 
   const onFullNameChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFullName(e.target.value);
@@ -392,8 +414,16 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
     e.preventDefault();
     try {
       setIsLoading(true);
-
-      // onAdditionalInfoAdded();
+      await new Promise((r) => setTimeout(r, 1000));
+      const paths = await uploadDriverCertificates(userInfo.uid, certificates);
+      await insertUser(userInfo.uid, {
+        displayName: `${userInfo.displayName} ${fullName}`.trim(),
+        phoneNumber: phoneNumber,
+        isPhoneNumberVerified: false,
+      });
+      await updateDriverCertificates(userInfo.uid, paths);
+      setError(null);
+      onAdditionalInfoAdded();
     } catch (error: unknown) {
       const err = error as Record<string, unknown> | null | undefined;
       console.debug({ err });
@@ -412,13 +442,14 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
       <form className="flex flex-col space-y-2" onSubmit={handleSubmit}>
         <label className="block">
           <span className="block text-sm font-medium text-gray-700">
-            Full Name
+            Full Name<span className="text-lg text-red-400">*</span>
           </span>
           <input
             type="text"
             value={fullName}
             onChange={onFullNameChanged}
             required
+            autoComplete="billing name"
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
           />
         </label>
@@ -428,14 +459,15 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
           </span>
           <input
             type="text"
+            autoComplete="tel"
             value={phoneNumber}
             onChange={onPhoneNumberChanged}
-            required
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
           />
         </label>
         <span className="block text-sm font-medium text-gray-700">
           Driver License & Certificates (max {MAX_CERTIFICATES})
+          <span className="text-lg text-red-400">*</span>
         </span>
         <div className="mt-1 flex flex-wrap items-center gap-8">
           {certificates.map((file, index) => (
@@ -469,10 +501,15 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
             </label>
           )}
         </div>
-        <Button color="dark" type="submit" disabled={isLoading}>
+        <button
+          color="dark"
+          type="submit"
+          disabled={isLoading}
+          className="flex flex-row items-center justify-center gap-2 rounded-md bg-gray-900 px-10 py-2 text-white disabled:cursor-not-allowed disabled:bg-gray-700"
+        >
           {isLoading && <Spinner aria-label="Spinner" size="sm" />}
-          Sign Up{isLoading ? "..." : ""}
-        </Button>
+          <span>Save{isLoading ? "..." : ""}</span>
+        </button>
       </form>
       {error && <p className="py-2 text-sm text-red-500">{error}</p>}
     </div>
@@ -532,7 +569,7 @@ const Confirm: React.FC<{ accountType: "client" | "driver" }> = ({
 
 const SignUp: React.FC = () => {
   const steps = ["Account Type", "User Info", "Additional Info", "Confirm"];
-  const [activeStep, setActiveStep] = useState(2);
+  const [activeStep, setActiveStep] = useState(0);
   const [accountType, setAccountType] = useState<"client" | "driver">("driver");
 
   const moveToNextStep = () => {

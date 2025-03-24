@@ -6,7 +6,7 @@ import logotiny from "../../assets/images/logo-blur.webp";
 import logo from "../../assets/images/logo.webp";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { PAGE_ROUTES } from "../../utils/constants";
-import { useAuth } from "../../hooks/auth";
+import { useAuth } from "../../hooks/use-auth";
 import { HiLogout } from "react-icons/hi";
 import { useState } from "react";
 import SignUp from "../molecules/sign-up";

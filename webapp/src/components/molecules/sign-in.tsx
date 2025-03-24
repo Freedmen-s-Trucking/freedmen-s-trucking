@@ -1,5 +1,5 @@
 import { ChangeEvent, useCallback, useRef, useState } from "react";
-import { useAuth } from "../../hooks/auth";
+import { useAuth } from "../../hooks/use-auth";
 import { FirebaseError } from "firebase/app";
 import { UserCredential } from "firebase/auth";
 import { Button, Label, Popover, Spinner, TextInput } from "flowbite-react";
@@ -170,6 +170,7 @@ const SignIn: React.FC<{
           <TextInput
             onChange={onEmailChanged}
             value={email}
+            autoComplete="email"
             id="email1"
             type="email"
             placeholder="jhon@domain.com"
@@ -234,6 +235,7 @@ const SignIn: React.FC<{
               onChange={onPasswordChanged}
               ref={passwordRef}
               value={password}
+              autoComplete="current-password"
               maxLength={32}
               id="password1"
               type="password"

@@ -12,8 +12,8 @@ export const PerformanceMonitoringProvider: React.FC<{
   const performance = useMemo(() => getPerformance(), []);
 
   useEffect(() => {
-    performance.dataCollectionEnabled = true;
-    performance.instrumentationEnabled = true;
+    // performance.dataCollectionEnabled = true;
+    // performance.instrumentationEnabled = true;
     // onCLS(console.log);
     // onINP(console.log);
     // onLCP(console.log);

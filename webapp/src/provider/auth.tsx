@@ -12,6 +12,8 @@ import { createContext, useEffect, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "../stores/hooks";
 import { AppUser, setUser } from "../stores/controllers/auth-ctrl";
 import { Spinner } from "flowbite-react";
+import { UserEntity } from "@freedman-trucking/entities";
+import { useDbOperations } from "../hooks/use-firestore";
 
 interface AppAuth {
   user: AppUser;
@@ -62,8 +64,8 @@ const _signInWithGoogle = async (): Promise<UserCredential> => {
 export const AuthProvider: React.FC<{
   children: React.ReactNode;
 }> & { Ctx: React.Context<AppAuth | null> } = ({ children }) => {
-  // const app = useFirebase();
   const auth = useMemo(() => getAuth(), []);
+  const { createUser } = useDbOperations();
 
   useEffect(() => {
     auth.useDeviceLanguage();
@@ -82,27 +84,30 @@ export const AuthProvider: React.FC<{
 
   const dispatch = useAppDispatch();
   useEffect(() => {
-    auth.onAuthStateChanged((user) => {
+    auth.onAuthStateChanged(async (user) => {
       if (user) {
-        console.log("user logged in", user);
+        const dbUser: UserEntity = {
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName ?? user.email?.split("@")[0] ?? "",
+          photoURL: user.photoURL,
+          phoneNumber: user.phoneNumber,
+          isPhoneNumberVerified: !!user.phoneNumber,
+          isEmailVerified: user.emailVerified,
+          authMethods: user.providerData.map((provider) => ({
+            provider: provider.providerId,
+            providerRowData: provider,
+          })),
+          createdAt: user.metadata.creationTime || null,
+          updatedAt: user.metadata.creationTime || null,
+        };
+
+        if (!user.isAnonymous) {
+          await createUser(dbUser);
+        }
         dispatch(
           setUser({
-            info: {
-              uid: user.uid,
-              email: user.email,
-              displayName: user.displayName ?? user.email?.split("@")[0] ?? "",
-              photoURL: user.photoURL,
-              phoneNumber: user.phoneNumber,
-              isAnonymous: user.isAnonymous,
-              authMethods: user.providerData.map((provider) => ({
-                provider: provider.providerId,
-                providerRowData: provider,
-              })),
-              customerId: null,
-              driverId: null,
-              createdAt: user.metadata.creationTime || null,
-              updatedAt: user.metadata.creationTime || null,
-            },
+            info: dbUser,
             isAnonymous: user.isAnonymous,
             isEmailVerified: user.emailVerified,
             meta: {
@@ -117,7 +122,7 @@ export const AuthProvider: React.FC<{
         signInAnonymously(auth);
       }
     });
-  }, [auth, dispatch]);
+  }, [auth, dispatch, createUser]);
 
   if (user == null) {
     return (

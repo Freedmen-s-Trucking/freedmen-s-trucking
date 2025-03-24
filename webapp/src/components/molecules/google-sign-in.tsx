@@ -1,6 +1,7 @@
-import { useAuth } from "../../hooks/auth";
+import { useAuth } from "../../hooks/use-auth";
 import { FirebaseError } from "firebase/app";
 import { UserCredential } from "firebase/auth";
+import { useState } from "react";
 
 export const GoogleSignIn: React.FC<{
   onSignInError?: (error: unknown) => void;
@@ -8,9 +9,11 @@ export const GoogleSignIn: React.FC<{
   title: string;
 }> = ({ title, onSignInCompleted, onSignInError }) => {
   const { signInWithGoogle } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
 
   const signIn = async () => {
     try {
+      setIsLoading(true);
       const result = await signInWithGoogle();
       if (onSignInCompleted) {
         onSignInCompleted(result);
@@ -23,13 +26,16 @@ export const GoogleSignIn: React.FC<{
         }
       }
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <button
       onClick={signIn}
-      className="m-auto my-4 flex items-center justify-center gap-2 rounded-lg bg-white bg-gradient-to-r from-red-700 via-red-600 to-orange-500 px-5 py-2 text-center text-sm font-bold text-white transition-all duration-500 hover:bg-gradient-to-bl focus:outline-none"
+      disabled={isLoading}
+      className="m-auto  my-4 flex items-center justify-center gap-2 rounded-lg bg-white bg-gradient-to-r from-red-700 via-red-600 to-orange-500 px-5 py-2 text-center text-sm font-bold text-white transition-all duration-500 hover:bg-gradient-to-bl focus:outline-none disabled:opacity-80"
     >
       <img
         src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"

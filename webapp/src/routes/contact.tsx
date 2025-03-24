@@ -58,12 +58,16 @@ function RouteComponent() {
               <input
                 required
                 id="contact-name-input"
+                autoComplete="name"
+                type="text"
                 maxLength={20}
                 className="block w-full rounded-xl border border-gray-300 bg-gray-200 p-3 text-center text-lg text-black focus:border-red-400 focus:outline-none focus:ring-transparent"
                 placeholder="Your Name"
               />
               <input
                 required
+                type="tel"
+                autoComplete="tel"
                 id="contact-phone-number-input"
                 maxLength={20}
                 className="block w-full rounded-xl border border-gray-300 bg-gray-200 p-3 text-center text-lg text-black focus:border-red-400 focus:outline-none focus:ring-transparent"
@@ -71,6 +75,8 @@ function RouteComponent() {
               />
               <input
                 required
+                autoComplete="email"
+                type="email"
                 id="contact-email-input"
                 maxLength={20}
                 className="block w-full rounded-xl border border-gray-300 bg-gray-200 p-3 text-center text-lg text-black focus:border-red-400 focus:outline-none focus:ring-transparent"
