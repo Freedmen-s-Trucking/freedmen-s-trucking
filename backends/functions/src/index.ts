@@ -1,3 +1,3 @@
-import webApi from './api'
-
-export const api = webApi
+import 'source-map-support/register';
+import 'dotenv/config'
+export { httpServer } from './http-server'

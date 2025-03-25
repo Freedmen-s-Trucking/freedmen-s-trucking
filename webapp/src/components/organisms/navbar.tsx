@@ -12,6 +12,7 @@ import { useState } from "react";
 import SignUp from "../molecules/sign-up";
 import SignIn from "../molecules/sign-in";
 import { TbLayoutDashboard } from "react-icons/tb";
+import { FaHouseUser } from "react-icons/fa6";
 
 const ProfileDropdown: React.FC = () => {
   const [authAction, setAuthAction] = useState<"login" | "signup" | null>(null);
@@ -50,6 +51,7 @@ const ProfileDropdown: React.FC = () => {
         </div>
       )) || (
         <Dropdown
+          trigger="hover"
           renderTrigger={() => {
             return (
               <AppImage
@@ -75,11 +77,19 @@ const ProfileDropdown: React.FC = () => {
             )}
           </div>
           <Dropdown.Divider />
+          {user.driverInfo && (
+            <Dropdown.Item
+              icon={TbLayoutDashboard}
+              onClick={() => navigate({ to: "/app/driver/dashboard" })}
+            >
+              Driver Dashboard
+            </Dropdown.Item>
+          )}
           <Dropdown.Item
-            icon={TbLayoutDashboard}
-            onClick={() => navigate({ to: "/app/driver/dashboard" })}
+            icon={FaHouseUser}
+            onClick={() => navigate({ to: "/app/customer/dashboard" })}
           >
-            Dashboard
+            Customer Dashboard
           </Dropdown.Item>
           <Dropdown.Divider />
           <Dropdown.Item icon={HiLogout} onClick={signOut}>

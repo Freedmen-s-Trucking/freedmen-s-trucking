@@ -1,5 +1,6 @@
-import { configureStore } from "@reduxjs/toolkit";
+import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { authCtrl } from "./controllers/auth-ctrl";
+import { appCtrl } from "./controllers/app-ctrl";
 import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 
@@ -10,6 +11,11 @@ const persistConfig = {
   storage,
 };
 
+const rootReducer = combineReducers({
+  authCtrl: persistReducer(persistConfig, authCtrl.reducer),
+  appCtrl: appCtrl.reducer,
+});
+
 export const store = configureStore({
   devTools: process.env.NODE_ENV !== "production",
   middleware: (getDefaultMiddleware) =>
@@ -18,10 +24,7 @@ export const store = configureStore({
         ignoredActions: ["persist/PERSIST", "persist/REHYDRATE"],
       },
     }),
-
-  reducer: {
-    authCtrl: persistReducer(persistConfig, authCtrl.reducer),
-  },
+  reducer: rootReducer,
 });
 
 export const persistor = persistStore(store);

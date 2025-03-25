@@ -14,11 +14,14 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@freedman-trucking/entities": "workspace:*",
+    "@freedman-trucking/types": "workspace:*",
     "@reduxjs/toolkit": "^2.6.1",
-    "@tanstack/react-query": "5.69.0",
+    "@stripe/react-stripe-js": "^3.5.1",
+    "@stripe/stripe-js": "^6.1.0",
+    "@tanstack/react-query": "5.68.0",
     "@tanstack/react-router": "1.114.17",
     "arktype": "^2.1.10",
+    "axios": "^1.8.4",
     "firebase": "^11.4.0",
     "flowbite-react": "^0.8.0",
     "react": "^18.2.0",
@@ -28,8 +31,8 @@
     "redux-persist": "^6.0.0"
   },
   "devDependencies": {
-    "@tanstack/eslint-plugin-query": "5.69.0",
-    "@tanstack/react-query-devtools": "5.69.0",
+    "@tanstack/eslint-plugin-query": "5.68.0",
+    "@tanstack/react-query-devtools": "5.68.0",
     "@tanstack/react-router-devtools": "1.114.17",
     "@tanstack/router-plugin": "1.114.17",
     "@types/react": "^18.2.67",

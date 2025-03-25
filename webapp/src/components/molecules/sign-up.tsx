@@ -15,6 +15,9 @@ import { TbLayoutDashboard, TbTruckDelivery } from "react-icons/tb";
 import { MdOutlinePostAdd } from "react-icons/md";
 import { useDbOperations } from "../../hooks/use-firestore";
 import { useStorageOperations } from "../../hooks/use-storage";
+import { DriverEntity } from "@freedman-trucking/types";
+import { useAppDispatch } from "@/stores/hooks";
+import { setUser } from "@/stores/controllers/auth-ctrl";
 const PASSWORD_SECURITY_LEVELS = [
   {
     label: "weak",
@@ -140,7 +143,7 @@ const SignUpUser: React.FC<{
   };
 
   const onEmailChanged = useCallback((ev: ChangeEvent<HTMLInputElement>) => {
-    setEmail(ev.target.value);
+    setEmail(ev.target.value.toLowerCase());
   }, []);
 
   const onPasswordChanged = useCallback((ev: ChangeEvent<HTMLInputElement>) => {
@@ -351,19 +354,19 @@ const Stepper: React.FC<{ activeStep: number; steps: string[] }> = ({
 const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
   onAdditionalInfoAdded,
 }) => {
-  const MAX_CERTIFICATES = 5;
-  const {
-    user: { info: userInfo },
-  } = useAuth();
+  const { user } = useAuth();
+  const userInfo = user.info;
   const [fullName, setFullName] = useState<string>(userInfo.displayName || "");
   const [phoneNumber, setPhoneNumber] = useState<string>(
     userInfo.phoneNumber || "",
   );
-  const [certificates, setCertificates] = useState<File[]>([]);
+  const [driverLicense, setDriverLicense] = useState<File | null>(null);
+  const [driverInsurance, setDriverInsurance] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const certificateInputRef = useRef<HTMLInputElement>(null);
-  const { insertUser, updateDriverCertificates } = useDbOperations();
-  const { uploadDriverCertificates } = useStorageOperations();
+  const { insertUser, updateDriver } = useDbOperations();
+  const { uploadCertificate } = useStorageOperations();
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     if (userInfo.displayName) {
@@ -385,29 +388,34 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
     setPhoneNumber(formattedValue);
   };
 
-  const onCertificatesChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onDriverLicenseChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
-      const newCertificates = Array.from(files).slice(0, 5);
-      setCertificates((prev) => [...prev, ...newCertificates]);
+      setDriverLicense(files[0]);
+    }
+  };
+  const onDriverInsuranceChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      setDriverInsurance(files[0]);
     }
   };
 
-  const removeCertificate = (indexToRemove: number) => {
-    const input = certificateInputRef.current;
-    const files = input?.files;
-    if (input && files) {
-      const dt = new DataTransfer();
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        if (indexToRemove !== i) {
-          dt.items.add(file);
-        }
-      }
-      input.files = dt.files;
-      setCertificates(Array.from(dt.files));
-    }
-  };
+  // const removeCertificate = (indexToRemove: number) => {
+  //   const input = certificateInputRef.current;
+  //   const files = input?.files;
+  //   if (input && files) {
+  //     const dt = new DataTransfer();
+  //     for (let i = 0; i < files.length; i++) {
+  //       const file = files[i];
+  //       if (indexToRemove !== i) {
+  //         dt.items.add(file);
+  //       }
+  //     }
+  //     input.files = dt.files;
+  //     setCertificates(Array.from(dt.files));
+  //   }
+  // };
 
   const [error, setError] = useState<null | string>(null);
   const handleSubmit = async (e: React.FormEvent) => {
@@ -415,13 +423,51 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
     try {
       setIsLoading(true);
       await new Promise((r) => setTimeout(r, 1000));
-      const paths = await uploadDriverCertificates(userInfo.uid, certificates);
+      const driverLicensePath = await uploadCertificate(
+        userInfo.uid,
+        driverLicense!,
+        "driver-license",
+      );
+      const driverInsurancePath = await uploadCertificate(
+        userInfo.uid,
+        driverInsurance!,
+        "driver-insurance",
+      );
       await insertUser(userInfo.uid, {
-        displayName: `${userInfo.displayName} ${fullName}`.trim(),
+        displayName: fullName.trim(),
         phoneNumber: phoneNumber,
         isPhoneNumberVerified: false,
       });
-      await updateDriverCertificates(userInfo.uid, paths);
+      const driverInfo: DriverEntity = {
+        driverLicense: {
+          storagePath: driverLicensePath,
+          status: "pending",
+          expiry: "",
+          issues: [],
+        },
+        driverInsurance: {
+          storagePath: driverInsurancePath,
+          status: "pending",
+          expiry: "",
+          issues: [],
+        },
+        verificationStatus: "pending",
+        currentEarnings: 0,
+        totalEarnings: 0,
+        tasksCompleted: 0,
+        activeTasks: 0,
+        paymentMethods: [],
+        withdrawalHistory: [],
+      };
+
+      await updateDriver(userInfo.uid, driverInfo);
+      dispatch(
+        setUser({
+          ...user,
+          driverInfo: driverInfo,
+        }),
+      );
+
       setError(null);
       onAdditionalInfoAdded();
     } catch (error: unknown) {
@@ -466,36 +512,72 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
           />
         </label>
         <span className="block text-sm font-medium text-gray-700">
-          Driver License & Certificates (max {MAX_CERTIFICATES})
+          Driver License
           <span className="text-lg text-red-400">*</span>
         </span>
         <div className="mt-1 flex flex-wrap items-center gap-8">
-          {certificates.map((file, index) => (
-            <div key={index} className="relative">
+          {driverLicense && (
+            <div className="relative">
               <img
-                src={URL.createObjectURL(file)}
-                alt={index + ""}
+                src={URL.createObjectURL(driverLicense)}
+                alt="Driver License"
                 className="h-20 w-20 object-cover"
               />
               <button
                 type="button"
                 className="absolute right-0 top-0 overflow-hidden rounded-full bg-red-500 p-1 text-white"
-                onClick={() => removeCertificate(index)}
+                onClick={() => setDriverLicense(null)}
               >
                 <IoClose />
               </button>
             </div>
-          ))}
-          {certificates.length < MAX_CERTIFICATES && (
+          )}
+          {driverLicense === null && (
             <label className="relative flex h-8 w-8 cursor-pointer items-center justify-center overflow-hidden rounded-lg border-2 border-dashed border-gray-500">
               <MdOutlinePostAdd className="text-2xl" />
               <input
                 type="file"
                 accept=".png,.jpg,.jpeg,.webp"
-                multiple
+                multiple={false}
                 required
                 ref={certificateInputRef}
-                onChange={onCertificatesChanged}
+                onChange={onDriverLicenseChanged}
+                className="absolute left-0 top-0 z-[-1] h-8 w-8 opacity-0"
+              />
+            </label>
+          )}
+        </div>
+        <span className="block text-sm font-medium text-gray-700">
+          Driver Insurance
+          <span className="text-lg text-red-400">*</span>
+        </span>
+        <div className="mt-1 flex flex-wrap items-center gap-8">
+          {driverInsurance && (
+            <div className="relative">
+              <img
+                src={URL.createObjectURL(driverInsurance)}
+                alt="Driver Insurance"
+                className="h-20 w-20 object-cover"
+              />
+              <button
+                type="button"
+                className="absolute right-0 top-0 overflow-hidden rounded-full bg-red-500 p-1 text-white"
+                onClick={() => setDriverInsurance(null)}
+              >
+                <IoClose />
+              </button>
+            </div>
+          )}
+          {driverInsurance === null && (
+            <label className="relative flex h-8 w-8 cursor-pointer items-center justify-center overflow-hidden rounded-lg border-2 border-dashed border-gray-500">
+              <MdOutlinePostAdd className="text-2xl" />
+              <input
+                type="file"
+                accept=".png,.jpg,.jpeg,.webp"
+                multiple={false}
+                required
+                ref={certificateInputRef}
+                onChange={onDriverInsuranceChanged}
                 className="absolute left-0 top-0 z-[-1] h-8 w-8 opacity-0"
               />
             </label>
@@ -525,6 +607,12 @@ const Confirm: React.FC<{ accountType: "client" | "driver" }> = ({
       description: "Schedule your first delivery",
       Icon: (props: Record<string, unknown>) => <TbTruckDelivery {...props} />,
       link: "/schedule-delivery",
+    },
+    {
+      title: "Go to Dashboard",
+      description: "Go to your dashboard",
+      Icon: (props: Record<string, unknown>) => <FaHouseUser {...props} />,
+      link: "/app/customer/dashboard",
     },
   ] as const;
   const driverNextSteps = [

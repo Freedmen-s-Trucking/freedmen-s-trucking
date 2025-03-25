@@ -126,7 +126,7 @@ const SignIn: React.FC<{
   };
 
   const onEmailChanged = useCallback((ev: ChangeEvent<HTMLInputElement>) => {
-    setEmail(ev.target.value);
+    setEmail(ev.target.value.toLowerCase());
   }, []);
 
   const onOpenChanged = useCallback(

@@ -1,6 +1,15 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import React, { useState } from "react";
-import { Tabs, Badge, Button, Card, Avatar, Accordion } from "flowbite-react";
+import {
+  Tabs,
+  Badge,
+  Button,
+  Card,
+  Avatar,
+  Accordion,
+  Tooltip,
+  Spinner,
+} from "flowbite-react";
 import {
   HiAdjustments,
   HiClipboardList,
@@ -11,210 +20,238 @@ import {
   HiCheck,
   HiX,
   HiClock,
+  HiHome,
 } from "react-icons/hi";
+import { useAuth } from "@/hooks/use-auth";
+import { AppImage } from "@/components/atoms/image";
+import { MdHideImage } from "react-icons/md";
+import { useStorageOperations } from "@/hooks/use-storage";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useDbOperations } from "@/hooks/use-firestore";
+import { setUser, updateDriverInfo } from "@/stores/controllers/auth-ctrl";
+import {
+  DriverEntity,
+  OrderEntity,
+  DriverOrderStatus,
+  OrderEntityFields,
+  RequiredVehicleEntity,
+} from "@freedman-trucking/types";
+import { useAppDispatch } from "@/stores/hooks";
+import { BsTrainFreightFront } from "react-icons/bs";
+import { GiTruck } from "react-icons/gi";
+import { TbCarSuv } from "react-icons/tb";
+import { PiVanBold } from "react-icons/pi";
+import { IoCarOutline } from "react-icons/io5";
 
 const tabs = ["overview", "active-orders", "history", "profile"] as const;
 
+const getStatusBadge = (status: DriverOrderStatus) => {
+  switch (status) {
+    case "delivered":
+      return <Badge color="success">Delivered</Badge>;
+    case "picked-up":
+      return <Badge color="indigo">Picked Up</Badge>;
+    case "on-the-way":
+      return <Badge color="info">On The Way</Badge>;
+    case "waiting":
+    default:
+      return <Badge color="warning">Waiting Action</Badge>;
+  }
+};
+
+const DisplayRequiredVehicles: React.FC<{
+  vehicles: RequiredVehicleEntity[] | undefined;
+}> = ({ vehicles }) => {
+  const vehicleIcons: Record<RequiredVehicleEntity["type"], React.ReactNode> = {
+    SEDAN: <IoCarOutline />,
+    SUV: <TbCarSuv />,
+    VAN: <PiVanBold />,
+    TRUCK: <GiTruck />,
+    FREIGHT: <BsTrainFreightFront />,
+  };
+  return (
+    <>
+      {(vehicles || []).map((vehicle) => (
+        <span key={vehicle.type}>
+          {vehicle.quantity} * {vehicleIcons[vehicle.type]}
+        </span>
+      ))}
+    </>
+  );
+};
+const verificationBadges = {
+  verified: {
+    color: "success",
+    icon: HiCheck,
+    label: "Verified",
+  },
+  failed: {
+    color: "failure",
+    icon: HiX,
+    label: "Verification Failed",
+  },
+  pending: {
+    color: "warning",
+    icon: HiClock,
+    label: "Verification Pending",
+  },
+};
+const getVerificationBadge = (
+  status: keyof typeof verificationBadges,
+  iconOnly = false,
+) => {
+  const badge = verificationBadges[status];
+
+  return (
+    <Tooltip content={badge.label} placement="top">
+      <Badge color={badge.color} icon={badge.icon}>
+        {!iconOnly && badge.label}
+      </Badge>
+    </Tooltip>
+  );
+};
+const GetNextActionButton: React.FC<{
+  orderPath: string;
+  order: OrderEntity;
+}> = ({ orderPath, order }) => {
+  const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const { updateOrderStatus } = useDbOperations();
+  const statusMap: Record<
+    DriverOrderStatus,
+    {
+      text: string;
+      color: string;
+      nextStatus: DriverOrderStatus | null;
+      nextStatusDescription: string;
+    }
+  > = {
+    [DriverOrderStatus.WAITING]: {
+      text: "Accept Order",
+      color: "green",
+      nextStatus: DriverOrderStatus.PICKED_UP,
+      nextStatusDescription: "On my way to pick up the products",
+    },
+    [DriverOrderStatus.PICKED_UP]: {
+      text: "On My Way",
+      color: "blue",
+      nextStatus: DriverOrderStatus.ON_THE_WAY,
+      nextStatusDescription:
+        "I have picked up the products and am on my way to the delivery location",
+    },
+    [DriverOrderStatus.ON_THE_WAY]: {
+      text: "Delivered",
+      color: "purple",
+      nextStatus: DriverOrderStatus.DELIVERED,
+      nextStatusDescription: "I have delivered the products",
+    },
+    [DriverOrderStatus.DELIVERED]: {
+      text: "Delivered",
+      color: "success",
+      nextStatus: null,
+      nextStatusDescription: "You have delivered the products",
+    },
+  };
+
+  const action = statusMap[order.driverStatus];
+  // Access the client
+  const queryClient = useQueryClient();
+
+  const { mutate: moveToNextStatus } = useMutation({
+    mutationFn: async (orderPath: string) => {
+      if (!action.nextStatus) return;
+      return updateOrderStatus(user.info.uid, orderPath, action.nextStatus);
+    },
+    onMutate: (orderPath: string) => {
+      console.log("Moving to next status for order", orderPath);
+      setIsLoading(true);
+    },
+    onSuccess: () => {
+      setIsLoading(false);
+      queryClient.invalidateQueries({ queryKey: ["activeOrders"] });
+      queryClient.invalidateQueries({ queryKey: ["historyOrders"] });
+      queryClient.invalidateQueries({ queryKey: ["driverInfo"] });
+    },
+    onError: (error) => {
+      console.error("Failed to update order status:", error);
+      setIsLoading(false);
+    },
+  });
+
+  if (!action) return null;
+
+  return (
+    <Tooltip content={action.nextStatusDescription} placement="top">
+      <Button
+        color={action.color}
+        size="sm"
+        className={`disabled:opacity-100 [&>span]:flex [&>span]:flex-row [&>span]:items-center [&>span]:justify-center [&>span]:gap-2`}
+        disabled={isLoading || !action.nextStatus}
+        onClick={() => moveToNextStatus(orderPath)}
+      >
+        {isLoading && <Spinner />}
+        {action.text}
+      </Button>
+    </Tooltip>
+  );
+};
+
 const DriverDashboard = () => {
+  const { fetchImage, uploadCertificate } = useStorageOperations();
+  const {
+    updateDriver: _updateDriver,
+    getDriver,
+    fetchCurrentActiveOrders,
+    fetchCompletedOrder,
+  } = useDbOperations();
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number] | null>(
     "overview",
   );
   const [showDriverId, setShowDriverId] = useState(false);
-  const [activeOrders, setActiveOrders] = useState([
-    {
-      id: "ORD-2023-001",
-      clientName: "John Smith",
-      pickupLocation: "123 Main St, Anytown",
-      targetLocation: "456 Oak Ave, Othertown",
-      vehicleType: "Sedan",
-      price: 35.5,
-      status: "pending",
-      updated: true,
-      createdAt: "2025-03-24T10:30:00",
-    },
-    {
-      id: "ORD-2023-002",
-      clientName: "Sarah Johnson",
-      pickupLocation: "789 Pine Rd, Sometown",
-      targetLocation: "101 Maple Dr, Newtown",
-      vehicleType: "SUV",
-      price: 45.75,
-      status: "accepted",
-      updated: false,
-      createdAt: "2025-03-24T09:15:00",
-    },
-  ]);
+  const { user } = useAuth();
+  const dispatch = useAppDispatch();
+  const queryClient = useQueryClient()
 
-  const [orderHistory] = useState([
-    {
-      id: "ORD-2023-000",
-      clientName: "Emily Wilson",
-      pickupLocation: "222 First St, Downtown",
-      targetLocation: "333 Second Ave, Uptown",
-      vehicleType: "Sedan",
-      price: 28.99,
-      status: "completed",
-      createdAt: "2025-03-23T15:45:00",
+  const { data: driverInfo } = useQuery({
+    initialData: user.driverInfo,
+    queryKey: ["driverInfo"],
+    queryFn: () => {
+      return getDriver(user.info.uid);
     },
-    {
-      id: "ORD-2022-123",
-      clientName: "Michael Brown",
-      pickupLocation: "444 Third Rd, Westside",
-      targetLocation: "555 Fourth Blvd, Eastside",
-      vehicleType: "Van",
-      price: 52.25,
-      status: "completed",
-      createdAt: "2025-03-22T12:20:00",
+    throwOnError(error, query) {
+      console.warn({ ref: "driverInfo", error, query });
+      return false;
     },
-    {
-      id: "ORD-2022-122",
-      clientName: "Jessica Taylor",
-      pickupLocation: "666 Fifth St, Northend",
-      targetLocation: "777 Sixth Ave, Southend",
-      vehicleType: "SUV",
-      price: 42.5,
-      status: "completed",
-      createdAt: "2025-03-21T09:10:00",
-    },
-    {
-      id: "ORD-2022-121",
-      clientName: "David Miller",
-      pickupLocation: "888 Seventh Rd, Riverside",
-      targetLocation: "999 Eighth St, Lakeside",
-      vehicleType: "Sedan",
-      price: 32.75,
-      status: "completed",
-      createdAt: "2025-03-20T14:30:00",
-    },
-    {
-      id: "ORD-2022-120",
-      clientName: "Lisa Anderson",
-      pickupLocation: "111 Ninth Ave, Hillside",
-      targetLocation: "222 Tenth Blvd, Valleyside",
-      vehicleType: "SUV",
-      price: 39.99,
-      status: "completed",
-      createdAt: "2025-03-19T11:15:00",
-    },
-  ]);
-
-  const [driverInfo] = useState({
-    id: "DRV-5678-9012",
-    name: "Alex Rodriguez",
-    email: "alex.rodriguez@example.com",
-    profilePhoto: "/api/placeholder/150/150",
-    verificationStatus: "pending", // can be 'verified', 'failed', 'pending'
-    currentEarnings: 81.25,
-    totalEarnings: 15489.75,
-    tasksCompleted: 423,
-    activeTasks: 2,
-    licenseInfo: {
-      number: "DL-987654321",
-      expiry: "2027-05-15",
-      verificationStatus: "pending",
-      issues: ["The image is blurry", "Expiration date not clearly visible"],
-    },
-    paymentMethods: [
-      { id: 1, type: "Bank Account", details: "**** 5678", default: true },
-      { id: 2, type: "PayPal", details: "alex.r@example.com", default: false },
-    ],
-    withdrawalHistory: [
-      { id: "WTH-001", amount: 250.0, date: "2025-03-15", status: "completed" },
-      { id: "WTH-002", amount: 175.5, date: "2025-03-01", status: "completed" },
-      { id: "WTH-003", amount: 300.0, date: "2025-02-15", status: "completed" },
-    ],
   });
 
-  const moveToNextStatus = (orderId: string) => {
-    setActiveOrders((orders) =>
-      orders.map((order) => {
-        if (order.id === orderId) {
-          const statusMap = {
-            pending: "accepted",
-            accepted: "on the way",
-            "on the way": "picked up",
-            "picked up": "delivered",
-          };
+  const { data: activeOrders, isLoading: activeOrdersLoading } = useQuery({
+    initialData: [],
+    queryKey: ["activeOrders"],
+    queryFn: () => fetchCurrentActiveOrders(user.info.uid, "driver"),
+    throwOnError(error, query) {
+      console.warn({ ref: "activeOrders", error, query });
+      return false;
+    },
+  });
+  const { data: historyOrders, isLoading: historyOrdersLoading } = useQuery({
+    initialData: [],
+    queryKey: ["historyOrders"],
+    queryFn: () => fetchCompletedOrder(user.info.uid, "driver"),
+    throwOnError(error, query) {
+      console.warn({ ref: "historyOrders", error, query });
+      return false;
+    },
+  });
 
-          const newStatus =
-            statusMap[order.status as keyof typeof statusMap] || order.status;
-
-          // If delivered, remove from active orders (would move to history in a real app)
-          if (newStatus === "delivered") {
-            return { ...order, status: newStatus, updated: false };
-          }
-
-          return { ...order, status: newStatus, updated: false };
-        }
-        return order;
-      }),
-    );
-  };
-
-  const getVerificationBadge = (status: string) => {
-    switch (status) {
-      case "verified":
-        return (
-          <Badge color="success" icon={HiCheck}>
-            Verified
-          </Badge>
-        );
-      case "failed":
-        return (
-          <Badge color="failure" icon={HiX}>
-            Verification Failed
-          </Badge>
-        );
-      case "pending":
-      default:
-        return (
-          <Badge color="warning" icon={HiClock}>
-            Verification Pending
-          </Badge>
-        );
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "completed":
-        return <Badge color="success">Completed</Badge>;
-      case "delivered":
-        return <Badge color="success">Delivered</Badge>;
-      case "picked up":
-        return <Badge color="indigo">Picked Up</Badge>;
-      case "on the way":
-        return <Badge color="info">On The Way</Badge>;
-      case "accepted":
-        return <Badge color="purple">Accepted</Badge>;
-      case "pending":
-      default:
-        return <Badge color="warning">Pending</Badge>;
-    }
-  };
-
-  const getNextActionButton = (order: (typeof activeOrders)[0]) => {
-    const statusMap = {
-      pending: { text: "Accept Order", color: "green" },
-      accepted: { text: "On My Way", color: "blue" },
-      "on the way": { text: "Picked Up", color: "purple" },
-      "picked up": { text: "Delivered", color: "success" },
-    };
-
-    const action = statusMap[order.status as keyof typeof statusMap];
-
-    if (!action) return null;
-
-    return (
-      <Button
-        color={action.color}
-        size="sm"
-        onClick={() => moveToNextStatus(order.id)}
-      >
-        {action.text}
-      </Button>
-    );
-  };
+  const { mutate: updateDriver } = useMutation({
+    mutationFn: async (driverInfo: Partial<DriverEntity>) => {
+      return _updateDriver(user.info.uid, driverInfo);
+    },
+    onSuccess(_, variables) {
+      dispatch(updateDriverInfo(variables))
+      queryClient.invalidateQueries({ queryKey: ["driverInfo"] });
+    },
+  });
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -225,27 +262,142 @@ const DriverDashboard = () => {
     );
   };
 
-  const hasUpdatedOrders = activeOrders.some((order) => order.updated);
+  const hasUpdatedOrders = activeOrders.some(
+    (order) =>
+      order.data[OrderEntityFields.driverStatus] === DriverOrderStatus.WAITING,
+  );
+
+  const navigation = useNavigate();
+  const { data: driverLicenseUrl } = useQuery({
+    initialData: "",
+    queryKey: ["driverLicenseUrl", driverInfo?.driverLicense?.storagePath],
+    queryFn: () => fetchImage(driverInfo?.driverLicense?.storagePath || ""),
+    select(data) {
+      return data;
+    },
+    throwOnError(error, query) {
+      console.warn({ ref: "driverLicenseUrl", error, query });
+      return false;
+    },
+  });
+  const { data: driverInsuranceUrl } = useQuery({
+    initialData: "",
+    queryKey: ["driverInsuranceUrl", driverInfo?.driverInsurance?.storagePath],
+    queryFn: () => fetchImage(driverInfo?.driverInsurance?.storagePath || ""),
+    select(data) {
+      return data;
+    },
+    throwOnError(error, query) {
+      console.warn({ ref: "driverInsuranceUrl", error, query });
+      return false;
+    },
+  });
+
+  const handleUploadLicense = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    e.preventDefault();
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      const res = await uploadCertificate(
+        user.info.uid,
+        files[0],
+        "driver-license",
+      );
+      if (!res) return;
+      await updateDriver({
+        driverLicense: {
+          storagePath: res,
+          status: "pending",
+          expiry: "",
+          issues: [],
+        },
+      });
+      dispatch(
+        setUser({
+          ...user,
+          driverInfo: {
+            ...(user.driverInfo || ({} as DriverEntity)),
+            driverLicense: {
+              storagePath: res,
+              status: "pending",
+              expiry: "",
+              issues: [],
+            },
+          },
+        }),
+      );
+    }
+  };
+
+  const handleUploadInsurance = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    e.preventDefault();
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      const res = await uploadCertificate(
+        user.info.uid,
+        files[0],
+        "driver-insurance",
+      );
+      if (!res) return;
+      await updateDriver({
+        driverInsurance: {
+          storagePath: res,
+          status: "pending",
+          expiry: "",
+          issues: [],
+        },
+      });
+      dispatch(
+        setUser({
+          ...user,
+          driverInfo: {
+            ...(user.driverInfo || ({} as DriverEntity)),
+            driverInsurance: {
+              storagePath: res,
+              status: "pending",
+              expiry: "",
+              issues: [],
+            },
+          },
+        }),
+      );
+    }
+  };
+
+  if (!driverInfo) {
+    navigation({ to: "/" });
+    return null;
+  }
 
   return (
     <div className="container mx-auto p-4">
       {/* Driver Header */}
       <div className="mb-6 flex flex-col items-center rounded-lg bg-white p-4 shadow md:flex-row">
         <div className="relative mb-4 md:mb-0 md:mr-6">
-          <Avatar img={driverInfo.profilePhoto} rounded size="lg" />
+          <Avatar
+            placeholderInitials={user.info.displayName}
+            img={user.info.photoURL || ""}
+            rounded
+            size="lg"
+          />
           <div className="absolute -right-2 -top-2">
-            {getVerificationBadge(driverInfo.verificationStatus)}
+            {getVerificationBadge(driverInfo.verificationStatus, true)}
           </div>
         </div>
         <div className="text-center md:text-left">
-          <h1 className="text-2xl font-bold">{driverInfo.name}</h1>
-          <p className="text-gray-600">{driverInfo.email}</p>
+          <h1 className="text-2xl font-bold">{user.info.displayName}</h1>
+          <p className="text-gray-600">{user.info.email}</p>
           <div className="mt-1 flex items-center">
             <span className="mr-2">Driver ID:</span>
             {showDriverId ? (
-              <span className="font-mono">{driverInfo.id}</span>
+              <span className="font-mono">{user.info.uid}</span>
             ) : (
-              <span className="font-mono">****-****-****</span>
+              <span className="font-mono">
+                {user.info.uid.slice(0, 4)}-****-****
+              </span>
             )}
             <Button
               color="light"
@@ -261,12 +413,24 @@ const DriverDashboard = () => {
             </Button>
           </div>
         </div>
+
+        <div className="flex flex-1 flex-col items-end justify-end md:flex-row">
+          <Tooltip content={"Return to home"} className="w-36">
+            <Link
+              to="/"
+              className="inline-flex items-center rounded-3xl border border-gray-300 bg-white p-2 text-sm font-medium text-gray-900 hover:border-red-400 hover:text-red-400 focus:border-red-400 focus:text-red-400 disabled:pointer-events-none disabled:opacity-50"
+            >
+              <HiHome className="h-8 w-8" />
+            </Link>
+          </Tooltip>
+        </div>
       </div>
 
       {/* Tabs */}
       <Tabs
         style="underline"
         onActiveTabChange={(tab) => setActiveTab(tabs[tab])}
+        className="focus:[&>button]:outline-none focus:[&>button]:ring-0"
       >
         <Tabs.Item
           active={activeTab === "overview"}
@@ -312,35 +476,67 @@ const DriverDashboard = () => {
           <div className="mb-6">
             <h2 className="mb-3 text-xl font-bold">Current Active Orders</h2>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {activeOrdersLoading && (
+                <p className="text-xs text-gray-500">
+                  Loading active orders...
+                </p>
+              )}
+              {activeOrders.length === 0 && (
+                <Card>
+                  <div className="py-4 text-center">
+                    <p className="text-gray-500">
+                      No active orders at the moment.
+                    </p>
+                  </div>
+                </Card>
+              )}
               {activeOrders.slice(0, 2).map((order) => (
                 <Card
-                  key={order.id}
-                  className={order.updated ? "border-l-4 border-blue-500" : ""}
+                  key={order.path}
+                  className={
+                    order.data[OrderEntityFields.updatedAt]
+                      ? "border-l-4 border-blue-500"
+                      : ""
+                  }
                 >
                   <div className="flex items-start justify-between">
                     <div>
                       <h5 className="text-lg font-bold tracking-tight text-gray-900">
-                        {order.clientName}
+                        {order.data[OrderEntityFields.clientName]}
                       </h5>
                       <p className="mb-2 font-normal text-gray-700 dark:text-gray-400">
-                        {order.id} • {order.vehicleType}
+                        ORD:{order.path.split("/").pop()?.slice(0, 8)}-****-****
+                        <DisplayRequiredVehicles
+                          vehicles={
+                            order.data[OrderEntityFields.requiredVehicles] || []
+                          }
+                        />
                       </p>
                     </div>
-                    <div>{getStatusBadge(order.status)}</div>
+                    <div>
+                      {getStatusBadge(
+                        order.data[OrderEntityFields.driverStatus],
+                      )}
+                    </div>
                   </div>
                   <div className="mt-2 space-y-1 text-sm">
                     <p>
-                      <strong>Pickup:</strong> {order.pickupLocation}
+                      <strong>Pickup:</strong>{" "}
+                      {order.data[OrderEntityFields.pickupLocation].address}
                     </p>
                     <p>
-                      <strong>Dropoff:</strong> {order.targetLocation}
+                      <strong>Dropoff:</strong>{" "}
+                      {order.data[OrderEntityFields.deliveryLocation].address}
                     </p>
                     <p className="mt-2 text-lg font-bold">
-                      ${order.price.toFixed(2)}
+                      ${order.data[OrderEntityFields.price].toFixed(2)}
                     </p>
                   </div>
                   <div className="mt-3 flex justify-end">
-                    {getNextActionButton(order)}
+                    <GetNextActionButton
+                      orderPath={order.path}
+                      order={order.data}
+                    />
                   </div>
                 </Card>
               ))}
@@ -349,28 +545,48 @@ const DriverDashboard = () => {
 
           {/* Recent History */}
           <div>
-            <h2 className="mb-3 text-xl font-bold">Recent Orders</h2>
+            <h2 className="mb-3 text-xl font-bold">Recent History</h2>
             <Card>
               <div className="flow-root">
                 <ul className="divide-y divide-gray-200">
-                  {orderHistory.slice(0, 5).map((order) => (
-                    <li key={order.id} className="py-3 sm:py-4">
+                  {historyOrdersLoading && (
+                    <div className="flex items-center justify-center">
+                      <Spinner size="md" light={false} />
+                      <p className="ml-2 text-xs text-gray-500">Loading...</p>
+                    </div>
+                  )}
+                  {historyOrders.length === 0 && (
+                    <div className="flex flex-col items-center justify-center py-4">
+                      <p className="text-xs text-gray-500">
+                        No order history found.
+                      </p>
+                    </div>
+                  )}
+
+                  {historyOrders.slice(0, 5).map((order) => (
+                    <li key={order.path} className="py-3 sm:py-4">
                       <div className="flex items-center space-x-4">
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm font-medium text-gray-900">
-                            {order.clientName}
+                            {order.data[OrderEntityFields.clientName]}
                           </p>
                           <p className="truncate text-sm text-gray-500">
-                            {order.id}
+                            {order.path}
                           </p>
                           <p className="text-xs text-gray-500">
-                            {formatDate(order.createdAt)}
+                            {formatDate(
+                              order.data[OrderEntityFields.createdAt],
+                            )}
                           </p>
                         </div>
                         <div className="inline-flex items-center text-base font-semibold text-gray-900">
-                          ${order.price.toFixed(2)}
+                          ${order.data[OrderEntityFields.price].toFixed(2)}
                         </div>
-                        <div>{getStatusBadge(order.status)}</div>
+                        <div>
+                          {getStatusBadge(
+                            order.data[OrderEntityFields.driverStatus],
+                          )}
+                        </div>
                       </div>
                     </li>
                   ))}
@@ -396,29 +612,48 @@ const DriverDashboard = () => {
         >
           <h2 className="mb-4 text-xl font-bold">Active Orders</h2>
           <div className="space-y-4">
+            {activeOrdersLoading && (
+              <p className="text-xs text-gray-500">Loading active orders...</p>
+            )}
             {activeOrders.map((order) => (
               <Card
-                key={order.id}
-                className={order.updated ? "border-l-4 border-blue-500" : ""}
+                key={order.path}
+                className={
+                  order.data[OrderEntityFields.driverStatus] ===
+                  DriverOrderStatus.WAITING
+                    ? "border-l-4 border-blue-500"
+                    : ""
+                }
               >
                 <div className="flex flex-col justify-between md:flex-row">
                   <div className="mb-3 md:mb-0">
                     <h5 className="text-lg font-bold tracking-tight text-gray-900">
-                      Order {order.id}
+                      Order {order.path.split("/").pop()?.slice(0, 13)}-****
                     </h5>
                     <p className="font-normal text-gray-700 dark:text-gray-400">
-                      Client: {order.clientName}
+                      Client: {order.data[OrderEntityFields.clientName]}
                     </p>
                     <p className="text-sm text-gray-500">
-                      Created: {formatDate(order.createdAt)}
+                      Created:{" "}
+                      {formatDate(order.data[OrderEntityFields.createdAt])}
                     </p>
                   </div>
                   <div className="flex flex-col items-end">
-                    <div className="mb-2">{getStatusBadge(order.status)}</div>
+                    <div className="mb-2">
+                      {getStatusBadge(
+                        order.data[OrderEntityFields.driverStatus],
+                      )}
+                    </div>
                     <p className="text-lg font-bold text-gray-900">
-                      ${order.price.toFixed(2)}
+                      ${order.data[OrderEntityFields.price].toFixed(2)}
                     </p>
-                    <p className="text-sm text-gray-600">{order.vehicleType}</p>
+                    <p className="text-sm text-gray-600">
+                      <DisplayRequiredVehicles
+                        vehicles={
+                          order.data[OrderEntityFields.requiredVehicles] || []
+                        }
+                      />
+                    </p>
                   </div>
                 </div>
 
@@ -426,13 +661,13 @@ const DriverDashboard = () => {
                   <div>
                     <p className="text-sm font-semibold">Pickup Location:</p>
                     <p className="text-sm text-gray-700">
-                      {order.pickupLocation}
+                      {order.data[OrderEntityFields.pickupLocation].address}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm font-semibold">Dropoff Location:</p>
                     <p className="text-sm text-gray-700">
-                      {order.targetLocation}
+                      {order.data[OrderEntityFields.deliveryLocation].address}
                     </p>
                   </div>
                 </div>
@@ -440,7 +675,9 @@ const DriverDashboard = () => {
                 <div className="mt-4 flex items-center justify-between">
                   <Accordion collapseAll className="w-full">
                     <Accordion.Panel>
-                      <Accordion.Title>View Map</Accordion.Title>
+                      <Accordion.Title className="bg-gray-200 p-2 text-gray-900">
+                        View Map
+                      </Accordion.Title>
                       <Accordion.Content>
                         <div className="flex h-64 items-center justify-center bg-gray-200 text-gray-500">
                           <p>Map with route would appear here</p>
@@ -451,7 +688,10 @@ const DriverDashboard = () => {
                 </div>
 
                 <div className="mt-3 flex justify-end">
-                  {getNextActionButton(order)}
+                  <GetNextActionButton
+                    orderPath={order.path}
+                    order={order.data}
+                  />
                 </div>
               </Card>
             ))}
@@ -475,26 +715,54 @@ const DriverDashboard = () => {
         >
           <h2 className="mb-4 text-xl font-bold">Order History</h2>
           <div className="space-y-4">
-            {orderHistory.map((order) => (
-              <Card key={order.id}>
+            {historyOrdersLoading && (
+              <div className="flex items-center justify-center">
+                <Spinner size="md" light={false} />
+                <p className="ml-2 text-xs text-gray-500">Loading...</p>
+              </div>
+            )}
+            {historyOrders.length === 0 && (
+              <Card>
+                <div className="flex flex-col items-center justify-center py-4">
+                  <p className="text-gray-500">
+                    No order history at the moment
+                  </p>
+                  <p className="text-gray-500">
+                    As you complete orders, you will see them appear here.
+                  </p>
+                </div>
+              </Card>
+            )}
+            {historyOrders.map((order) => (
+              <Card key={order.path}>
                 <div className="flex flex-col justify-between md:flex-row">
                   <div className="mb-3 md:mb-0">
                     <h5 className="text-lg font-bold tracking-tight text-gray-900">
-                      Order {order.id}
+                      Order {order.path.split("/").pop()?.slice(0, 13)}-****
                     </h5>
                     <p className="font-normal text-gray-700 dark:text-gray-400">
-                      Client: {order.clientName}
+                      Client: {order.data[OrderEntityFields.clientName]}
                     </p>
                     <p className="text-sm text-gray-500">
-                      {formatDate(order.createdAt)}
+                      {formatDate(order.data[OrderEntityFields.createdAt])}
                     </p>
                   </div>
                   <div className="flex flex-col items-end">
-                    <div className="mb-2">{getStatusBadge(order.status)}</div>
+                    <div className="mb-2">
+                      {getStatusBadge(
+                        order.data[OrderEntityFields.driverStatus],
+                      )}
+                    </div>
                     <p className="text-lg font-bold text-gray-900">
-                      ${order.price.toFixed(2)}
+                      ${order.data[OrderEntityFields.price].toFixed(2)}
                     </p>
-                    <p className="text-sm text-gray-600">{order.vehicleType}</p>
+                    <p className="text-sm text-gray-600">
+                      <DisplayRequiredVehicles
+                        vehicles={
+                          order.data[OrderEntityFields.requiredVehicles]
+                        }
+                      />
+                    </p>
                   </div>
                 </div>
 
@@ -502,13 +770,13 @@ const DriverDashboard = () => {
                   <div>
                     <p className="text-sm font-semibold">Pickup Location:</p>
                     <p className="text-sm text-gray-700">
-                      {order.pickupLocation}
+                      {order.data[OrderEntityFields.pickupLocation].address}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm font-semibold">Dropoff Location:</p>
                     <p className="text-sm text-gray-700">
-                      {order.targetLocation}
+                      {order.data[OrderEntityFields.deliveryLocation].address}
                     </p>
                   </div>
                 </div>
@@ -536,15 +804,19 @@ const DriverDashboard = () => {
           icon={HiUserCircle}
         >
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            {/* Personal Information */}
             <Card className="lg:col-span-2">
               <h5 className="mb-4 text-xl font-bold">Personal Information</h5>
               <div className="mb-6 flex flex-col sm:flex-row">
                 <div className="mb-4 sm:mb-0 sm:mr-6">
-                  <Avatar img={driverInfo.profilePhoto} size="xl" rounded />
-                  <Button size="xs" className="mt-2 w-full">
+                  <Avatar
+                    placeholderInitials={user.info.displayName}
+                    img={user.info.photoURL || ""}
+                    size="xl"
+                    rounded
+                  />
+                  {/* <Button size="xs" className="mt-2 w-full">
                     Change Photo
-                  </Button>
+                  </Button> */}
                 </div>
                 <div className="flex-1 space-y-4">
                   <div>
@@ -554,7 +826,7 @@ const DriverDashboard = () => {
                     <input
                       type="text"
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                      value={driverInfo.name}
+                      value={user.info.displayName}
                       readOnly
                     />
                   </div>
@@ -565,7 +837,7 @@ const DriverDashboard = () => {
                     <input
                       type="email"
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                      value={driverInfo.email}
+                      value={user.info.email || ""}
                       readOnly
                     />
                   </div>
@@ -579,24 +851,28 @@ const DriverDashboard = () => {
                 </h5>
                 <div className="rounded-lg bg-gray-50 p-4">
                   <div className="mb-3 flex items-start justify-between">
-                    <div>
+                    <AppImage
+                      fallback={<MdHideImage className="h-8 w-8" />}
+                      src={driverLicenseUrl}
+                      alt="driver license"
+                      className="h-auto w-1/2 max-w-96 rounded-md"
+                    />
+                    {/* <div>
                       <p>
                         <strong>License Number:</strong>{" "}
-                        {driverInfo.licenseInfo.number}
+                        {driverInfo.driverLicense.number}
                       </p>
                       <p>
                         <strong>Expiry Date:</strong>{" "}
-                        {driverInfo.licenseInfo.expiry}
+                        {driverInfo.driverLicense.expiry}
                       </p>
-                    </div>
+                    </div> */}
                     <div>
-                      {getVerificationBadge(
-                        driverInfo.licenseInfo.verificationStatus,
-                      )}
+                      {getVerificationBadge(driverInfo.driverLicense.status)}
                     </div>
                   </div>
 
-                  {driverInfo.licenseInfo.verificationStatus === "failed" && (
+                  {driverInfo.driverLicense.status === "failed" && (
                     <div className="mt-3 border-l-4 border-red-400 bg-red-50 p-4">
                       <div className="flex">
                         <div className="ml-3">
@@ -605,7 +881,7 @@ const DriverDashboard = () => {
                           </h3>
                           <div className="mt-2 text-sm text-red-700">
                             <ul className="list-disc space-y-1 pl-5">
-                              {driverInfo.licenseInfo.issues.map(
+                              {driverInfo.driverLicense.issues.map(
                                 (issue, index) => (
                                   <li key={index}>{issue}</li>
                                 ),
@@ -618,9 +894,81 @@ const DriverDashboard = () => {
                   )}
 
                   <div className="mt-4 flex justify-between">
-                    <Button color="light">View License</Button>
-                    {driverInfo.licenseInfo.verificationStatus === "failed" && (
-                      <Button color="failure">Upload New License</Button>
+                    {driverInfo.driverLicense.status !== "verified" && (
+                      <>
+                        <label className="relative flex cursor-pointer items-center justify-center overflow-hidden rounded-lg border-2 border-dashed border-gray-500">
+                          <input
+                            type="file"
+                            accept=".png,.jpg,.jpeg,.webp"
+                            multiple={false}
+                            required
+                            onChange={handleUploadLicense}
+                            className="absolute left-0 top-0 z-[-1] h-8 w-8 opacity-0"
+                          />
+                          <Button color="light" className="pointer-events-none">
+                            Upload New License
+                          </Button>
+                        </label>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Insurance Information */}
+              <div className="mt-4 border-t border-gray-200 pt-4">
+                <h5 className="mb-3 text-lg font-bold">
+                  Insurance Information
+                </h5>
+                <div className="rounded-lg bg-gray-50 p-4">
+                  <div className="mb-3 flex items-start justify-between">
+                    <AppImage
+                      fallback={<MdHideImage className="h-8 w-8" />}
+                      src={driverInsuranceUrl}
+                      alt="driver license"
+                      className="h-auto w-1/2 max-w-96 rounded-md"
+                    />
+                    <div>
+                      {getVerificationBadge(driverInfo.driverInsurance.status)}
+                    </div>
+                  </div>
+
+                  {driverInfo.driverInsurance.status === "failed" && (
+                    <div className="mt-3 border-l-4 border-red-400 bg-red-50 p-4">
+                      <div className="flex">
+                        <div className="ml-3">
+                          <h3 className="text-sm font-medium text-red-800">
+                            Verification Issues
+                          </h3>
+                          <div className="mt-2 text-sm text-red-700">
+                            <ul className="list-disc space-y-1 pl-5">
+                              {driverInfo.driverInsurance.issues.map(
+                                (issue, index) => (
+                                  <li key={index}>{issue}</li>
+                                ),
+                              )}
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="mt-4 flex justify-between">
+                    {driverInfo.driverInsurance.status !== "verified" && (
+                      <label className="relative flex cursor-pointer items-center justify-center overflow-hidden rounded-lg border-2 border-dashed border-gray-500">
+                        <input
+                          type="file"
+                          accept=".png,.jpg,.jpeg,.webp"
+                          multiple={false}
+                          required
+                          onChange={handleUploadInsurance}
+                          className="absolute left-0 top-0 z-[-1] h-8 w-8 opacity-0"
+                        />
+                        <Button color="light" className="pointer-events-none">
+                          Upload New Insurance
+                        </Button>
+                      </label>
                     )}
                   </div>
                 </div>
@@ -652,18 +1000,22 @@ const DriverDashboard = () => {
                     </div>
                   </div>
                 ))}
-                <Button color="light">Add Payment Method</Button>
+                <Button disabled color="dark">
+                  Add Payment Method
+                </Button>
               </Card>
 
               {/* Withdrawals */}
               <Card>
-                <div className="mb-4 flex items-center justify-between">
+                <div className="mb-4 flex items-center justify-between gap-2">
                   <h5 className="text-xl font-bold">Withdrawals</h5>
-                  <Button color="blue">Request Withdrawal</Button>
+                  <Button disabled color="dark" size="xs">
+                    Request Withdrawal
+                  </Button>
                 </div>
                 <div className="space-y-3">
                   <p className="font-medium">Available for withdrawal:</p>
-                  <p className="text-2xl font-bold text-green-600">
+                  <p className="text-2xl font-bold text-green-900">
                     ${driverInfo.currentEarnings.toFixed(2)}
                   </p>
                 </div>
@@ -671,6 +1023,13 @@ const DriverDashboard = () => {
                   <h6 className="mb-2 font-medium">Recent Withdrawals</h6>
                   <div className="flow-root">
                     <ul className="divide-y divide-gray-200">
+                      {driverInfo.withdrawalHistory.length === 0 && (
+                        <li className="py-3">
+                          <p className="text-xs font-medium">
+                            No withdrawals yet
+                          </p>
+                        </li>
+                      )}
                       {driverInfo.withdrawalHistory.map((withdrawal) => (
                         <li key={withdrawal.id} className="py-3">
                           <div className="flex justify-between">

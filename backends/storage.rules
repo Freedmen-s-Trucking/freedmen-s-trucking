@@ -6,6 +6,9 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
     // Allow read/write access to a document keyed by the user's UID
+    match /users/{uid}/{sub=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
     match /drivers-certifications/{uid}/{sub=**} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
     }

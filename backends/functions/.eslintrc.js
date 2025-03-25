@@ -9,7 +9,7 @@ module.exports = {
     "plugin:import/errors",
     "plugin:import/warnings",
     "plugin:import/typescript",
-    "plugin:prettier/recommended",
+    "plugin:prettier",
     "google",
     "plugin:@typescript-eslint/recommended",
   ],
@@ -30,5 +30,6 @@ module.exports = {
     "quotes": ["error", "double"],
     "import/no-unresolved": 0,
     "indent": ["error", 2],
+    "@typescript-eslint/no-explicit-any": "off",
   },
 };

@@ -2,12 +2,14 @@ import { Popover } from "flowbite-react";
 import { useGeocoding, OSMSearchResult } from "../../hooks/use-geocoding";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+export type OnAddressChangedParams = {
+  possibleValues: OSMSearchResult[];
+  query: string;
+  address: OSMSearchResult | null;
+};
+
 export type AddressSearchInputProps = {
-  onAddressChanged: (_: {
-    possibleValues: OSMSearchResult[];
-    query: string;
-    address: OSMSearchResult | null;
-  }) => void;
+  onAddressChanged: (params: OnAddressChangedParams) => void;
 } & Omit<
   React.ComponentProps<"input">,
   "onChange" | "type" | "ref" | "autoComplete"
@@ -20,6 +22,10 @@ export const AddressSearchInput: React.FC<AddressSearchInputProps> = ({
   const { searchPlaceOSM, data, query, isFetching } = useGeocoding();
   const [dataCached, setDataCached] = useState<OSMSearchResult[]>([]);
   const [searchOptionsOpen, setSearchOptionOpen] = useState(false);
+  const [addressInfo, setAddressInfo] = useState<{
+    query: string;
+    address: OSMSearchResult | null;
+  } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -35,6 +41,10 @@ export const AddressSearchInput: React.FC<AddressSearchInputProps> = ({
         address,
         possibleValues: dataCached || [],
       });
+      setAddressInfo({
+        query: query,
+        address,
+      });
 
       if (inputRef.current && address) {
         inputRef.current.value = address.display_name || "";
@@ -48,17 +58,17 @@ export const AddressSearchInput: React.FC<AddressSearchInputProps> = ({
   );
 
   useEffect(() => {
-    if (dataCached.length > 0) {
+    if (addressInfo?.query !== query) {
       onItemClick(null);
     }
-  }, [dataCached, onItemClick]);
+  }, [onItemClick, query, addressInfo?.query]);
 
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.oninput = () => {
         console.log(inputRef.current?.value);
         searchPlaceOSM(inputRef.current?.value || "");
-        setSearchOptionOpen(query.length > 2);
+        setSearchOptionOpen(query.length > 1);
         setTimeout(() => inputRef.current?.focus(), 10);
       };
       inputRef.current.onblur = () => {

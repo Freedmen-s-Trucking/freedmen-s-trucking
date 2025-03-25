@@ -2,7 +2,7 @@ import {
   CustomerEntity,
   DriverEntity,
   UserEntity,
-} from "@freedman-trucking/entities";
+} from "@freedman-trucking/types";
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { UserInfo, UserMetadata } from "firebase/auth";
@@ -29,6 +29,14 @@ export const authCtrl = createSlice({
   name: "auth-ctrl",
   initialState,
   reducers: {
+    updateDriverInfo: (state, action: PayloadAction<Partial<DriverEntity>>) => {
+      if (state.user) {
+        state.user.driverInfo = {
+          ...(state.user.driverInfo || ({} as DriverEntity)),
+          ...action.payload,
+        };
+      }
+    },
     setUser: (state, action: PayloadAction<AppUser>) => {
       state.user = action.payload;
     },
@@ -40,6 +48,6 @@ export const authCtrl = createSlice({
   },
 });
 
-export const { setUser, getUser } = authCtrl.actions;
+export const { setUser, getUser, updateDriverInfo } = authCtrl.actions;
 
 export default authCtrl.reducer;

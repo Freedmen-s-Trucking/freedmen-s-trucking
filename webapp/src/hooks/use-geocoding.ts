@@ -25,7 +25,7 @@ export const useGeocoding = () => {
   const { data, error, isFetching } = useQuery({
     queryKey: ["reponseData", query],
     initialData: [],
-    enabled: query.trim().length > 3,
+    enabled: query.trim().length > 2,
     queryFn: async () => {
       const params = new URLSearchParams({
         countrycodes: "us",

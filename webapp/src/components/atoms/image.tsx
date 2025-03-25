@@ -32,6 +32,7 @@ export const AppImage = forwardRef<HTMLImageElement, ImageProps>(
       img.src = src;
       img.onload = () => {
         setCurrentSource(src);
+        setShowFallback(false);
       };
       img.onerror = (e) => {
         setShowFallback(true);
