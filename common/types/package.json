@@ -1,0 +1,12 @@
+{
+  "name": "@freedman-trucking/types",
+  "version": "1.0.0",
+  "description": "Shared entities between webapp and backend function",
+  "scripts": {
+    "build": "npm run build:esm && npm run build:cjs",
+    "build:esm": "tsc -p tsconfig.mjs.json",
+    "build:cjs": "tsc -p tsconfig.cjs.json"
+  },
+  "dependencies": {
+  }
+}

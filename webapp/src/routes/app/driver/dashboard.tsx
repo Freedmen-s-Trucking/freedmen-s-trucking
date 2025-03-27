@@ -210,7 +210,7 @@ const DriverDashboard = () => {
   const [showDriverId, setShowDriverId] = useState(false);
   const { user } = useAuth();
   const dispatch = useAppDispatch();
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   const { data: driverInfo } = useQuery({
     initialData: user.driverInfo,
@@ -248,7 +248,7 @@ const DriverDashboard = () => {
       return _updateDriver(user.info.uid, driverInfo);
     },
     onSuccess(_, variables) {
-      dispatch(updateDriverInfo(variables))
+      dispatch(updateDriverInfo(variables));
       queryClient.invalidateQueries({ queryKey: ["driverInfo"] });
     },
   });
@@ -784,7 +784,9 @@ const DriverDashboard = () => {
                 <div className="mt-4 flex items-center justify-between">
                   <Accordion collapseAll className="w-full">
                     <Accordion.Panel>
-                      <Accordion.Title>View Map</Accordion.Title>
+                      <Accordion.Title className="bg-gray-200 p-2 text-gray-900">
+                        View Map
+                      </Accordion.Title>
                       <Accordion.Content>
                         <div className="flex h-64 items-center justify-center bg-gray-200 text-gray-500">
                           <p>Map with route would appear here</p>
