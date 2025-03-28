@@ -1,19 +1,16 @@
 import { Modal } from "flowbite-react";
+import { add, formatDuration, intervalToDuration } from "date-fns";
 import {
-  ApiComputeDeliveryEstimation,
   DriverOrderStatus,
-  OrderEntityFields,
   OrderPriority,
   OrderStatus,
-  ProductEntity,
-  VehicleType,
+  ProductWithQuantity,
 } from "@freedman-trucking/types";
 import { useState } from "react";
-import { OSMSearchResult } from "@/hooks/use-geocoding";
+import { CustomOSMSearchResult } from "@/hooks/use-geocoding";
 import { useDbOperations } from "@/hooks/use-firestore";
 import { setRequestedAuthAction } from "@/stores/controllers/app-ctrl";
 import { useAppDispatch } from "@/stores/hooks";
-import { SERVER_API } from "@/utils/constants";
 import { FaTrash } from "react-icons/fa6";
 import { Dropdown } from "flowbite-react";
 import StripePayment from "@/components/molecules/stripe-payment";
@@ -22,6 +19,7 @@ import {
   OnAddressChangedParams,
 } from "@/components/atoms/address-search-input";
 import { useAuth } from "@/hooks/use-auth";
+import { useComputeDeliveryEstimation } from "@/hooks/use-price-calculator";
 
 const OrderPriorities = [
   {
@@ -69,12 +67,6 @@ export const CreateOrderForm: React.FC<{ brightness: "dark" | "light" }> = ({
   const [deliveryPriority, setDeliveryPriorityInput] =
     useState<(typeof OrderPriorities)[number]>();
   const { createOrder } = useDbOperations();
-  const [estimations, setEstimations] = useState<{
-    vehicles: Array<{ type: VehicleType; count: number }>;
-    cost: number;
-    distanceInMiles: number;
-    durationInSeconds?: number | null;
-  } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const formattedEstimation = () =>
     new Intl.NumberFormat("en-US", {
@@ -82,18 +74,16 @@ export const CreateOrderForm: React.FC<{ brightness: "dark" | "light" }> = ({
       style: "currency",
     }).format(estimations?.cost ?? 0);
 
-  const [packages, setPackages] = useState<ProductEntity[]>([]);
+  const [packages, setPackages] = useState<ProductWithQuantity[]>([]);
 
-  const [pickupLocation, setPickupLocation] = useState<OSMSearchResult | null>(
-    null,
-  );
+  const [pickupLocation, setPickupLocation] =
+    useState<CustomOSMSearchResult | null>(null);
 
   const [deliveryLocation, setDeliveryLocation] =
-    useState<OSMSearchResult | null>(null);
+    useState<CustomOSMSearchResult | null>(null);
 
   const onPickupLocationChanged = (params: OnAddressChangedParams) => {
     console.log({ onPickupLocationChanged: params });
-    setEstimations(null);
     setPickupLocation(params.address);
   };
 
@@ -101,15 +91,24 @@ export const CreateOrderForm: React.FC<{ brightness: "dark" | "light" }> = ({
     params: (typeof OrderPriorities)[number],
   ) => {
     console.log({ onDeliveryPriorityChanged: params });
-    setEstimations(null);
     setDeliveryPriorityInput(params);
   };
 
   const onDeliveryLocationChanged = (params: OnAddressChangedParams) => {
     console.log({ onDeliveryLocationChanged: params });
-    setEstimations(null);
     setDeliveryLocation(params.address);
   };
+
+  const {
+    result: estimations,
+    isFetching: isEstimationLoading,
+    error: estimationError,
+  } = useComputeDeliveryEstimation({
+    pickupLocation: pickupLocation || undefined,
+    deliveryLocation: deliveryLocation || undefined,
+    priority: deliveryPriority?.value || undefined,
+    products: packages,
+  });
 
   const dispatch = useAppDispatch();
   const requestSignIn = () => dispatch(setRequestedAuthAction("login"));
@@ -117,12 +116,7 @@ export const CreateOrderForm: React.FC<{ brightness: "dark" | "light" }> = ({
     (index: number) =>
     (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
       const { name, value, type } = event.target;
-      // if (type === "number") {
-      //   const int = parseInt(value);
-      //   if (isNaN(int) || int < 0) {
-      //     return;
-      //   }
-      // }
+
       setPackages((previousPackages) => {
         const newPackages = [...previousPackages];
         if (
@@ -135,13 +129,14 @@ export const CreateOrderForm: React.FC<{ brightness: "dark" | "light" }> = ({
             ...newPackages[index],
             dimensions: {
               ...newPackages[index].dimensions,
-              [dimensionName]: value,
+              [dimensionName]:
+                value && type === "number" ? parseFloat(value) : value,
             },
           };
         } else {
           newPackages[index] = {
             ...newPackages[index],
-            [name]: value,
+            [name]: value && type === "number" ? parseFloat(value) : value,
           };
         }
         return newPackages;
@@ -164,7 +159,6 @@ export const CreateOrderForm: React.FC<{ brightness: "dark" | "light" }> = ({
     ]);
   };
 
-  const [isComputingEstimation, setIsComputingEstimation] = useState(false);
   const [isScheduling, setIsScheduling] = useState(false);
   const [processPayment, setProcessPayment] = useState<{
     orderId: string;
@@ -184,26 +178,25 @@ export const CreateOrderForm: React.FC<{ brightness: "dark" | "light" }> = ({
     setIsScheduling(true);
     try {
       const orderId = await createOrder({
-        [OrderEntityFields.clientName]:
-          user.info.displayName || user.info.email || "",
-        [OrderEntityFields.clientId]: user.info.uid,
-        [OrderEntityFields.pickupLocation]: {
+        clientName: user.info.displayName || user.info.email || "",
+        clientId: user.info.uid,
+        pickupLocation: {
           address: pickupLocation?.display_name || "",
-          latitude: +pickupLocation.lat || 0,
-          longitude: +pickupLocation.lon || 0,
+          latitude: +pickupLocation.latitude || 0,
+          longitude: +pickupLocation.longitude || 0,
         },
-        [OrderEntityFields.deliveryLocation]: {
+        deliveryLocation: {
           address: deliveryLocation?.display_name || "",
-          latitude: +deliveryLocation.lat || 0,
-          longitude: +deliveryLocation.lon || 0,
+          latitude: +deliveryLocation.latitude || 0,
+          longitude: +deliveryLocation.longitude || 0,
         },
-        [OrderEntityFields.products]: packages,
-        [OrderEntityFields.priority]: deliveryPriority?.value || "standard",
-        [OrderEntityFields.status]: OrderStatus.PENDING_PAYMENT,
-        [OrderEntityFields.driverStatus]: DriverOrderStatus.WAITING,
-        [OrderEntityFields.price]: +estimations.cost,
-        [OrderEntityFields.requiredVehicles]: [],
-        [OrderEntityFields.createdAt]: new Date().toISOString(),
+        products: packages,
+        priority: deliveryPriority?.value || "standard",
+        status: OrderStatus.PENDING_PAYMENT,
+        driverStatus: DriverOrderStatus.WAITING,
+        price: +estimations.cost,
+        requiredVehicles: [],
+        createdAt: new Date().toISOString(),
       });
       setProcessPayment({ orderId });
     } catch (error) {
@@ -228,61 +221,31 @@ export const CreateOrderForm: React.FC<{ brightness: "dark" | "light" }> = ({
     return null;
   };
   const validateForm = () => {
-    setEstimations(null);
     const errorMessage = getValidationErrorMessage();
     if (errorMessage) {
       setError(errorMessage);
-      return;
+      return errorMessage;
     }
     setError(null);
+    return null;
   };
+
   const handleComputeEstimation = async (e: React.FormEvent) => {
     e.preventDefault();
-    validateForm();
+    const validationResult = validateForm();
+    if (validationResult) {
+      return;
+    }
+    if (user.isAnonymous) {
+      requestSignIn();
+      return;
+    }
+    if (!estimations) {
+      setError(`Failed to compute estimation: ${estimationError?.message}`);
+      return;
+    }
     setProcessPayment(null);
-    if (
-      !pickupLocation ||
-      !deliveryLocation ||
-      !deliveryPriority ||
-      !packages?.length
-    ) {
-      return;
-    }
-    setIsComputingEstimation(true);
-    const res = await fetch(`${SERVER_API}/v1/compute-delivery-estimation`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        [OrderEntityFields.pickupLocation]: {
-          latitude: +pickupLocation.lat,
-          longitude: +pickupLocation.lon,
-        },
-        [OrderEntityFields.deliveryLocation]: {
-          latitude: +deliveryLocation.lat,
-          longitude: +deliveryLocation.lon,
-        },
-        [OrderEntityFields.products]: packages,
-        [OrderEntityFields.priority]:
-          deliveryPriority.value || OrderPriority.STANDARD,
-      } as ApiComputeDeliveryEstimation),
-    });
-    setIsComputingEstimation(false);
-    if (!res.ok) {
-      console.error("Failed to compute delivery estimation", await res.text());
-      return;
-    }
-    const data: {
-      vehicles: {
-        type: VehicleType;
-        count: number;
-      }[];
-      cost: number;
-      distanceInMiles: number;
-      durationInSeconds?: number | null;
-    } = await res.json();
-    setEstimations(data);
+    handleScheduleDelivery();
   };
 
   const handleRemovePackage = (index: number) => () => {
@@ -324,7 +287,7 @@ export const CreateOrderForm: React.FC<{ brightness: "dark" | "light" }> = ({
               spellCheck
               minLength={10}
               readOnly
-              value={deliveryPriority?.label}
+              value={deliveryPriority?.label || ""}
               id="delivery-type-input"
               className={`block w-full cursor-pointer rounded-xl border p-3 text-center text-lg text-black focus:border-red-400 focus:outline-none focus:ring-transparent ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
               placeholder="Priority >"
@@ -366,7 +329,7 @@ export const CreateOrderForm: React.FC<{ brightness: "dark" | "light" }> = ({
                     step={1}
                     name="quantity"
                     id={`package-quantity-input-${index}`}
-                    value={packageProps.quantity}
+                    value={`${packageProps.quantity}`}
                     onChange={handlePackageChange(index)}
                     className={`block w-full rounded-xl border p-3 text-center text-lg text-black placeholder:text-lg focus:border-red-400 focus:outline-none focus:ring-transparent ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
                     placeholder="Quantity"
@@ -381,7 +344,7 @@ export const CreateOrderForm: React.FC<{ brightness: "dark" | "light" }> = ({
                     step={0.01}
                     name="weightInLbs"
                     id={`package-weight-input-${index}`}
-                    value={packageProps.weightInLbs}
+                    value={`${packageProps.weightInLbs}`}
                     onChange={handlePackageChange(index)}
                     className={`block w-full rounded-xl border p-3 text-center text-lg text-black placeholder:text-lg focus:border-red-400 focus:outline-none focus:ring-transparent ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
                     placeholder="Weight (lbs)"
@@ -398,7 +361,7 @@ export const CreateOrderForm: React.FC<{ brightness: "dark" | "light" }> = ({
                     step={0.01}
                     name="dimensions.heightInInches"
                     id={`package-height-input-${index}`}
-                    value={packageProps.dimensions.heightInInches}
+                    value={`${packageProps.dimensions.heightInInches}`}
                     onChange={handlePackageChange(index)}
                     className={`block w-full rounded-xl border p-3 text-center text-lg text-black placeholder:text-lg focus:border-red-400 focus:outline-none focus:ring-transparent ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
                     placeholder="Height (in)"
@@ -413,7 +376,7 @@ export const CreateOrderForm: React.FC<{ brightness: "dark" | "light" }> = ({
                     step={0.01}
                     name="dimensions.widthInInches"
                     id={`package-width-input-${index}`}
-                    value={packageProps.dimensions.widthInInches}
+                    value={`${packageProps.dimensions.widthInInches}`}
                     onChange={handlePackageChange(index)}
                     className={`block w-full rounded-xl border p-3 text-center text-lg text-black placeholder:text-lg focus:border-red-400 focus:outline-none focus:ring-transparent ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
                     placeholder="Width (in)"
@@ -428,7 +391,7 @@ export const CreateOrderForm: React.FC<{ brightness: "dark" | "light" }> = ({
                     step={0.01}
                     name="dimensions.lengthInInches"
                     id={`package-length-input-${index}`}
-                    value={packageProps.dimensions.lengthInInches}
+                    value={`${packageProps.dimensions.lengthInInches}`}
                     onChange={handlePackageChange(index)}
                     className={`block w-full rounded-xl border p-3 text-center text-lg text-black placeholder:text-lg focus:border-red-400 focus:outline-none focus:ring-transparent ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
                     placeholder="Length (in)"
@@ -450,74 +413,57 @@ export const CreateOrderForm: React.FC<{ brightness: "dark" | "light" }> = ({
             Add Package
           </button>
         </div>
-        {!getValidationErrorMessage() && estimations && (
-          <div
-            className={`block w-full text-wrap rounded-xl border  p-3 text-sm  focus:outline-none focus:ring-transparent sm:text-[16px] ${brightness === "dark" ? "border-gray-300 bg-amber-400/30 text-white focus:border-red-400" : "border-gray-300 bg-amber-200/30 text-gray-800 focus:border-red-900"}`}
-          >
-            {(estimations.vehicles.length && (
-              <span className="block">
-                Required Vehicle Type:{" "}
-                {estimations.vehicles
-                  .map((v) => `${v.count}*${v.type}`)
-                  .join(", ")}
-              </span>
-            )) ||
-              null}
-            {(estimations.cost && (
-              <span className="block">
-                Estimated Delivery Cost: {formattedEstimation()}
-              </span>
-            )) ||
-              null}
-            {estimations.durationInSeconds && (
-              <span className="block">
-                Estimated Delivery Time: {estimations.durationInSeconds}
-              </span>
-            )}
-            {estimations.distanceInMiles && (
-              <span className="block">
-                Estimated Distance: {estimations?.distanceInMiles.toFixed(3)}{" "}
-                miles
-              </span>
-            )}
-          </div>
-        )}
+        <div
+          className={`block w-full text-wrap rounded-xl border  p-3 text-sm  focus:outline-none focus:ring-transparent sm:text-[16px] ${brightness === "dark" ? "border-gray-300 bg-amber-400/30 text-white focus:border-red-400" : "border-gray-300 bg-amber-200/30 text-gray-800 focus:border-red-900"}`}
+        >
+          <span className="block">
+            Required Vehicle Type:{" "}
+            {estimations?.vehicles
+              ?.map((v) => `${v.count}*${v.type}`)
+              .join(", ") || "N/A"}
+          </span>
+          <span className="block">
+            Estimated Delivery Cost:{" "}
+            {estimations?.cost ? formattedEstimation() : "N/A"}
+          </span>
+          <span className="block">
+            Estimated Delivery Time:{" "}
+            {estimations?.durationInSeconds
+              ? formatDuration(
+                  intervalToDuration({
+                    start: new Date(0),
+                    end: add(new Date(0), {
+                      seconds: estimations.durationInSeconds,
+                    }),
+                  }),
+                  { zero: true, format: ["hours", "minutes", "seconds"] },
+                )
+              : "N/A"}
+          </span>
+          <span className="block">
+            Estimated Distance:{" "}
+            {estimations?.distanceInMiles
+              ? `${estimations.distanceInMiles.toFixed(3)} miles`
+              : "N/A"}
+          </span>
+        </div>
         <div
           className={`inline-block w-full rounded-lg p-1 text-center text-red-500 transition-all duration-500 ${error ? "" : "hidden"} ${brightness === "dark" ? "bg-white " : "bg-gray-950"}`}
         >
           {error}
         </div>
-        <button
-          type="submit"
-          className={`rounded-xl  border bg-transparent px-5 py-3 text-sm shadow-md transition-all duration-100  ${brightness === "dark" ? "text-white shadow-gray-300/70  hover:bg-gray-200 hover:text-gray-800" : "text-gray-900 shadow-gray-800/70 hover:bg-gray-800 hover:text-white  "}`}
-          disabled={isComputingEstimation}
-        >
-          {isComputingEstimation ? "Estimating..." : "Estimate delivery cost"}
-        </button>
-      </form>
-      {(pickupLocation &&
-        deliveryLocation &&
-        user.isAnonymous &&
-        deliveryPriority &&
-        packages?.length &&
-        estimations && (
+        {user.isAnonymous ? (
           <button
-            onClick={requestSignIn}
-            className="rounded-full bg-white px-5 py-3 text-gray-800"
-            disabled={!estimations}
+            type="submit"
+            className={`rounded-xl  border bg-transparent px-5 py-3 text-sm shadow-md transition-all duration-100  ${brightness === "dark" ? "text-white shadow-gray-300/70  hover:bg-gray-200 hover:text-gray-800" : "text-gray-900 shadow-gray-800/70 hover:bg-gray-800 hover:text-white  "}`}
+            // className="rounded-full bg-white px-5 py-3 text-gray-800"
+            disabled={isEstimationLoading}
           >
             Sign In To Continue
           </button>
-        )) ||
-        null}
-      {(pickupLocation &&
-        deliveryLocation &&
-        !user.isAnonymous &&
-        deliveryPriority &&
-        packages?.length &&
-        estimations && (
+        ) : (
           <>
-            {processPayment && (
+            {estimations && processPayment && (
               <StripePayment
                 showInModal
                 price={estimations.cost}
@@ -526,17 +472,17 @@ export const CreateOrderForm: React.FC<{ brightness: "dark" | "light" }> = ({
               />
             )}
             <button
-              onClick={handleScheduleDelivery}
+              type="submit"
               className="rounded-xl bg-green-900/90 px-5 py-3 text-white"
-              disabled={!estimations || isScheduling}
+              disabled={isEstimationLoading || isScheduling}
             >
               {isScheduling
                 ? "Scheduling..."
                 : `Schedule Now For ${formattedEstimation()}`}
             </button>
           </>
-        )) ||
-        null}
+        )}
+      </form>
     </div>
   );
 };

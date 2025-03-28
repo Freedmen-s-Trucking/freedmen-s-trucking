@@ -1,60 +1,22 @@
-import type { ProductEntity } from "../types";
-
-type VehicleType = "SEDAN" | "SUV" | "VAN" | "TRUCK" | "FREIGHT";
-
-type VehicleInfo = {
-  type: VehicleType;
-  pricePerMile: number;
-  maxCapacityInCubicInches: number;
-  maxWeightInLbs: number;
-};
+import { ProductWithQuantity, vehiclesInfoList, VehicleType } from '@freedman-trucking/types';
 
 const deliveryPriorityPricesAddons = {
-  'standard': 0,
-  'expedited': 1,
-  'urgent': 1.5,
+  standard: 0,
+  expedited: 1,
+  urgent: 1.5,
 } as const;
 
-const vehiclesInfo: VehicleInfo[] = [
-  {
-    type: "SEDAN",
-    pricePerMile: 1.5,
-    maxCapacityInCubicInches: 14 * 60 * 40,
-    maxWeightInLbs: 1000,
-  },
-  {
-    type: "SUV",
-    pricePerMile: 2.25,
-    maxCapacityInCubicInches: 40 * 60 * 40,
-    maxWeightInLbs: 2000,
-  },
-  {
-    type: "VAN",
-    pricePerMile: 2.25,
-    maxCapacityInCubicInches: 70 * 60 * 40,
-    maxWeightInLbs: 3000,
-  },
-  {
-    type: "TRUCK",
-    pricePerMile: 3.0,
-    maxCapacityInCubicInches: 96 * 96 * 96,
-    maxWeightInLbs: 5000,
-  },
-  {
-    type: "FREIGHT",
-    pricePerMile: 4.5,
-    maxCapacityInCubicInches: 53 * 102 * 102,
-    maxWeightInLbs: 10000,
-  },
-];
-
 /**
- * Calculate the minimum number of vehicles needed to deliver the packages 
+ * Calculate the minimum number of vehicles needed to deliver the packages
  * @param packages The array of packages to be delivered
  * @returns The array of vehicles needed to deliver the packages
  */
-export function calculateTheCheapestCombinationOfVehicles(packages: ProductEntity[], miles: number, priority: 'standard' | 'expedited' | 'urgent'): {vehicles: {type: VehicleType, count: number}[], cost: number} {
-  const vehicles: {type: VehicleType, count: number}[] = [];
+export function calculateTheCheapestCombinationOfVehicles(
+  packages: ProductWithQuantity[],
+  miles: number,
+  priority: 'standard' | 'expedited' | 'urgent',
+): { vehicles: { type: VehicleType; count: number }[]; cost: number } {
+  const vehicles: { type: VehicleType; count: number }[] = [];
   const totalWeight = CalculateTotalWeight(packages);
   const totalVolume = CalculateTotalVolume(packages);
 
@@ -62,18 +24,20 @@ export function calculateTheCheapestCombinationOfVehicles(packages: ProductEntit
   let remainingWeight = totalWeight;
   let remainingVolume = totalVolume;
   while (remainingWeight > 0 || remainingVolume > 0) {
-    const vehicleFound = vehiclesInfo.find(v => v.maxWeightInLbs >= remainingWeight && v.maxCapacityInCubicInches >= remainingVolume);
-    const vehicle = vehicleFound || vehiclesInfo[vehiclesInfo.length - 1];
+    const vehicleFound = vehiclesInfoList.find(
+      (v) => v.maxWeightInLbs >= remainingWeight && v.maxCapacityInCubicInches >= remainingVolume,
+    );
+    const vehicle = vehicleFound || vehiclesInfoList[vehiclesInfoList.length - 1];
     if (vehicle) {
       totalCost += vehicle.pricePerMile * miles;
-      vehicles.push({type: vehicle.type, count: 1});
+      vehicles.push({ type: vehicle.type, count: 1 });
       remainingWeight -= vehicle.maxWeightInLbs;
       remainingVolume -= vehicle.maxCapacityInCubicInches;
     }
   }
 
   totalCost += (deliveryPriorityPricesAddons[priority] || 0) * miles;
-  return {vehicles, cost: totalCost };
+  return { vehicles, cost: totalCost };
 }
 
 /**
@@ -81,7 +45,7 @@ export function calculateTheCheapestCombinationOfVehicles(packages: ProductEntit
  * @param packages The array of packages
  * @returns The total weight in lbs
  */
-function CalculateTotalWeight(packages: ProductEntity[]): number {
+function CalculateTotalWeight(packages: ProductWithQuantity[]): number {
   return packages.reduce((acc, cur) => acc + cur.weightInLbs * cur.quantity, 0);
 }
 
@@ -90,8 +54,12 @@ function CalculateTotalWeight(packages: ProductEntity[]): number {
  * @param packages The array of packages
  * @returns The total volume in cubic inches
  */
-function CalculateTotalVolume(packages: ProductEntity[]): number {
-  return packages.reduce((acc, cur) => acc + cur.dimensions.heightInInches * cur.dimensions.widthInInches * cur.dimensions.lengthInInches * cur.quantity, 0);
+function CalculateTotalVolume(packages: ProductWithQuantity[]): number {
+  return packages.reduce(
+    (acc, cur) =>
+      acc + cur.dimensions.heightInInches * cur.dimensions.widthInInches * cur.dimensions.lengthInInches * cur.quantity,
+    0,
+  );
 }
 
 // /**

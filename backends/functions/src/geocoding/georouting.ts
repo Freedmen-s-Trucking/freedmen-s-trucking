@@ -1,6 +1,6 @@
-import { HarversineGeoRoutingService } from './haversine';
-import { OSRMGeoRoutingService } from './osrm';
-import { GeoPoint } from './utils/utils';
+import { HarversineGeoRoutingService } from './haversine.js';
+import { OSRMGeoRoutingService } from './osrm.js';
+import { GeoPoint } from './utils/utils.js';
 
 export enum GeoRoutingServiceType {
   osm,

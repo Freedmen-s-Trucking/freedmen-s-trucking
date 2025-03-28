@@ -2,21 +2,29 @@ import { useQuery } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 
 const OSM_PLACE_SEARCH_API = "https://nominatim.openstreetmap.org/search.php";
-export type OSMSearchResult = {
+type OSMSearchResult = {
   place_id: number;
-  licence: string;
-  osm_type: string;
-  osm_id: number;
+  licence?: string;
+  osm_type?: string;
+  osm_id?: number;
   lat: string;
   lon: string;
-  category: string;
-  type: string;
-  place_rank: number;
-  importance: number;
-  addresstype: string;
+  category?: string;
+  type?: string;
+  place_rank?: number;
+  importance?: number;
+  addresstype?: string;
   name: string;
   display_name: string;
-  boundingbox: string[];
+  boundingbox?: string[];
+};
+
+export type CustomOSMSearchResult = {
+  place_id: number;
+  latitude: number;
+  longitude: number;
+  name: string;
+  display_name: string;
 };
 
 export const useGeocoding = () => {
@@ -42,7 +50,13 @@ export const useGeocoding = () => {
         throw new Error(response.statusText);
       }
       const data: OSMSearchResult[] = await response.json();
-      return data;
+      return data.map((item) => ({
+        latitude: Number(item.lat),
+        longitude: Number(item.lon),
+        name: item.name,
+        display_name: item.display_name,
+        place_id: item.place_id,
+      }));
     },
   });
 

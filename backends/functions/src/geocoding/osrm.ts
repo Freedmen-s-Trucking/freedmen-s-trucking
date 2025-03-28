@@ -2,8 +2,8 @@ import {
   GetDistanceInKilometerRequest,
   GetDistanceInKilometerResponse,
   GeoRoutingInterface,
-} from './georouting';
-import { getRequest } from './utils/http_request';
+} from './georouting.js';
+import { getRequest } from './utils/http_request.js';
 import {
   convertToKm,
   convertToMin,

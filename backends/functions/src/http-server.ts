@@ -1,39 +1,35 @@
-import { onRequest } from "firebase-functions/v2/https";
-import { Hono } from "hono";
-import { getRequestListener } from "@hono/node-server";
-import { calculateTheCheapestCombinationOfVehicles } from "./utils/compute-delivery-estimationy";
-import { GeoRoutingService, GeoRoutingServiceType, GetDistanceInKilometerResponse } from "./geocoding/georouting";
-import { convertKilometerToMiles } from "./utils/convert";
-import { ApiComputeDeliveryEstimation } from "./types";
-import _stripe from "stripe";
-import { logger } from "hono/logger";
-import { secureHeaders } from "hono/secure-headers";
-import { CollectionReference, FieldValue, getFirestore } from "firebase-admin/firestore";
-import { DriverEntity, OrderEntity, OrderStatus } from "./types";
-import { apps } from 'firebase-admin';
-import { initializeApp } from "firebase-admin/app";
-console.log({api: process.env.STRIPE_SECRET_KEY, webhook: process.env.STRIPE_WEBHOOK_SECRET})
+import { onRequest } from 'firebase-functions/v2/https';
+import { Hono } from 'hono';
+import { getRequestListener } from '@hono/node-server';
+import { calculateTheCheapestCombinationOfVehicles } from './utils/compute-delivery-estimationy.js';
+import { GeoRoutingService, GeoRoutingServiceType, GetDistanceInKilometerResponse } from './geocoding/georouting.js';
+import { convertKilometerToMiles } from './utils/convert.js';
+import { ComputeDeliveryEstimation } from '@freedman-trucking/types';
+import _stripe from 'stripe';
+import { logger } from 'hono/logger';
+import { secureHeaders } from 'hono/secure-headers';
+import { CollectionReference, FieldValue, getFirestore } from 'firebase-admin/firestore';
+import { DriverEntity, OrderEntity, OrderStatus } from '@freedman-trucking/types';
+console.log({
+  api: process.env.STRIPE_SECRET_KEY,
+  webhook: process.env.STRIPE_WEBHOOK_SECRET,
+});
 const stripe = new _stripe(process.env.STRIPE_SECRET_KEY!);
-const init = () => {
-  if (!apps.length) {
-    initializeApp();
-  }
-}
+
 export const customLogger = (message: string, ...rest: string[]) => {
-  console.log(message, ...rest)
-}
+  console.log(message, ...rest);
+};
 
 const apiV1Route = new Hono();
-apiV1Route.use(logger(customLogger))
-apiV1Route.use(secureHeaders())
+apiV1Route.use(logger(customLogger));
+apiV1Route.use(secureHeaders());
 
 apiV1Route.use('*', async (c, next) => {
-  init();
   await next();
 });
 
-apiV1Route.post("/compute-delivery-estimation", async (c) => {
-  const data: ApiComputeDeliveryEstimation = await c.req.json();
+apiV1Route.post('/compute-delivery-estimation', async (c) => {
+  const data: ComputeDeliveryEstimation = await c.req.json();
   const computeDistanceWithOSM = GeoRoutingService.create(GeoRoutingServiceType.osm);
   const computeDistanceWithHaversine = GeoRoutingService.create(GeoRoutingServiceType.haversine);
 
@@ -48,7 +44,7 @@ apiV1Route.post("/compute-delivery-estimation", async (c) => {
       console.error('>>failed to compute distance with Haversine', (e2 as Error).stack, data);
       throw e2;
     }
-  }
+  };
   try {
     distanceInKm = await computeDistanceWithOSM.getDistanceInKilometer({
       startPoint: data.pickupLocation,
@@ -64,19 +60,23 @@ apiV1Route.post("/compute-delivery-estimation", async (c) => {
   const distanceInMiles = convertKilometerToMiles(distanceInKm?.distance || 0);
   console.log({ distanceInKm, distanceInMiles, ...data });
   const response = calculateTheCheapestCombinationOfVehicles(data.products, distanceInMiles, data.priority);
-  return c.json({...response, distanceInMiles, durationInSeconds: distanceInKm?.durationInMin ? distanceInKm.durationInMin * 60 : undefined});
+  return c.json({
+    ...response,
+    distanceInMiles,
+    durationInSeconds: distanceInKm?.durationInMin ? distanceInKm.durationInMin * 60 : undefined,
+  });
 });
 
-apiV1Route.post("/stripe/create-payment-intent", async (c) => {
+apiV1Route.post('/stripe/create-payment-intent', async (c) => {
   const json = await c.req.json();
-  console.log({reqdata: json})
+  console.log({ reqdata: json });
   const { amount: amountInUSD, orderId } = json;
   if (!amountInUSD || !orderId) {
-    return c.json({error: "Invalid request: missing amount or orderId"}, 400);
+    return c.json({ error: 'Invalid request: missing amount or orderId' }, 400);
   }
   const paymentIntent = await stripe.paymentIntents.create({
     amount: Math.ceil(amountInUSD * 100),
-    currency: "usd",
+    currency: 'usd',
     metadata: {
       orderId,
     },
@@ -84,7 +84,7 @@ apiV1Route.post("/stripe/create-payment-intent", async (c) => {
   return c.json({ clientSecret: paymentIntent.client_secret });
 });
 
-apiV1Route.post("/stripe/webhook", async (c) => {
+apiV1Route.post('/stripe/webhook', async (c) => {
   let event: _stripe.Event;
   // try {
   //   const sig = c.req.header('stripe-signature');
@@ -96,8 +96,8 @@ apiV1Route.post("/stripe/webhook", async (c) => {
   // catch (err) {
   //   return c.json({error: `Webhook Error: ${(err as Error).message}`}, 400);
   // }
-  
-  event ??= await c.req.json(); 
+
+  event ??= await c.req.json();
   console.log(event.type);
 
   // Handle the event
@@ -105,9 +105,9 @@ apiV1Route.post("/stripe/webhook", async (c) => {
     case 'payment_intent.succeeded':
       const paymentIntent = event.data.object;
       const orderId = paymentIntent.metadata.orderId;
-      if(!orderId) {
+      if (!orderId) {
         console.error('Invalid request: missing orderId');
-        return c.json({error: "Invalid request: missing orderId"}, 400);
+        return c.json({ error: 'Invalid request: missing orderId' }, 400);
       }
 
       const firestore = getFirestore();
@@ -116,26 +116,35 @@ apiV1Route.post("/stripe/webhook", async (c) => {
       const query = driverCollection.where('verificationStatus', '!=', 'failed').orderBy('activeTasks', 'asc');
       const snapshot = await query.limit(1).get();
       const driverId = snapshot.empty ? null : snapshot.docs[0].id;
-      const orderCollection = firestore.collection('orders') as CollectionReference<Partial<OrderEntity>, Partial<OrderEntity>>;
-      await orderCollection.doc(orderId).set({
-        status: driverId ? OrderStatus.ASSIGNED_TO_DRIVER : OrderStatus.PAYMENT_RECEIVED,
-        driverId,
-        payment: {
-          paymentIntentId: paymentIntent.id,
-          amountInCents: `${paymentIntent.amount}`,  
-        }
-      }, {merge: true});
+      const orderCollection = firestore.collection('orders') as CollectionReference<
+        Partial<OrderEntity>,
+        Partial<OrderEntity>
+      >;
+      await orderCollection.doc(orderId).set(
+        {
+          status: driverId ? OrderStatus.ASSIGNED_TO_DRIVER : OrderStatus.PAYMENT_RECEIVED,
+          driverId,
+          payment: {
+            paymentIntentId: paymentIntent.id,
+            amountInCents: `${paymentIntent.amount}`,
+          },
+        },
+        { merge: true },
+      );
       if (driverId) {
         const driverCollection = firestore.collection('drivers') as CollectionReference<DriverEntity, DriverEntity>;
-        await driverCollection.doc(driverId).set({
-          activeTasks: FieldValue.increment(1)
-        }, {merge: true});
+        await driverCollection.doc(driverId).set(
+          {
+            activeTasks: FieldValue.increment(1),
+          },
+          { merge: true },
+        );
       }
-      console.log({paymentIntent, meta: paymentIntent.metadata });
+      console.log({ paymentIntent, meta: paymentIntent.metadata });
       break;
     case 'payment_method.attached':
       const paymentMethod = event.data.object;
-      console.log({paymentMethod});
+      console.log({ paymentMethod });
       // Then define and call a method to handle the successful attachment of a PaymentMethod.
       // handlePaymentMethodAttached(paymentMethod);
       break;
@@ -145,22 +154,27 @@ apiV1Route.post("/stripe/webhook", async (c) => {
   }
 
   // Return a response to acknowledge receipt of the event
-  return c.json({received: true});
+  return c.json({ received: true });
 });
 
 apiV1Route.notFound((c) => {
-  return c.text('404 Not Found', 404)
-})
+  return c.text('404 Not Found', 404);
+});
 
 apiV1Route.onError((err, c) => {
-  console.error(`${err}`, err)
-  return c.text('Internal Server Error', 500)
-})
+  console.error(`${err}`, err);
+  return c.text('Internal Server Error', 500);
+});
 
 const app = new Hono();
 app.route('/api/v1', apiV1Route);
 
-export const httpServer = onRequest(getRequestListener(app.fetch));
+export const httpServer = onRequest(
+  {
+    timeoutSeconds: 5,
+  },
+  getRequestListener(app.fetch),
+);
 // Export with proper initialization
 // export const api = onRequest(
 //   {

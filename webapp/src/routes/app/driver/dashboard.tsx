@@ -33,7 +33,6 @@ import {
   DriverEntity,
   OrderEntity,
   DriverOrderStatus,
-  OrderEntityFields,
   RequiredVehicleEntity,
 } from "@freedman-trucking/types";
 import { useAppDispatch } from "@/stores/hooks";
@@ -263,8 +262,7 @@ const DriverDashboard = () => {
   };
 
   const hasUpdatedOrders = activeOrders.some(
-    (order) =>
-      order.data[OrderEntityFields.driverStatus] === DriverOrderStatus.WAITING,
+    (order) => order.data.driverStatus === DriverOrderStatus.WAITING,
   );
 
   const navigation = useNavigate();
@@ -443,7 +441,7 @@ const DriverDashboard = () => {
                 Current Earnings
               </h5>
               <p className="text-3xl font-bold text-blue-600">
-                ${driverInfo.currentEarnings.toFixed(2)}
+                ${driverInfo.currentEarnings?.toFixed(2) || 0}
               </p>
             </Card>
             <Card>
@@ -451,7 +449,7 @@ const DriverDashboard = () => {
                 Total Earnings
               </h5>
               <p className="text-3xl font-bold text-green-600">
-                ${driverInfo.totalEarnings.toFixed(2)}
+                ${driverInfo.totalEarnings?.toFixed(2) || 0}
               </p>
             </Card>
             <Card>
@@ -494,42 +492,34 @@ const DriverDashboard = () => {
                 <Card
                   key={order.path}
                   className={
-                    order.data[OrderEntityFields.updatedAt]
-                      ? "border-l-4 border-blue-500"
-                      : ""
+                    order.data.updatedAt ? "border-l-4 border-blue-500" : ""
                   }
                 >
                   <div className="flex items-start justify-between">
                     <div>
                       <h5 className="text-lg font-bold tracking-tight text-gray-900">
-                        {order.data[OrderEntityFields.clientName]}
+                        {order.data.clientName}
                       </h5>
                       <p className="mb-2 font-normal text-gray-700 dark:text-gray-400">
                         ORD:{order.path.split("/").pop()?.slice(0, 8)}-****-****
                         <DisplayRequiredVehicles
-                          vehicles={
-                            order.data[OrderEntityFields.requiredVehicles] || []
-                          }
+                          vehicles={order.data.requiredVehicles || []}
                         />
                       </p>
                     </div>
-                    <div>
-                      {getStatusBadge(
-                        order.data[OrderEntityFields.driverStatus],
-                      )}
-                    </div>
+                    <div>{getStatusBadge(order.data.driverStatus)}</div>
                   </div>
                   <div className="mt-2 space-y-1 text-sm">
                     <p>
                       <strong>Pickup:</strong>{" "}
-                      {order.data[OrderEntityFields.pickupLocation].address}
+                      {order.data.pickupLocation.address}
                     </p>
                     <p>
                       <strong>Dropoff:</strong>{" "}
-                      {order.data[OrderEntityFields.deliveryLocation].address}
+                      {order.data.deliveryLocation.address}
                     </p>
                     <p className="mt-2 text-lg font-bold">
-                      ${order.data[OrderEntityFields.price].toFixed(2)}
+                      ${order.data.price.toFixed(2)}
                     </p>
                   </div>
                   <div className="mt-3 flex justify-end">
@@ -568,25 +558,20 @@ const DriverDashboard = () => {
                       <div className="flex items-center space-x-4">
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm font-medium text-gray-900">
-                            {order.data[OrderEntityFields.clientName]}
+                            {order.data.clientName}
                           </p>
                           <p className="truncate text-sm text-gray-500">
                             {order.path}
                           </p>
                           <p className="text-xs text-gray-500">
-                            {formatDate(
-                              order.data[OrderEntityFields.createdAt],
-                            )}
+                            {order.data.createdAt &&
+                              formatDate(order.data.createdAt)}
                           </p>
                         </div>
                         <div className="inline-flex items-center text-base font-semibold text-gray-900">
-                          ${order.data[OrderEntityFields.price].toFixed(2)}
+                          ${order.data.price.toFixed(2)}
                         </div>
-                        <div>
-                          {getStatusBadge(
-                            order.data[OrderEntityFields.driverStatus],
-                          )}
-                        </div>
+                        <div>{getStatusBadge(order.data.driverStatus)}</div>
                       </div>
                     </li>
                   ))}
@@ -619,8 +604,7 @@ const DriverDashboard = () => {
               <Card
                 key={order.path}
                 className={
-                  order.data[OrderEntityFields.driverStatus] ===
-                  DriverOrderStatus.WAITING
+                  order.data.driverStatus === DriverOrderStatus.WAITING
                     ? "border-l-4 border-blue-500"
                     : ""
                 }
@@ -631,27 +615,23 @@ const DriverDashboard = () => {
                       Order {order.path.split("/").pop()?.slice(0, 13)}-****
                     </h5>
                     <p className="font-normal text-gray-700 dark:text-gray-400">
-                      Client: {order.data[OrderEntityFields.clientName]}
+                      Client: {order.data.clientName}
                     </p>
                     <p className="text-sm text-gray-500">
                       Created:{" "}
-                      {formatDate(order.data[OrderEntityFields.createdAt])}
+                      {order.data.createdAt && formatDate(order.data.createdAt)}
                     </p>
                   </div>
                   <div className="flex flex-col items-end">
                     <div className="mb-2">
-                      {getStatusBadge(
-                        order.data[OrderEntityFields.driverStatus],
-                      )}
+                      {getStatusBadge(order.data.driverStatus)}
                     </div>
                     <p className="text-lg font-bold text-gray-900">
-                      ${order.data[OrderEntityFields.price].toFixed(2)}
+                      ${order.data.price.toFixed(2)}
                     </p>
                     <p className="text-sm text-gray-600">
                       <DisplayRequiredVehicles
-                        vehicles={
-                          order.data[OrderEntityFields.requiredVehicles] || []
-                        }
+                        vehicles={order.data.requiredVehicles || []}
                       />
                     </p>
                   </div>
@@ -661,13 +641,13 @@ const DriverDashboard = () => {
                   <div>
                     <p className="text-sm font-semibold">Pickup Location:</p>
                     <p className="text-sm text-gray-700">
-                      {order.data[OrderEntityFields.pickupLocation].address}
+                      {order.data.pickupLocation.address}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm font-semibold">Dropoff Location:</p>
                     <p className="text-sm text-gray-700">
-                      {order.data[OrderEntityFields.deliveryLocation].address}
+                      {order.data.deliveryLocation.address}
                     </p>
                   </div>
                 </div>
@@ -741,26 +721,22 @@ const DriverDashboard = () => {
                       Order {order.path.split("/").pop()?.slice(0, 13)}-****
                     </h5>
                     <p className="font-normal text-gray-700 dark:text-gray-400">
-                      Client: {order.data[OrderEntityFields.clientName]}
+                      Client: {order.data.clientName}
                     </p>
                     <p className="text-sm text-gray-500">
-                      {formatDate(order.data[OrderEntityFields.createdAt])}
+                      {order.data.createdAt && formatDate(order.data.createdAt)}
                     </p>
                   </div>
                   <div className="flex flex-col items-end">
                     <div className="mb-2">
-                      {getStatusBadge(
-                        order.data[OrderEntityFields.driverStatus],
-                      )}
+                      {getStatusBadge(order.data.driverStatus)}
                     </div>
                     <p className="text-lg font-bold text-gray-900">
-                      ${order.data[OrderEntityFields.price].toFixed(2)}
+                      ${order.data.price.toFixed(2)}
                     </p>
                     <p className="text-sm text-gray-600">
                       <DisplayRequiredVehicles
-                        vehicles={
-                          order.data[OrderEntityFields.requiredVehicles]
-                        }
+                        vehicles={order.data.requiredVehicles}
                       />
                     </p>
                   </div>
@@ -770,13 +746,13 @@ const DriverDashboard = () => {
                   <div>
                     <p className="text-sm font-semibold">Pickup Location:</p>
                     <p className="text-sm text-gray-700">
-                      {order.data[OrderEntityFields.pickupLocation].address}
+                      {order.data.pickupLocation.address}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm font-semibold">Dropoff Location:</p>
                     <p className="text-sm text-gray-700">
-                      {order.data[OrderEntityFields.deliveryLocation].address}
+                      {order.data.deliveryLocation.address}
                     </p>
                   </div>
                 </div>
@@ -1018,7 +994,7 @@ const DriverDashboard = () => {
                 <div className="space-y-3">
                   <p className="font-medium">Available for withdrawal:</p>
                   <p className="text-2xl font-bold text-green-900">
-                    ${driverInfo.currentEarnings.toFixed(2)}
+                    ${driverInfo.currentEarnings?.toFixed(2) || 0}
                   </p>
                 </div>
                 <div className="mt-4">

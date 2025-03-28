@@ -2,8 +2,8 @@ import {
   GetDistanceInKilometerRequest,
   GetDistanceInKilometerResponse,
   GeoRoutingInterface,
-} from './georouting';
-import { GeoPoint } from './utils/utils';
+} from './georouting.js';
+import { GeoPoint } from './utils/utils.js';
 
 /**
  * GeoRoutingService implementation using the Harversine algorithm.

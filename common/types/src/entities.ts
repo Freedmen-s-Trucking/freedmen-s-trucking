@@ -1,86 +1,66 @@
-export type UserRole = "ADMIN" | "DRIVER" | "CUSTOMER";
+import {
+  authMethodType,
+  certificateType,
+  locationType,
+  paymentMethodType,
+  productWithQuantityType,
+  type,
+  vehicleType,
+} from "./types.js";
 
-export interface Certificate {
-  storagePath: string;
-  status: "pending" | "verified" | "failed";
-  expiry: string | null;
-  issues: string[];
-}
+export const withdrawalEntity = type({
+  id: "string",
+  amount: "number",
+  date: "string",
+  status: "'pending' | 'completed' | 'failed'",
+});
+export type WithdrawalEntity = typeof withdrawalEntity.infer;
 
-export interface WithdrawalEntity {
-  id: string;
-  amount: number;
-  date: string;
-  status: "pending" | "completed" | "failed";
-}
+export const userEntity = type({
+  uid: "string",
+  displayName: "string",
+  email: "string | null",
+  phoneNumber: "string | null",
+  photoURL: "string | null",
+  uploadedProfileStoragePath: "string | null",
+  isEmailVerified: "boolean",
+  isPhoneNumberVerified: "boolean",
+  authMethods: authMethodType.array(),
+  createdAt: "string | null",
+  updatedAt: "string | null",
+});
+export type UserEntity = typeof userEntity.infer;
 
-export interface PaymentMethod {
-  id: string;
-  type: "BANK";
-  details: string;
-  default: boolean;
-}
+export const driverEntity = type({
+  driverInsurance: certificateType,
+  driverLicense: certificateType,
+  withdrawalHistory: withdrawalEntity.array(),
+  paymentMethods: paymentMethodType.array(),
+  verificationStatus: "'pending' | 'verified' | 'failed'",
+  currentEarnings: "number | null",
+  totalEarnings: "number | null",
+  tasksCompleted: "number | null",
+  activeTasks: "number | null",
+});
+export type DriverEntity = typeof driverEntity.infer;
 
-export interface AuthMethod {
-  provider: string;
-  providerRowData: Record<string, any>;
-}
+export const requiredVehicleEntity = type({
+  type: vehicleType,
+  quantity: "number",
+});
+export type RequiredVehicleEntity = typeof requiredVehicleEntity.infer;
 
-export interface UserEntity {
-  uid: string;
-  displayName: string;
-  email: string | null;
-  phoneNumber: string | null;
-  photoURL: string | null;
-  uploadedProfileStoragePath?: string | null;
-  isEmailVerified: boolean;
-  isPhoneNumberVerified: boolean;
-  authMethods: AuthMethod[];
-  createdAt: string | null;
-  updatedAt: string | null;
-}
-
-export interface CustomerEntity {}
-
-export interface DriverEntity {
-  driverInsurance: Certificate;
-  driverLicense: Certificate;
-  withdrawalHistory: WithdrawalEntity[];
-  paymentMethods: PaymentMethod[];
-  verificationStatus: "pending" | "verified" | "failed";
-  currentEarnings: number;
-  totalEarnings: number;
-  tasksCompleted: number;
-  activeTasks: number;
-}
-
-export interface ProductEntity {
-  name: string;
-  dimensions: {
-    widthInInches: number;
-    heightInInches: number;
-    lengthInInches: number;
-  };
-  weightInLbs: number;
-  quantity: number;
-}
-
-export type VehicleType = "SEDAN" | "SUV" | "VAN" | "TRUCK" | "FREIGHT";
-export interface RequiredVehicleEntity {
-  type: VehicleType;
-  quantity: number;
-}
-
-export interface NotificationEntity {
-  id: string;
-  type: "order" | "system";
-  message: string;
-  read: boolean;
-  targetType: "customer" | "driver";
-  targetId: string;
-  createdAt: string;
-  updatedAt: string;
-}
+export const notificationEntity = type({
+  id: "string",
+  type: "'order' | 'system'",
+  message: "string",
+  read: "boolean",
+  targetType: "'customer' | 'driver'",
+  targetId: "string",
+  createdAt: "string",
+  updatedAt: "string",
+});
+export type NotificationEntity = typeof notificationEntity.infer;
 
 export enum OrderStatus {
   PENDING_PAYMENT = "pending-payment",
@@ -103,7 +83,6 @@ export enum OrderPriority {
 }
 
 export enum OrderEntityFields {
-  id = "id",
   clientName = "clientName",
   clientId = "clientId",
   pickupLocation = "pickupLocation",
@@ -117,35 +96,31 @@ export enum OrderEntityFields {
   driverId = "driverId",
   createdAt = "createdAt",
   updatedAt = "updatedAt",
-}
-export interface LocationEntity {
-  address: string;
-  latitude: number;
-  longitude: number;
+  payment = "payment",
 }
 
-export interface OrderEntity {
-  [OrderEntityFields.id]: string;
-  [OrderEntityFields.clientName]: string;
-  [OrderEntityFields.clientId]: string;
-  [OrderEntityFields.pickupLocation]: LocationEntity;
-  [OrderEntityFields.deliveryLocation]: LocationEntity;
-  [OrderEntityFields.requiredVehicles]: RequiredVehicleEntity[];
-  [OrderEntityFields.price]: number;
-  [OrderEntityFields.products]: ProductEntity[];
-  [OrderEntityFields.priority]: OrderPriority;
-  [OrderEntityFields.status]: OrderStatus;
-  [OrderEntityFields.driverStatus]: DriverOrderStatus;
-  [OrderEntityFields.driverId]?: string | null;
-  [OrderEntityFields.createdAt]: string;
-  [OrderEntityFields.updatedAt]?: string;
-  payment?: {
-    paymentIntentId: string;
-    [key:string]: string;
-  };
-}
+export const orderEntity = type({
+  [OrderEntityFields.clientName]: "string",
+  [OrderEntityFields.clientId]: "string",
+  [OrderEntityFields.pickupLocation]: locationType,
+  [OrderEntityFields.deliveryLocation]: locationType,
+  [OrderEntityFields.requiredVehicles]: requiredVehicleEntity.array(),
+  [OrderEntityFields.price]: "number",
+  [OrderEntityFields.products]: productWithQuantityType.array(),
+  [OrderEntityFields.priority]: type.valueOf(OrderPriority),
+  [OrderEntityFields.status]: type.valueOf(OrderStatus),
+  [OrderEntityFields.driverStatus]: type.valueOf(DriverOrderStatus),
+  [OrderEntityFields.driverId]: type("string | null").optional(),
+  [OrderEntityFields.createdAt]: type("string | null").optional(),
+  [OrderEntityFields.updatedAt]: type("string | null").optional(),
+  [OrderEntityFields.payment]: type({
+    paymentIntentId: "string",
+    "[string]": "unknown",
+  }).optional(),
+});
+export type OrderEntity = typeof orderEntity.infer;
 
-export const ORDER_EXAMPLES: OrderEntity[] = [
+export const ORDER_EXAMPLES: (OrderEntity & { id: string })[] = [
   {
     id: "ORD-2023-001",
     clientName: "John Smith",

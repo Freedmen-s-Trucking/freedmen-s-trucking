@@ -2,12 +2,19 @@
   "folders": [
     {
       "path": "backends/functions",
+      "name": "functions",
     },
     {
       "path": "webapp/",
+      "name": "webapp",
+    },
+    {
+      "path": "common/types",
+      "name": "common-types",
     },
     {
       "path": ".",
+      "name": "root",
     },
   ],
   "settings": {

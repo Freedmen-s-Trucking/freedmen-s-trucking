@@ -1,11 +1,11 @@
 import { Popover } from "flowbite-react";
-import { useGeocoding, OSMSearchResult } from "../../hooks/use-geocoding";
+import { useGeocoding, CustomOSMSearchResult } from "../../hooks/use-geocoding";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export type OnAddressChangedParams = {
-  possibleValues: OSMSearchResult[];
+  possibleValues: CustomOSMSearchResult[];
   query: string;
-  address: OSMSearchResult | null;
+  address: CustomOSMSearchResult | null;
 };
 
 export type AddressSearchInputProps = {
@@ -20,11 +20,11 @@ export const AddressSearchInput: React.FC<AddressSearchInputProps> = ({
   ...inputProps
 }) => {
   const { searchPlaceOSM, data, query, isFetching } = useGeocoding();
-  const [dataCached, setDataCached] = useState<OSMSearchResult[]>([]);
+  const [dataCached, setDataCached] = useState<CustomOSMSearchResult[]>([]);
   const [searchOptionsOpen, setSearchOptionOpen] = useState(false);
   const [addressInfo, setAddressInfo] = useState<{
     query: string;
-    address: OSMSearchResult | null;
+    address: CustomOSMSearchResult | null;
   } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -35,7 +35,7 @@ export const AddressSearchInput: React.FC<AddressSearchInputProps> = ({
   }, [isFetching, data]);
 
   const onItemClick = useCallback(
-    (address: OSMSearchResult | null) => {
+    (address: CustomOSMSearchResult | null) => {
       onAddressChanged({
         query: query,
         address,
@@ -98,16 +98,15 @@ export const AddressSearchInput: React.FC<AddressSearchInputProps> = ({
                 </div>
               )}
               {dataCached.map((item) => (
-                <>
+                <span key={item.place_id}>
                   <hr className="border-gray-300" />
                   <button
                     onClick={() => onItemClick(item)}
-                    key={item.place_id}
                     className="w-full cursor-pointer px-4 py-2 text-sm hover:bg-gray-100"
                   >
                     {item.display_name}
                   </button>
-                </>
+                </span>
               ))}
             </div>
           }

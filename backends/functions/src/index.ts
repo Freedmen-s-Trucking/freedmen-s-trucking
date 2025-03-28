@@ -1,3 +1,4 @@
-import 'source-map-support/register';
-import 'dotenv/config'
-export { httpServer } from './http-server'
+import "source-map-support/register.js";
+import "dotenv/config";
+import "./config.js";
+export { httpServer } from "./http-server.js";

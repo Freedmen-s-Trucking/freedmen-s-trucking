@@ -24,7 +24,6 @@ import { useDbOperations } from "@/hooks/use-firestore";
 import { setUser } from "@/stores/controllers/auth-ctrl";
 import {
   DriverOrderStatus,
-  OrderEntityFields,
   RequiredVehicleEntity,
   OrderStatus,
 } from "@freedman-trucking/types";
@@ -115,8 +114,7 @@ const CustomerDashboard = () => {
   };
 
   const hasUpdatedOrders = activeOrders.some(
-    (order) =>
-      order.data[OrderEntityFields.status] === OrderStatus.ASSIGNED_TO_DRIVER,
+    (order) => order.data.status === OrderStatus.ASSIGNED_TO_DRIVER,
   );
 
   const { data: customerProfileUrl } = useQuery({
@@ -266,8 +264,7 @@ const CustomerDashboard = () => {
               <Card
                 key={order.path}
                 className={
-                  order.data[OrderEntityFields.driverStatus] ===
-                  DriverOrderStatus.WAITING
+                  order.data.driverStatus === DriverOrderStatus.WAITING
                     ? "border-l-4 border-blue-500"
                     : ""
                 }
@@ -278,22 +275,19 @@ const CustomerDashboard = () => {
                       Order {order.path.split("/").pop()}
                     </h5>
                     <p className="text-sm text-gray-500">
-                      Created:{" "}
-                      {formatDate(order.data[OrderEntityFields.createdAt])}
+                      Created: {formatDate(order.data.createdAt || "")}
                     </p>
                   </div>
                   <div className="flex flex-col items-end">
                     <div className="mb-2">
-                      {getStatusBadge(order.data[OrderEntityFields.status])}
+                      {getStatusBadge(order.data.status)}
                     </div>
                     <p className="text-lg font-bold text-gray-900">
-                      ${order.data[OrderEntityFields.price].toFixed(2)}
+                      ${order.data.price.toFixed(2)}
                     </p>
                     <p className="text-sm text-gray-600">
                       <DisplayRequiredVehicles
-                        vehicles={
-                          order.data[OrderEntityFields.requiredVehicles] || []
-                        }
+                        vehicles={order.data.requiredVehicles || []}
                       />
                     </p>
                   </div>
@@ -303,13 +297,13 @@ const CustomerDashboard = () => {
                   <div>
                     <p className="text-sm font-semibold">Pickup Location:</p>
                     <p className="text-sm text-gray-700">
-                      {order.data[OrderEntityFields.pickupLocation].address}
+                      {order.data.pickupLocation.address}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm font-semibold">Dropoff Location:</p>
                     <p className="text-sm text-gray-700">
-                      {order.data[OrderEntityFields.deliveryLocation].address}
+                      {order.data.deliveryLocation.address}
                     </p>
                   </div>
                 </div>
@@ -382,21 +376,19 @@ const CustomerDashboard = () => {
                       Order {order.path.split("/").pop()}
                     </h5>
                     <p className="text-sm text-gray-500">
-                      {formatDate(order.data[OrderEntityFields.createdAt])}
+                      {formatDate(order.data.createdAt || "")}
                     </p>
                   </div>
                   <div className="flex flex-col items-end">
                     <div className="mb-2">
-                      {getStatusBadge(order.data[OrderEntityFields.status])}
+                      {getStatusBadge(order.data.status)}
                     </div>
                     <p className="text-lg font-bold text-gray-900">
-                      ${order.data[OrderEntityFields.price].toFixed(2)}
+                      ${order.data.price.toFixed(2)}
                     </p>
                     <p className="text-sm text-gray-600">
                       <DisplayRequiredVehicles
-                        vehicles={
-                          order.data[OrderEntityFields.requiredVehicles]
-                        }
+                        vehicles={order.data.requiredVehicles}
                       />
                     </p>
                   </div>
@@ -406,13 +398,13 @@ const CustomerDashboard = () => {
                   <div>
                     <p className="text-sm font-semibold">Pickup Location:</p>
                     <p className="text-sm text-gray-700">
-                      {order.data[OrderEntityFields.pickupLocation].address}
+                      {order.data.pickupLocation.address}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm font-semibold">Dropoff Location:</p>
                     <p className="text-sm text-gray-700">
-                      {order.data[OrderEntityFields.deliveryLocation].address}
+                      {order.data.deliveryLocation.address}
                     </p>
                   </div>
                 </div>
