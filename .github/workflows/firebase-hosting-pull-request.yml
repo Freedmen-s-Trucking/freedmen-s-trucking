@@ -20,6 +20,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
       - run: bun i && bun run build
+        env:
+          VITE_STRIPE_CLIENT_SECRET: ${{ secrets.STRIPE_CLIENT_SECRET_DEV }}
+          VITE_FIREBASE_CONFIG_JSON: ${{ secrets.FIREBASE_CONFIG_JSON_DEV }}
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
