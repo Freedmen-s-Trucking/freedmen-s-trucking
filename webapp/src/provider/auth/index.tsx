@@ -97,7 +97,7 @@ export const AuthProvider: React.FC<{
           isEmailVerified: user.emailVerified,
           authMethods: user.providerData.map((provider) => ({
             provider: provider.providerId,
-            providerRowData: provider,
+            providerRowData: { ...provider },
           })),
           createdAt: user.metadata.creationTime || null,
           updatedAt: user.metadata.creationTime || null,

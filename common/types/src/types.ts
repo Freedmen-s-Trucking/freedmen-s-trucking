@@ -20,9 +20,9 @@ export type PaymentMethod = typeof paymentMethodType.infer;
 
 export const authMethodType = type({
   provider: "string",
-  providerRowData: {
+  providerRowData: type({
     "[string]": "unknown",
-  },
+  }),
 });
 export type AuthMethod = typeof authMethodType.infer;
 

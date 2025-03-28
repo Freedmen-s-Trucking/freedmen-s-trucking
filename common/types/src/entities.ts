@@ -23,7 +23,7 @@ export const userEntity = type({
   email: "string | null",
   phoneNumber: "string | null",
   photoURL: "string | null",
-  uploadedProfileStoragePath: "string | null",
+  uploadedProfileStoragePath: type("string | null").optional(),
   isEmailVerified: "boolean",
   isPhoneNumberVerified: "boolean",
   authMethods: authMethodType.array(),
