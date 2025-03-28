@@ -63,3 +63,6 @@ export const vehicleInfoType = type({
   maxWeightInLbs: "number",
 });
 export type VehicleInfo = typeof vehicleInfoType.infer;
+
+export const verificationStatus = type("'pending' | 'verified' | 'failed'");
+export type VerificationStatus = typeof verificationStatus.infer;
