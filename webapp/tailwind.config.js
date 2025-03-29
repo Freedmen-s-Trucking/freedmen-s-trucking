@@ -1,15 +1,13 @@
-import flowbite from "flowbite-react/plugin/tailwindcss";
-import flowbiteReact from "flowbite-react/plugin/tailwindcss";
+import flowbite from "flowbite-react/tailwind";
 
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-    ".flowbite-react/class-list.json",
-  ],
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}", flowbite.content()],
   theme: {
     extend: {
+      screens: {
+        xs: "380px",
+      },
       colors: {
         // Override primary colors
         primary: {
@@ -27,5 +25,5 @@ export default {
       },
     },
   },
-  plugins: [flowbite, flowbiteReact],
+  plugins: [flowbite.plugin()],
 };
