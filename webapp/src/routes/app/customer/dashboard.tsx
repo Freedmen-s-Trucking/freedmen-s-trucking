@@ -226,7 +226,7 @@ const CustomerDashboard = () => {
 
       {/* Tabs */}
       <Tabs
-        style="underline"
+        variant="underline"
         onActiveTabChange={(tab) => setActiveTab(tabs[tab])}
         className="focus:[&>button]:outline-none focus:[&>button]:ring-0"
       >
