@@ -1,14 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import home2Logo from "../assets/images/home-2.webp";
-import FAQ from "../components/molecules/faq";
-import home2LogoBlured from "../assets/images/home-2-blur.webp";
-import AppFooter from "../components/organisms/footer";
-import Hero from "../components/molecules/hero";
-import contactHeroImg from "../assets/images/contact-us-hero.webp";
-import contactHeroImgBlured from "../assets/images/contact-us-hero-blur.webp";
-import { AppImageBackground } from "../components/atoms/image-background";
+import home2Logo from "@/assets/images/home-2.webp";
+import FAQ from "@/components/molecules/faq";
+import home2LogoBlured from "@/assets/images/home-2-blur.webp";
+import AppFooter from "@/components/organisms/footer";
+import Hero from "@/components/molecules/hero";
+import contactHeroImg from "@/assets/images/contact-us-hero.webp";
+import contactHeroImgBlured from "@/assets/images/contact-us-hero-blur.webp";
+import { AppImageBackground } from "@/components/atoms/image-background";
 
-export const Route = createFileRoute("/contact")({
+export const Route = createFileRoute("/preview/contact")({
   component: RouteComponent,
 });
 
@@ -23,7 +23,7 @@ function RouteComponent() {
       value: "hello@domain.com", // TODO: update mail.
     },
     {
-      label: "Adress",
+      label: "Address",
       value: "Your address goes here", // TODO: FIXIT.
     },
   ];

@@ -606,7 +606,7 @@ const Confirm: React.FC<{ accountType: "client" | "driver" }> = ({
       title: "Schedule Delivery",
       description: "Schedule your first delivery",
       Icon: (props: Record<string, unknown>) => <TbTruckDelivery {...props} />,
-      link: "/schedule-delivery",
+      link: "/preview/schedule-delivery",
     },
     {
       title: "Go to Dashboard",

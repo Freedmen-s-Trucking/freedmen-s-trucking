@@ -219,11 +219,9 @@ const AppNavbar: React.FC = () => {
         className="bg-white md:bg-transparent"
       >
         {PAGE_ROUTES.map((item, index) => (
-          // <Navbar.Link key={index} className="m-0 space-x-0">
           <Link
             key={index}
             to={item.href}
-            // className={`md:mx-0 lg:mx-3 ${
             className={`lg:mx-3 ${
               router.location.pathname === item.href
                 ? activeClasses
@@ -232,7 +230,6 @@ const AppNavbar: React.FC = () => {
           >
             {item.name}
           </Link>
-          // </Navbar.Link>
         ))}
       </Navbar.Collapse>
     </Navbar>

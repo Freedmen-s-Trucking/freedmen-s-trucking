@@ -11,50 +11,57 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as TrackingImport } from './routes/tracking'
-import { Route as ServicesImport } from './routes/services'
-import { Route as ScheduleDeliveryImport } from './routes/schedule-delivery'
-import { Route as ContactImport } from './routes/contact'
-import { Route as AboutImport } from './routes/about'
 import { Route as IndexImport } from './routes/index'
+import { Route as PreviewIndexImport } from './routes/preview/index'
+import { Route as PreviewTrackingImport } from './routes/preview/tracking'
+import { Route as PreviewServicesImport } from './routes/preview/services'
+import { Route as PreviewScheduleDeliveryImport } from './routes/preview/schedule-delivery'
+import { Route as PreviewContactImport } from './routes/preview/contact'
+import { Route as PreviewAboutImport } from './routes/preview/about'
 import { Route as AppDriverDashboardImport } from './routes/app/driver/dashboard'
 import { Route as AppCustomerDashboardImport } from './routes/app/customer/dashboard'
 
 // Create/Update Routes
 
-const TrackingRoute = TrackingImport.update({
-  id: '/tracking',
-  path: '/tracking',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const ServicesRoute = ServicesImport.update({
-  id: '/services',
-  path: '/services',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const ScheduleDeliveryRoute = ScheduleDeliveryImport.update({
-  id: '/schedule-delivery',
-  path: '/schedule-delivery',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const ContactRoute = ContactImport.update({
-  id: '/contact',
-  path: '/contact',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const AboutRoute = AboutImport.update({
-  id: '/about',
-  path: '/about',
-  getParentRoute: () => rootRoute,
-} as any)
-
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const PreviewIndexRoute = PreviewIndexImport.update({
+  id: '/preview/',
+  path: '/preview/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const PreviewTrackingRoute = PreviewTrackingImport.update({
+  id: '/preview/tracking',
+  path: '/preview/tracking',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const PreviewServicesRoute = PreviewServicesImport.update({
+  id: '/preview/services',
+  path: '/preview/services',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const PreviewScheduleDeliveryRoute = PreviewScheduleDeliveryImport.update({
+  id: '/preview/schedule-delivery',
+  path: '/preview/schedule-delivery',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const PreviewContactRoute = PreviewContactImport.update({
+  id: '/preview/contact',
+  path: '/preview/contact',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const PreviewAboutRoute = PreviewAboutImport.update({
+  id: '/preview/about',
+  path: '/preview/about',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -81,39 +88,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
-    '/about': {
-      id: '/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AboutImport
+    '/preview/about': {
+      id: '/preview/about'
+      path: '/preview/about'
+      fullPath: '/preview/about'
+      preLoaderRoute: typeof PreviewAboutImport
       parentRoute: typeof rootRoute
     }
-    '/contact': {
-      id: '/contact'
-      path: '/contact'
-      fullPath: '/contact'
-      preLoaderRoute: typeof ContactImport
+    '/preview/contact': {
+      id: '/preview/contact'
+      path: '/preview/contact'
+      fullPath: '/preview/contact'
+      preLoaderRoute: typeof PreviewContactImport
       parentRoute: typeof rootRoute
     }
-    '/schedule-delivery': {
-      id: '/schedule-delivery'
-      path: '/schedule-delivery'
-      fullPath: '/schedule-delivery'
-      preLoaderRoute: typeof ScheduleDeliveryImport
+    '/preview/schedule-delivery': {
+      id: '/preview/schedule-delivery'
+      path: '/preview/schedule-delivery'
+      fullPath: '/preview/schedule-delivery'
+      preLoaderRoute: typeof PreviewScheduleDeliveryImport
       parentRoute: typeof rootRoute
     }
-    '/services': {
-      id: '/services'
-      path: '/services'
-      fullPath: '/services'
-      preLoaderRoute: typeof ServicesImport
+    '/preview/services': {
+      id: '/preview/services'
+      path: '/preview/services'
+      fullPath: '/preview/services'
+      preLoaderRoute: typeof PreviewServicesImport
       parentRoute: typeof rootRoute
     }
-    '/tracking': {
-      id: '/tracking'
-      path: '/tracking'
-      fullPath: '/tracking'
-      preLoaderRoute: typeof TrackingImport
+    '/preview/tracking': {
+      id: '/preview/tracking'
+      path: '/preview/tracking'
+      fullPath: '/preview/tracking'
+      preLoaderRoute: typeof PreviewTrackingImport
+      parentRoute: typeof rootRoute
+    }
+    '/preview/': {
+      id: '/preview/'
+      path: '/preview'
+      fullPath: '/preview'
+      preLoaderRoute: typeof PreviewIndexImport
       parentRoute: typeof rootRoute
     }
     '/app/customer/dashboard': {
@@ -137,22 +151,24 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/contact': typeof ContactRoute
-  '/schedule-delivery': typeof ScheduleDeliveryRoute
-  '/services': typeof ServicesRoute
-  '/tracking': typeof TrackingRoute
+  '/preview/about': typeof PreviewAboutRoute
+  '/preview/contact': typeof PreviewContactRoute
+  '/preview/schedule-delivery': typeof PreviewScheduleDeliveryRoute
+  '/preview/services': typeof PreviewServicesRoute
+  '/preview/tracking': typeof PreviewTrackingRoute
+  '/preview': typeof PreviewIndexRoute
   '/app/customer/dashboard': typeof AppCustomerDashboardRoute
   '/app/driver/dashboard': typeof AppDriverDashboardRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/contact': typeof ContactRoute
-  '/schedule-delivery': typeof ScheduleDeliveryRoute
-  '/services': typeof ServicesRoute
-  '/tracking': typeof TrackingRoute
+  '/preview/about': typeof PreviewAboutRoute
+  '/preview/contact': typeof PreviewContactRoute
+  '/preview/schedule-delivery': typeof PreviewScheduleDeliveryRoute
+  '/preview/services': typeof PreviewServicesRoute
+  '/preview/tracking': typeof PreviewTrackingRoute
+  '/preview': typeof PreviewIndexRoute
   '/app/customer/dashboard': typeof AppCustomerDashboardRoute
   '/app/driver/dashboard': typeof AppDriverDashboardRoute
 }
@@ -160,11 +176,12 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/contact': typeof ContactRoute
-  '/schedule-delivery': typeof ScheduleDeliveryRoute
-  '/services': typeof ServicesRoute
-  '/tracking': typeof TrackingRoute
+  '/preview/about': typeof PreviewAboutRoute
+  '/preview/contact': typeof PreviewContactRoute
+  '/preview/schedule-delivery': typeof PreviewScheduleDeliveryRoute
+  '/preview/services': typeof PreviewServicesRoute
+  '/preview/tracking': typeof PreviewTrackingRoute
+  '/preview/': typeof PreviewIndexRoute
   '/app/customer/dashboard': typeof AppCustomerDashboardRoute
   '/app/driver/dashboard': typeof AppDriverDashboardRoute
 }
@@ -173,31 +190,34 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/about'
-    | '/contact'
-    | '/schedule-delivery'
-    | '/services'
-    | '/tracking'
+    | '/preview/about'
+    | '/preview/contact'
+    | '/preview/schedule-delivery'
+    | '/preview/services'
+    | '/preview/tracking'
+    | '/preview'
     | '/app/customer/dashboard'
     | '/app/driver/dashboard'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/about'
-    | '/contact'
-    | '/schedule-delivery'
-    | '/services'
-    | '/tracking'
+    | '/preview/about'
+    | '/preview/contact'
+    | '/preview/schedule-delivery'
+    | '/preview/services'
+    | '/preview/tracking'
+    | '/preview'
     | '/app/customer/dashboard'
     | '/app/driver/dashboard'
   id:
     | '__root__'
     | '/'
-    | '/about'
-    | '/contact'
-    | '/schedule-delivery'
-    | '/services'
-    | '/tracking'
+    | '/preview/about'
+    | '/preview/contact'
+    | '/preview/schedule-delivery'
+    | '/preview/services'
+    | '/preview/tracking'
+    | '/preview/'
     | '/app/customer/dashboard'
     | '/app/driver/dashboard'
   fileRoutesById: FileRoutesById
@@ -205,22 +225,24 @@ export interface FileRouteTypes {
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AboutRoute: typeof AboutRoute
-  ContactRoute: typeof ContactRoute
-  ScheduleDeliveryRoute: typeof ScheduleDeliveryRoute
-  ServicesRoute: typeof ServicesRoute
-  TrackingRoute: typeof TrackingRoute
+  PreviewAboutRoute: typeof PreviewAboutRoute
+  PreviewContactRoute: typeof PreviewContactRoute
+  PreviewScheduleDeliveryRoute: typeof PreviewScheduleDeliveryRoute
+  PreviewServicesRoute: typeof PreviewServicesRoute
+  PreviewTrackingRoute: typeof PreviewTrackingRoute
+  PreviewIndexRoute: typeof PreviewIndexRoute
   AppCustomerDashboardRoute: typeof AppCustomerDashboardRoute
   AppDriverDashboardRoute: typeof AppDriverDashboardRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AboutRoute: AboutRoute,
-  ContactRoute: ContactRoute,
-  ScheduleDeliveryRoute: ScheduleDeliveryRoute,
-  ServicesRoute: ServicesRoute,
-  TrackingRoute: TrackingRoute,
+  PreviewAboutRoute: PreviewAboutRoute,
+  PreviewContactRoute: PreviewContactRoute,
+  PreviewScheduleDeliveryRoute: PreviewScheduleDeliveryRoute,
+  PreviewServicesRoute: PreviewServicesRoute,
+  PreviewTrackingRoute: PreviewTrackingRoute,
+  PreviewIndexRoute: PreviewIndexRoute,
   AppCustomerDashboardRoute: AppCustomerDashboardRoute,
   AppDriverDashboardRoute: AppDriverDashboardRoute,
 }
@@ -236,11 +258,12 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/about",
-        "/contact",
-        "/schedule-delivery",
-        "/services",
-        "/tracking",
+        "/preview/about",
+        "/preview/contact",
+        "/preview/schedule-delivery",
+        "/preview/services",
+        "/preview/tracking",
+        "/preview/",
         "/app/customer/dashboard",
         "/app/driver/dashboard"
       ]
@@ -248,20 +271,23 @@ export const routeTree = rootRoute
     "/": {
       "filePath": "index.tsx"
     },
-    "/about": {
-      "filePath": "about.tsx"
+    "/preview/about": {
+      "filePath": "preview/about.tsx"
     },
-    "/contact": {
-      "filePath": "contact.tsx"
+    "/preview/contact": {
+      "filePath": "preview/contact.tsx"
     },
-    "/schedule-delivery": {
-      "filePath": "schedule-delivery.tsx"
+    "/preview/schedule-delivery": {
+      "filePath": "preview/schedule-delivery.tsx"
     },
-    "/services": {
-      "filePath": "services.tsx"
+    "/preview/services": {
+      "filePath": "preview/services.tsx"
     },
-    "/tracking": {
-      "filePath": "tracking.tsx"
+    "/preview/tracking": {
+      "filePath": "preview/tracking.tsx"
+    },
+    "/preview/": {
+      "filePath": "preview/index.tsx"
     },
     "/app/customer/dashboard": {
       "filePath": "app/customer/dashboard.tsx"

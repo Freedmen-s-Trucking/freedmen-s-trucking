@@ -1,14 +1,4 @@
 import { createFileRoute, Link, useRouterState } from "@tanstack/react-router";
-import home2LogoBlured from "../assets/images/home-2-blur.webp";
-import home2Logo from "../assets/images/home-2.webp";
-import aboutUsTruck from "../assets/images/about-us-truck-1.webp";
-import ourServicesHeroImg from "../assets/images/our-services-hero.webp";
-import ourServicesHeroImgBlured from "../assets/images/our-services-hero-blur.webp";
-import Hero from "../components/molecules/hero";
-import FAQ from "../components/molecules/faq";
-import AppFooter from "../components/organisms/footer";
-import { AppImage } from "../components/atoms/image";
-import { SPECIALTIES_DATA } from "../utils/constants";
 import {
   Accordion,
   AccordionContent,
@@ -16,7 +6,17 @@ import {
   AccordionTitle,
   Flowbite,
 } from "flowbite-react";
-import { AppImageBackground } from "../components/atoms/image-background";
+import home2LogoBlured from "@/assets/images/home-2-blur.webp";
+import home2Logo from "@/assets/images/home-2.webp";
+import aboutUsTruck from "@/assets/images/about-us-truck-1.webp";
+import ourServicesHeroImg from "@/assets/images/our-services-hero.webp";
+import ourServicesHeroImgBlured from "@/assets/images/our-services-hero-blur.webp";
+import Hero from "@/components/molecules/hero";
+import FAQ from "@/components/molecules/faq";
+import AppFooter from "@/components/organisms/footer";
+import { AppImage } from "@/components/atoms/image";
+import { SPECIALTIES_DATA } from "@/utils/constants";
+import { AppImageBackground } from "@/components/atoms/image-background";
 
 const ACCORDION_THEME = {
   theme: {
@@ -43,7 +43,7 @@ const ACCORDION_THEME = {
     },
   },
 };
-export const Route = createFileRoute("/services")({
+export const Route = createFileRoute("/preview/services")({
   component: RouteComponent,
 });
 
@@ -64,7 +64,7 @@ const BoxTruckSection: React.FC = () => {
         <div className="columns-3 md:columns-2">
           {SPECIALTIES_DATA.map((specialty, index) => (
             <Link
-              to="/services"
+              to="/preview/services"
               disabled={isActive(specialty.sku)}
               search={(prev: Record<string, unknown>) => ({
                 ...prev,
@@ -115,7 +115,7 @@ const BoxTruckSection: React.FC = () => {
             </p>
             <div className="flex sm:gap-5 md:order-2">
               <Link
-                to={"/schedule-delivery"}
+                to={"/preview/schedule-delivery"}
                 type="button"
                 className="focus:outline-hidden inline-flex items-center gap-x-2 rounded-3xl border border-white px-4 py-3 text-sm font-medium text-white hover:border-red-400 hover:text-red-400 focus:border-red-400 focus:text-red-400 disabled:pointer-events-none disabled:opacity-50 "
               >
