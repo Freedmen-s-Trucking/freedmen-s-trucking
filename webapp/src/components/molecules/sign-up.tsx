@@ -15,7 +15,7 @@ import { TbLayoutDashboard, TbTruckDelivery } from "react-icons/tb";
 import { MdOutlinePostAdd } from "react-icons/md";
 import { useDbOperations } from "../../hooks/use-firestore";
 import { useStorageOperations } from "../../hooks/use-storage";
-import { DriverEntity } from "@freedman-trucking/types";
+import { AccountType, DriverEntity } from "@freedman-trucking/types";
 import { useAppDispatch } from "@/stores/hooks";
 import { setUser } from "@/stores/controllers/auth-ctrl";
 const PASSWORD_SECURITY_LEVELS = [
@@ -183,14 +183,16 @@ const SignUpUser: React.FC<{
             required
           />
         </div>
-        <div>
+        <div className="z-10">
           <div className="mb-2 block">
             <Label htmlFor="password1" value="Your password" />
           </div>
           <Popover
             trigger="hover"
+            className="absolute z-auto inline-block w-max max-w-[100vw] rounded-lg border border-gray-200 bg-white shadow-sm outline-none dark:border-gray-600 dark:bg-gray-800 [&>div>div:last-child]:relative"
+            initialOpen
             content={
-              <div className="space-y-2 p-3">
+              <div className="space-y-2 bg-primary-100 p-3">
                 {password.length < 8 && (
                   <h3 className="font-semibold text-red-500">
                     Must have at least 8 characters
@@ -272,7 +274,7 @@ const SignUpUser: React.FC<{
 };
 
 const AccountSelection: React.FC<{
-  onAccountSelected: (type: "client" | "driver") => void;
+  onAccountSelected: (type: AccountType) => void;
 }> = ({ onAccountSelected }) => {
   return (
     <div className="mx-auto max-w-md space-y-4">
@@ -283,7 +285,7 @@ const AccountSelection: React.FC<{
         <button
           type="button"
           className="flex flex-1 flex-col items-center space-x-3 rounded-lg border border-red-400/90 px-4 py-2 font-bold text-red-400/90 hover:bg-red-400 hover:text-white"
-          onClick={() => onAccountSelected("client")}
+          onClick={() => onAccountSelected("customer")}
         >
           <FaHouseUser className="text-7xl" />
           {/* TODO: Update this text. */}
@@ -598,9 +600,7 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
   );
 };
 
-const Confirm: React.FC<{ accountType: "client" | "driver" }> = ({
-  accountType,
-}) => {
+const Confirm: React.FC<{ accountType: AccountType }> = ({ accountType }) => {
   const clientNextSteps = [
     {
       title: "Schedule Delivery",
@@ -634,7 +634,7 @@ const Confirm: React.FC<{ accountType: "client" | "driver" }> = ({
       <br />
       <h3 className="text-sm text-gray-700">Now what next?</h3>
       <ol className="shadow-xs mb-8 flex w-full items-center space-x-3 overflow-hidden rounded-lg text-center text-sm font-medium">
-        {(accountType === "client" ? clientNextSteps : driverNextSteps).map(
+        {(accountType === "customer" ? clientNextSteps : driverNextSteps).map(
           (step) => (
             <li
               key={step.title}
@@ -655,16 +655,18 @@ const Confirm: React.FC<{ accountType: "client" | "driver" }> = ({
   );
 };
 
-const SignUp: React.FC = () => {
+const SignUp: React.FC<{ account?: AccountType }> = ({ account }) => {
   const steps = ["Account Type", "User Info", "Additional Info", "Confirm"];
-  const [activeStep, setActiveStep] = useState(0);
-  const [accountType, setAccountType] = useState<"client" | "driver">("driver");
+  const [activeStep, setActiveStep] = useState(account ? 1 : 0);
+  const [accountType, setAccountType] = useState<AccountType>(
+    account || "driver",
+  );
 
   const moveToNextStep = () => {
     setActiveStep((prev) => prev + 1);
   };
 
-  const onAccountSelected = (type: "client" | "driver") => {
+  const onAccountSelected = (type: AccountType) => {
     setAccountType(type);
     setActiveStep((prev) => prev + 1);
   };

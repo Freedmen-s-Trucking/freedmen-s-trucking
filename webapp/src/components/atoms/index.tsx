@@ -7,7 +7,7 @@ export const Heading1: React.FC<
   React.PropsWithChildren<{ className?: string }>
 > = ({ children, className = "" }) => (
   <h1
-    className={`mb-4 text-5xl font-bold text-[#553A26] sm:text-6xl ${className}`}
+    className={`mb-4 text-5xl font-bold text-primary-700 sm:text-6xl ${className}`}
   >
     {children}
   </h1>
@@ -16,7 +16,7 @@ export const Heading1: React.FC<
 export const Heading2: React.FC<
   React.PropsWithChildren<{ className?: string }>
 > = ({ children, className = "" }) => (
-  <h2 className={`mb-3 text-4xl font-bold text-[#553A26] ${className}`}>
+  <h2 className={`mb-3 text-4xl font-bold text-primary-700 ${className}`}>
     {children}
   </h2>
 );
@@ -24,7 +24,7 @@ export const Heading2: React.FC<
 export const Heading3: React.FC<
   React.PropsWithChildren<{ className?: string }>
 > = ({ children, className = "" }) => (
-  <h3 className={`mb-2 text-3xl font-bold text-[#553A26] ${className}`}>
+  <h3 className={`mb-2 text-3xl font-bold text-primary-700 ${className}`}>
     {children}
   </h3>
 );
@@ -32,13 +32,13 @@ export const Heading3: React.FC<
 export const Tagline: React.FC<
   React.PropsWithChildren<{ className?: string }>
 > = ({ children, className = "" }) => (
-  <p className={`mb-1 text-2xl text-[#553A26] ${className}`}>{children}</p>
+  <p className={`mb-1 text-2xl text-primary-700 ${className}`}>{children}</p>
 );
 
 export const BodyText: React.FC<
   React.PropsWithChildren<{ className?: string }>
 > = ({ children, className = "" }) => (
-  <p className={`leading-relaxed text-[#553A26] ${className} text-lg`}>
+  <p className={`leading-relaxed text-primary-700 ${className} text-lg`}>
     {children}
   </p>
 );
@@ -77,7 +77,7 @@ export const PrimaryButton: React.FC<
       disabled={isLoading}
       initial="initial"
       animate={isLoading ? "loading" : "initial"}
-      className={`flex h-[60px] flex-row items-center justify-center rounded-lg bg-[#553A26]  px-1 py-1 font-medium text-[#F2E7D8] transition-colors duration-300 hover:bg-[#3e2b1c] disabled:bg-[#3e2b1c] ${className}`}
+      className={`flex h-[60px] flex-row items-center justify-center rounded-lg bg-primary-700  px-1 py-1 font-medium text-primary-100 transition-colors duration-300 hover:bg-primary-800 disabled:bg-primary-800 ${className}`}
     >
       {isLoading ? (
         <motion.div
@@ -86,8 +86,8 @@ export const PrimaryButton: React.FC<
           className="flex w-full flex-row items-center justify-evenly gap-2"
           transition={{ type: "spring", stiffness: 100 }}
         >
-          <span className="inline-block h-7 w-7 animate-spin rounded-full border-4 border-[#F2E7D833] border-t-[#F2E7D8]" />
-          <span className="text-[#F2E7D8]">{loadingText}</span>
+          <span className="border-primary-100/33 inline-block h-7 w-7 animate-spin rounded-full border-4 border-t-primary-100" />
+          <span className="text-primary-100">{loadingText}</span>
         </motion.div>
       ) : (
         children
@@ -128,7 +128,7 @@ export const SecondaryButton: React.FC<
       disabled={isLoading}
       initial="initial"
       animate={isLoading ? "loading" : "initial"}
-      className={`flex h-[60px] flex-row items-center justify-center rounded-lg border-2 border-[#553A2699] bg-[#553A2611] bg-[#F2E7D8] px-1 py-1 font-medium text-[#553A26] transition-colors duration-300 hover:bg-[#553A2633] ${className}`}
+      className={`flex h-[60px] flex-row items-center justify-center rounded-lg border-2 border-primary-700/80 bg-primary-100 bg-primary-700/10 px-1 py-1 font-medium text-primary-700 transition-colors duration-300 hover:bg-primary-700/20 ${className}`}
     >
       {isLoading ? (
         <motion.div
@@ -137,8 +137,8 @@ export const SecondaryButton: React.FC<
           className="flex w-full flex-row items-center justify-evenly gap-2"
           transition={{ type: "spring", stiffness: 100 }}
         >
-          <span className="inline-block h-7 w-7 animate-spin rounded-full border-4 border-[#553A2633] border-t-[#553A26]" />
-          <span className="text-[#553A26]">{loadingText}</span>
+          <span className="border-primary-700/33 inline-block h-7 w-7 animate-spin rounded-full border-4 border-t-primary-700" />
+          <span className="text-primary-700">{loadingText}</span>
         </motion.div>
       ) : (
         children
@@ -165,8 +165,8 @@ export const FeatureCard: React.FC<
   }>
 > = ({ title, description, className = "" }) => (
   <div className={`p-6 text-center ${className}`}>
-    <h3 className={`mb-2 text-xl font-medium text-[#553A26]`}>{title}</h3>
-    <p className={`text-[#553A26]`}>{description}</p>
+    <h3 className={`mb-2 text-xl font-medium text-primary-700`}>{title}</h3>
+    <p className={`text-primary-700`}>{description}</p>
   </div>
 );
 

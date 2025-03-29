@@ -10,12 +10,117 @@ import {
   SecondaryButton,
   Container,
 } from "@/components/atoms";
+import { useAppDispatch } from "@/stores/hooks";
+import { setRequestedAuthAction } from "@/stores/controllers/app-ctrl";
 
 export const Route = createFileRoute("/")({
   component: Index,
 });
 
 function Index() {
+  const dispatch = useAppDispatch();
+  const requestSignIn = () =>
+    dispatch(
+      setRequestedAuthAction({ type: "signup", targetAccount: "driver" }),
+    );
+
+  // Staggered animation for container children
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+        delayChildren: 0.3,
+      },
+    },
+  };
+
+  // Animation for heading elements
+  const headingVariants = {
+    hidden: { opacity: 0, y: -20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.6, ease: "easeOut" },
+    },
+  };
+
+  // Animation for buttons and content cards
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5, ease: "easeOut" },
+    },
+  };
+
+  return (
+    <div className="relative h-screen w-screen overflow-hidden">
+      <BackgroundBalls />
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+      >
+        <Container className="flex h-screen w-screen flex-col items-center gap-1 px-4 transition-colors duration-300 sm:gap-3 sm:p-12 sm:px-8 md:gap-8 md:p-16 lg:gap-12">
+          <motion.div
+            className="xs:flex-[3] flex flex-[2] flex-col justify-end text-center md:px-12"
+            variants={containerVariants}
+          >
+            <motion.div variants={headingVariants}>
+              <Heading1 className="mb-2">
+                FREEDMEN'S <span className="inline-block">LAST MILE</span>
+              </Heading1>
+            </motion.div>
+            <motion.div variants={headingVariants}>
+              <Tagline className="mb-12">
+                Powered by AI. Built for Speed.
+              </Tagline>
+            </motion.div>
+          </motion.div>
+
+          <motion.div
+            className="xs:flex-row xs:flex-[4] xs:gap-2 flex max-w-lg flex-[3] flex-col gap-12 sm:gap-9"
+            variants={containerVariants}
+          >
+            <motion.div
+              className="xs:flex-1 w-full max-w-sm sm:flex-1"
+              variants={itemVariants}
+            >
+              <PrimaryButton
+                onClick={requestSignIn}
+                className="text-md w-full px-1 sm:text-xl"
+              >
+                Become a Driver
+              </PrimaryButton>
+              <BodyText className="mt-4 text-center text-sm sm:text-lg">
+                Start earning with your own schedule. Simple setup, instant
+                payouts, full flexibility.
+              </BodyText>
+            </motion.div>
+
+            <motion.div
+              className="xs:flex-1 w-full max-w-sm sm:flex-1"
+              variants={itemVariants}
+            >
+              <SecondaryButton className="text-md w-full px-1 sm:text-xl">
+                Place a Delivery
+              </SecondaryButton>
+              <BodyText className="mt-4 text-center text-sm sm:text-lg">
+                Fast, reliable, professional logistics. Trusted by businesses
+                and individuals across the country.
+              </BodyText>
+            </motion.div>
+          </motion.div>
+        </Container>
+      </motion.div>
+    </div>
+  );
+}
+
+function BackgroundBalls() {
   const [dots, setDots] = useState<
     {
       id: number;
@@ -153,40 +258,9 @@ function Index() {
       }
     };
   }, []);
-  // Staggered animation for container children
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-        delayChildren: 0.3,
-      },
-    },
-  };
-
-  // Animation for heading elements
-  const headingVariants = {
-    hidden: { opacity: 0, y: -20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.6, ease: "easeOut" },
-    },
-  };
-
-  // Animation for buttons and content cards
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.5, ease: "easeOut" },
-    },
-  };
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden">
+    <>
       {/* Animated background dots with physics */}
       {dots.map((dot) => (
         <motion.div
@@ -212,60 +286,6 @@ function Index() {
           }}
         />
       ))}
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-      >
-        <Container className="flex h-screen w-screen flex-col items-center gap-1 px-4 transition-colors duration-300 sm:gap-3 sm:p-12 sm:px-8 md:gap-8 md:p-16 lg:gap-12">
-          <motion.div
-            className="xs:flex-[3] flex flex-[2] flex-col justify-end text-center md:px-12"
-            variants={containerVariants}
-          >
-            <motion.div variants={headingVariants}>
-              <Heading1 className="mb-2">
-                FREEDMEN'S <span className="inline-block">LAST MILE</span>
-              </Heading1>
-            </motion.div>
-            <motion.div variants={headingVariants}>
-              <Tagline className="mb-12">
-                Powered by AI. Built for Speed.
-              </Tagline>
-            </motion.div>
-          </motion.div>
-
-          <motion.div
-            className="xs:flex-row xs:flex-[4] xs:gap-2 flex max-w-lg flex-[3] flex-col gap-12 sm:gap-9"
-            variants={containerVariants}
-          >
-            <motion.div
-              className="xs:flex-1 w-full max-w-sm sm:flex-1"
-              variants={itemVariants}
-            >
-              <PrimaryButton className="text-md w-full px-1 sm:text-xl">
-                Become a Driver
-              </PrimaryButton>
-              <BodyText className="mt-4 text-center text-sm sm:text-lg">
-                Start earning with your own schedule. Simple setup, instant
-                payouts, full flexibility.
-              </BodyText>
-            </motion.div>
-
-            <motion.div
-              className="xs:flex-1 w-full max-w-sm sm:flex-1"
-              variants={itemVariants}
-            >
-              <SecondaryButton className="text-md w-full px-1 sm:text-xl">
-                Place a Delivery
-              </SecondaryButton>
-              <BodyText className="mt-4 text-center text-sm sm:text-lg">
-                Fast, reliable, professional logistics. Trusted by businesses
-                and individuals across the country.
-              </BodyText>
-            </motion.div>
-          </motion.div>
-        </Container>
-      </motion.div>
-    </div>
+    </>
   );
 }

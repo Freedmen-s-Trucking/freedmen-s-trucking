@@ -11,19 +11,18 @@ export const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const { user } = useAuth();
   const { requestedAuthAction } = useAppSelector((state) => state.appCtrl);
-  const [authAction, setAuthAction] = useState<"login" | "signup" | null>(
-    requestedAuthAction,
+  const [authAction, setAuthAction] = useState(
+    requestedAuthAction?.type || null,
   );
-  const onCloseModal = () => setAuthAction(null);
+  const onCloseModal = () => dispatch(setRequestedAuthAction(null));
   const dispatch = useAppDispatch();
   const onSignInComplete = () => {
     onCloseModal();
-    dispatch(setRequestedAuthAction(null));
   };
 
   useEffect(() => {
-    setAuthAction(requestedAuthAction);
-  }, [requestedAuthAction]);
+    setAuthAction(requestedAuthAction?.type || null);
+  }, [dispatch, requestedAuthAction]);
 
   return (
     <>
@@ -31,11 +30,11 @@ export const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({
       <Modal
         show={authAction !== null}
         onClose={onCloseModal}
-        size="3xl"
+        size="xl"
         position="center"
-        className="[&>div>div]:bg-white/95 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-end md:[&>div]:h-auto"
+        className="bg-opacity-45 [&>div>div]:bg-primary-100/95 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-end md:[&>div]:h-auto"
       >
-        <Modal.Header className="h-12 p-3 text-center">
+        <Modal.Header className="h-12 p-3 text-center" title="">
           {authAction === "login" ? "Login" : "Sign Up"}
         </Modal.Header>
         <Modal.Body>
@@ -58,7 +57,7 @@ export const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({
             )}
             {authAction === "signup" && (
               <div className="max-w-md space-y-6">
-                <SignUp />
+                <SignUp account={requestedAuthAction?.targetAccount} />
                 {user.isAnonymous && (
                   <div className="flex justify-between text-sm font-medium text-gray-500">
                     Already have an account?&nbsp;

@@ -146,7 +146,7 @@ export const AuthProvider: React.FC<{
   if (user == null) {
     return (
       <div className="flex h-screen flex-col items-center justify-center text-center">
-        <span className="inline-block h-16 w-16 animate-spin rounded-full border-4 border-[#553A2633] border-t-[#553A26]" />
+        <span className="border-primary-700/33 inline-block h-16 w-16 animate-spin rounded-full border-4 border-t-primary-700" />
       </div>
     );
   }

@@ -111,7 +111,8 @@ export const CreateOrderForm: React.FC<{ brightness: "dark" | "light" }> = ({
   });
 
   const dispatch = useAppDispatch();
-  const requestSignIn = () => dispatch(setRequestedAuthAction("login"));
+  const requestSignIn = () =>
+    dispatch(setRequestedAuthAction({ type: "login" }));
   const handlePackageChange =
     (index: number) =>
     (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
