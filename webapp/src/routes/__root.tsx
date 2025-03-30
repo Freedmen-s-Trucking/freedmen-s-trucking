@@ -15,6 +15,13 @@ const Component: React.FC = () => {
   );
 };
 
-export const Route = createRootRouteWithContext<{ user: AppUser | null }>()({
+type AppContext = {
+  user: AppUser | null;
+  remoteConfigs: {
+    canShowPreviewLandingPage?: boolean;
+  };
+};
+
+export const Route = createRootRouteWithContext<AppContext>()({
   component: Component,
 });

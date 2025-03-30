@@ -1,5 +1,5 @@
 import React from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import homeHeroImg from "@/assets/images/hero.webp";
 import homeHeroImgBlured from "@/assets/images/hero-blur.webp";
 import home2LogoBlured from "@/assets/images/home-2-blur.webp";
@@ -13,6 +13,13 @@ import { SPECIALTIES_DATA } from "@/utils/constants";
 import { AppImageBackground } from "@/components/atoms/image-background";
 
 export const Route = createFileRoute("/preview/")({
+  beforeLoad({ context }) {
+    if (!context.remoteConfigs.canShowPreviewLandingPage) {
+      throw redirect({
+        to: "/",
+      });
+    }
+  },
   component: Index,
 });
 
@@ -173,7 +180,7 @@ const OurSpecialty: React.FC = () => {
                 specialty: specialty.sku,
               })}
               key={index}
-              className="h-42 border-secondary-800 mx-auto mb-8  block w-4/5 self-center justify-self-center rounded-3xl border-[1px] bg-white/20 p-3 md:w-[350px] lg:w-[300px]"
+              className="h-42 mx-auto mb-8 block  w-4/5 self-center justify-self-center rounded-3xl border-[1px] border-secondary-800 bg-white/20 p-3 md:w-[350px] lg:w-[300px]"
             >
               <div className="inline-block rounded-full border-2 border-black bg-gray-400">
                 <AppImage
@@ -269,7 +276,7 @@ const Prices: React.FC = () => {
                 </li>
               ))}
             </ul>
-            <button className="text-secondary-950 self-center rounded-3xl border border-red-400 px-12 py-3 text-sm font-medium hover:border-white hover:bg-red-500 hover:text-white focus:border-white focus:bg-red-500 focus:text-white">
+            <button className="self-center rounded-3xl border border-red-400 px-12 py-3 text-sm font-medium text-secondary-950 hover:border-white hover:bg-red-500 hover:text-white focus:border-white focus:bg-red-500 focus:text-white">
               Subscribe
             </button>
           </div>

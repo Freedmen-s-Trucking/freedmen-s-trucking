@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import home2LogoBlured from "@/assets/images/home-2-blur.webp";
 import home2Logo from "@/assets/images/home-2.webp";
 import Hero from "@/components/molecules/hero";
@@ -9,6 +9,13 @@ import deliveryTrackingHeroImgBlured from "@/assets/images/track-delivery-hero-b
 import { AppImageBackground } from "@/components/atoms/image-background";
 
 export const Route = createFileRoute("/preview/tracking")({
+  beforeLoad({ context }) {
+    if (!context.remoteConfigs.canShowPreviewLandingPage) {
+      throw redirect({
+        to: "/",
+      });
+    }
+  },
   component: RouteComponent,
 });
 

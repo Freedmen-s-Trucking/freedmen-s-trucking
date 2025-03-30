@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { UserEntity } from "@freedman-trucking/types";
 import home2LogoBlured from "@/assets/images/home-2-blur.webp";
 import home2Logo from "@/assets/images/home-2.webp";
@@ -12,6 +12,13 @@ import { useAuth } from "@/hooks/use-auth";
 import { CreateOrderForm } from "@/components/molecules/create-order";
 
 export const Route = createFileRoute("/preview/schedule-delivery")({
+  beforeLoad({ context }) {
+    if (!context.remoteConfigs.canShowPreviewLandingPage) {
+      throw redirect({
+        to: "/",
+      });
+    }
+  },
   component: RouteComponent,
 });
 

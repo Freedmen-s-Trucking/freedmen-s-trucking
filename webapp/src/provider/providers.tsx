@@ -10,6 +10,7 @@ import { StorageProvider } from "./storage";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { isDevMode } from "../utils/envs";
+import { RemoteConfigProvider } from "./remote-config";
 
 const queryClient = new QueryClient();
 export const RootProviders: React.FC<{
@@ -17,29 +18,31 @@ export const RootProviders: React.FC<{
 }> = ({ children }) => {
   return (
     <>
-      <FirebaseProvider>
-        <PerformanceMonitoringProvider>
-          <StorageProvider>
-            <FireStoreProvider>
-              <QueryClientProvider client={queryClient}>
-                <Provider store={store}>
-                  <PersistGate loading={null} persistor={persistor}>
-                    <AuthProvider>
-                      {children}
-                      {isDevMode && (
-                        <ReactQueryDevtools
-                          initialIsOpen={false}
-                          client={queryClient}
-                        />
-                      )}
-                    </AuthProvider>
-                  </PersistGate>
-                </Provider>
-              </QueryClientProvider>
-            </FireStoreProvider>
-          </StorageProvider>
-        </PerformanceMonitoringProvider>
-      </FirebaseProvider>
+      <QueryClientProvider client={queryClient}>
+        <FirebaseProvider>
+          <PerformanceMonitoringProvider>
+            <StorageProvider>
+              <FireStoreProvider>
+                <RemoteConfigProvider>
+                  <Provider store={store}>
+                    <PersistGate loading={null} persistor={persistor}>
+                      <AuthProvider>
+                        {children}
+                        {isDevMode && (
+                          <ReactQueryDevtools
+                            initialIsOpen={false}
+                            client={queryClient}
+                          />
+                        )}
+                      </AuthProvider>
+                    </PersistGate>
+                  </Provider>
+                </RemoteConfigProvider>
+              </FireStoreProvider>
+            </StorageProvider>
+          </PerformanceMonitoringProvider>
+        </FirebaseProvider>
+      </QueryClientProvider>
     </>
   );
 };

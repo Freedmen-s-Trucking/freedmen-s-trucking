@@ -11,30 +11,18 @@
         "*.local"
       ],
       "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" run lint",
         "npm --prefix \"$RESOURCE_DIR\" run build"
       ]
     }
   ],
   "hosting": {
     "public": "webapp/dist",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "rewrites": [
-      {
-        "source": "/api/v1/**",
-        "function": "httpServer",
-         "region": "us-central1"
-      },
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ]
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"]
   },
-  "remoteconfig": {},
+  "remoteconfig": {
+    "template": "backends/remote-configs/src/dev_template.json"
+  },
   "emulators": {
     "functions": {
       "port": 5001
@@ -54,10 +42,10 @@
     "singleProjectMode": true
   },
   "firestore": {
-    "rules": "backends/firestore.rules",
-    "indexes": "backends/firestore.indexes.json"
+    "rules": "backends/services-configs/firestore.rules",
+    "indexes": "backends/services-configs/firestore.indexes.json"
   },
   "storage": {
-    "rules": "backends/storage.rules"
+    "rules": "backends/services-configs/storage.rules"
   }
 }

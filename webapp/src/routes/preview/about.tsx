@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import aboutUsHeroImg from "@/assets/images/about-us-hero.webp";
 import aboutUsHeroImgBlured from "@/assets/images/about-us-hero-blur.webp";
 import home2Logo from "@/assets/images/home-2.webp";
@@ -12,6 +12,13 @@ import { AppImage } from "@/components/atoms/image";
 import { AppImageBackground } from "@/components/atoms/image-background";
 
 export const Route = createFileRoute("/preview/about")({
+  beforeLoad({ context }) {
+    if (!context.remoteConfigs.canShowPreviewLandingPage) {
+      throw redirect({
+        to: "/",
+      });
+    }
+  },
   component: About,
 });
 const AboutUsSection: React.FC = () => {
