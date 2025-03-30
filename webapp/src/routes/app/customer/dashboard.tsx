@@ -123,7 +123,6 @@ const CustomerDashboard = () => {
     queryKey: ["customerProfileUrl", user.info.uploadedProfileStoragePath],
     queryFn: () => fetchImage(user.info.uploadedProfileStoragePath || ""),
     select(data) {
-      console.log(data, user.info.uploadedProfileStoragePath);
       return data;
     },
     throwOnError(error, query) {
@@ -216,7 +215,7 @@ const CustomerDashboard = () => {
           <Tooltip content={"Return to home"} className="w-36">
             <Link
               to="/"
-              className="inline-flex items-center rounded-3xl border border-gray-300 bg-white p-2 text-sm font-medium text-gray-900 hover:border-red-400 hover:text-red-400 focus:border-red-400 focus:text-red-400 disabled:pointer-events-none disabled:opacity-50"
+              className="inline-flex items-center rounded-3xl border border-gray-300 bg-white p-2 text-sm font-medium text-secondary-950 hover:border-red-400 hover:text-red-400 focus:border-red-400 focus:text-red-400 disabled:pointer-events-none disabled:opacity-50"
             >
               <HiHome className="h-8 w-8" />
             </Link>
@@ -226,9 +225,9 @@ const CustomerDashboard = () => {
 
       {/* Tabs */}
       <Tabs
-        variant="underline"
+        // style="underline"
         onActiveTabChange={(tab) => setActiveTab(tabs[tab])}
-        className="focus:[&>button]:outline-none focus:[&>button]:ring-0"
+        // className="focus:[&>button]:outline-primary-700 focus:[&>button]:ring-secondary-800"
       >
         <Tabs.Item
           active={activeTab === "active-orders"}
@@ -250,7 +249,7 @@ const CustomerDashboard = () => {
             <Tooltip content={"Create new order"} className="w-40 bg-red-500">
               <button
                 onClick={() => setIsCreateOrderModalOpen(true)}
-                className="inline-flex items-center rounded-3xl border border-gray-300 bg-white p-2 text-sm font-medium text-gray-900 hover:border-teal-800 hover:text-teal-800 focus:border-teal-800 focus:text-teal-800 disabled:pointer-events-none disabled:opacity-50"
+                className="inline-flex items-center rounded-3xl border border-gray-300 bg-white p-2 text-sm font-medium text-secondary-950 hover:border-teal-800 hover:text-teal-800 focus:border-teal-800 focus:text-teal-800 disabled:pointer-events-none disabled:opacity-50"
               >
                 <PiPlus className="h-8 w-8" />
               </button>
@@ -271,7 +270,7 @@ const CustomerDashboard = () => {
               >
                 <div className="flex flex-col justify-between md:flex-row">
                   <div className="mb-3 md:mb-0">
-                    <h5 className="text-lg font-bold tracking-tight text-gray-900">
+                    <h5 className="text-lg font-bold tracking-tight text-secondary-950">
                       Order {order.path.split("/").pop()}
                     </h5>
                     <p className="text-sm text-gray-500">
@@ -282,7 +281,7 @@ const CustomerDashboard = () => {
                     <div className="mb-2">
                       {getStatusBadge(order.data.status)}
                     </div>
-                    <p className="text-lg font-bold text-gray-900">
+                    <p className="text-lg font-bold text-secondary-950">
                       ${order.data.price.toFixed(2)}
                     </p>
                     <p className="text-sm text-gray-600">
@@ -296,13 +295,13 @@ const CustomerDashboard = () => {
                 <div className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-2">
                   <div>
                     <p className="text-sm font-semibold">Pickup Location:</p>
-                    <p className="text-sm text-gray-700">
+                    <p className="text-sm text-secondary-800">
                       {order.data.pickupLocation.address}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm font-semibold">Dropoff Location:</p>
-                    <p className="text-sm text-gray-700">
+                    <p className="text-sm text-secondary-800">
                       {order.data.deliveryLocation.address}
                     </p>
                   </div>
@@ -311,7 +310,7 @@ const CustomerDashboard = () => {
                 <div className="mt-4 flex items-center justify-between">
                   <Accordion collapseAll className="w-full">
                     <Accordion.Panel>
-                      <Accordion.Title className="bg-gray-200 p-2 text-gray-900">
+                      <Accordion.Title className="bg-gray-200 p-2 text-secondary-950">
                         View Map
                       </Accordion.Title>
                       <Accordion.Content>
@@ -372,7 +371,7 @@ const CustomerDashboard = () => {
               <Card key={order.path}>
                 <div className="flex flex-col justify-between md:flex-row">
                   <div className="mb-3 md:mb-0">
-                    <h5 className="text-lg font-bold tracking-tight text-gray-900">
+                    <h5 className="text-lg font-bold tracking-tight text-secondary-950">
                       Order {order.path.split("/").pop()}
                     </h5>
                     <p className="text-sm text-gray-500">
@@ -383,7 +382,7 @@ const CustomerDashboard = () => {
                     <div className="mb-2">
                       {getStatusBadge(order.data.status)}
                     </div>
-                    <p className="text-lg font-bold text-gray-900">
+                    <p className="text-lg font-bold text-secondary-950">
                       ${order.data.price.toFixed(2)}
                     </p>
                     <p className="text-sm text-gray-600">
@@ -397,13 +396,13 @@ const CustomerDashboard = () => {
                 <div className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-2">
                   <div>
                     <p className="text-sm font-semibold">Pickup Location:</p>
-                    <p className="text-sm text-gray-700">
+                    <p className="text-sm text-secondary-800">
                       {order.data.pickupLocation.address}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm font-semibold">Dropoff Location:</p>
-                    <p className="text-sm text-gray-700">
+                    <p className="text-sm text-secondary-800">
                       {order.data.deliveryLocation.address}
                     </p>
                   </div>
@@ -412,7 +411,7 @@ const CustomerDashboard = () => {
                 <div className="mt-4 flex items-center justify-between">
                   <Accordion collapseAll className="w-full">
                     <Accordion.Panel>
-                      <Accordion.Title className="bg-gray-200 p-2 text-gray-900">
+                      <Accordion.Title className="bg-gray-200 p-2 text-secondary-950">
                         View Map
                       </Accordion.Title>
                       <Accordion.Content>

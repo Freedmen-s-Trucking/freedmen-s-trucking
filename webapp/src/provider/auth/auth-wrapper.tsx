@@ -14,8 +14,8 @@ export const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({
   const [authAction, setAuthAction] = useState(
     requestedAuthAction?.type || null,
   );
-  const onCloseModal = () => dispatch(setRequestedAuthAction(null));
   const dispatch = useAppDispatch();
+  const onCloseModal = () => dispatch(setRequestedAuthAction(null));
   const onSignInComplete = () => {
     onCloseModal();
   };
@@ -30,11 +30,11 @@ export const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({
       <Modal
         show={authAction !== null}
         onClose={onCloseModal}
-        size="xl"
+        size="lg"
         position="center"
-        className="bg-opacity-45 [&>div>div]:bg-primary-100/95 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-end md:[&>div]:h-auto"
+        className="bg-black bg-opacity-30 [&>div>div]:bg-primary-50/95 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-end md:[&>div]:h-auto"
       >
-        <Modal.Header className="h-12 p-3 text-center" title="">
+        <Modal.Header>
           {authAction === "login" ? "Login" : "Sign Up"}
         </Modal.Header>
         <Modal.Body>
@@ -42,12 +42,12 @@ export const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({
             {authAction === "login" && (
               <div className="space-y-6">
                 <SignIn onComplete={onSignInComplete} />
-                {user.isAnonymous && (
+                {user.isAnonymous && !requestedAuthAction?.strict && (
                   <div className="flex justify-between text-sm font-medium text-gray-500">
                     Not registered?&nbsp;
                     <button
                       onClick={() => setAuthAction("signup")}
-                      className="font-bold text-gray-800 hover:underline"
+                      className="font-bold text-secondary-900 hover:underline"
                     >
                       {">>"}Create account
                     </button>
@@ -58,12 +58,12 @@ export const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({
             {authAction === "signup" && (
               <div className="max-w-md space-y-6">
                 <SignUp account={requestedAuthAction?.targetAccount} />
-                {user.isAnonymous && (
+                {user.isAnonymous && !requestedAuthAction?.strict && (
                   <div className="flex justify-between text-sm font-medium text-gray-500">
                     Already have an account?&nbsp;
                     <button
                       onClick={() => setAuthAction("login")}
-                      className="font-bold text-gray-900 hover:underline"
+                      className="font-bold text-secondary-950 hover:underline"
                     >
                       {">>"}Login
                     </button>

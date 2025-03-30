@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import { useEffect, useState, useRef } from "react";
 
@@ -12,16 +12,38 @@ import {
 } from "@/components/atoms";
 import { useAppDispatch } from "@/stores/hooks";
 import { setRequestedAuthAction } from "@/stores/controllers/app-ctrl";
+import { CreateOrder } from "@/components/molecules/create-order";
 
 export const Route = createFileRoute("/")({
+  beforeLoad(ctx) {
+    if (!ctx.context.user) {
+      return;
+    }
+    if (ctx.context.user.driverInfo) {
+      throw redirect({
+        to: "/app/driver/dashboard",
+      });
+    }
+    if (!ctx.context.user.isAnonymous) {
+      throw redirect({
+        to: "/app/customer/dashboard",
+      });
+    }
+  },
   component: Index,
 });
 
 function Index() {
+  const [isSchedulingDelivery, setIsSchedulingDelivery] = useState(false);
+  const scheduleDelivery = () => setIsSchedulingDelivery(true);
   const dispatch = useAppDispatch();
   const requestSignIn = () =>
     dispatch(
-      setRequestedAuthAction({ type: "signup", targetAccount: "driver" }),
+      setRequestedAuthAction({
+        type: "signup",
+        targetAccount: "driver",
+        strict: true,
+      }),
     );
 
   // Staggered animation for container children
@@ -66,7 +88,7 @@ function Index() {
       >
         <Container className="flex h-screen w-screen flex-col items-center gap-1 px-4 transition-colors duration-300 sm:gap-3 sm:p-12 sm:px-8 md:gap-8 md:p-16 lg:gap-12">
           <motion.div
-            className="xs:flex-[3] flex flex-[2] flex-col justify-end text-center md:px-12"
+            className="flex flex-[2] flex-col justify-end text-center xs:flex-[3] md:px-12"
             variants={containerVariants}
           >
             <motion.div variants={headingVariants}>
@@ -82,11 +104,11 @@ function Index() {
           </motion.div>
 
           <motion.div
-            className="xs:flex-row xs:flex-[4] xs:gap-2 flex max-w-lg flex-[3] flex-col gap-12 sm:gap-9"
+            className="flex max-w-lg flex-[3] flex-col gap-12 xs:flex-[4] xs:flex-row xs:gap-2 sm:gap-9"
             variants={containerVariants}
           >
             <motion.div
-              className="xs:flex-1 w-full max-w-sm sm:flex-1"
+              className="w-full max-w-sm xs:flex-1 sm:flex-1"
               variants={itemVariants}
             >
               <PrimaryButton
@@ -102,10 +124,13 @@ function Index() {
             </motion.div>
 
             <motion.div
-              className="xs:flex-1 w-full max-w-sm sm:flex-1"
+              className="w-full max-w-sm xs:flex-1 sm:flex-1"
               variants={itemVariants}
             >
-              <SecondaryButton className="text-md w-full px-1 sm:text-xl">
+              <SecondaryButton
+                onClick={scheduleDelivery}
+                className="text-md w-full px-1 sm:text-xl"
+              >
                 Place a Delivery
               </SecondaryButton>
               <BodyText className="mt-4 text-center text-sm sm:text-lg">
@@ -116,6 +141,13 @@ function Index() {
           </motion.div>
         </Container>
       </motion.div>
+      {isSchedulingDelivery && (
+        <CreateOrder
+          showInModal
+          brightness="light"
+          onComplete={() => setIsSchedulingDelivery(false)}
+        />
+      )}
     </div>
   );
 }

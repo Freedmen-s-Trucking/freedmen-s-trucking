@@ -14,6 +14,19 @@ import { useQuery } from "@tanstack/react-query";
 
 const stripePromise = loadStripe(STRIPE_CLIENT_SECRET!);
 
+const appearance = {
+  theme: "flat",
+  variables: {
+    colorPrimary: "#331D10",
+    colorBackground: "#FFFCFA",
+    colorText: "#001829",
+    colorDanger: "#df1b41",
+    fontFamily: "Ideal Sans, system-ui, sans-serif",
+    spacingUnit: "2px",
+    borderRadius: "4px",
+  },
+} as const;
+
 const StripePayment: React.FC<{
   showInModal: boolean;
   price: number;
@@ -27,9 +40,14 @@ const StripePayment: React.FC<{
   };
   if (showInModal) {
     return (
-      <Modal show={showModal} onClose={onCloseModal} size={"md"}>
+      <Modal
+        show={showModal}
+        onClose={onCloseModal}
+        size={"md"}
+        className=" bg-black bg-opacity-30 [&>div>div]:bg-primary-100 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-end md:[&>div]:h-auto"
+      >
         <Modal.Header>
-          <h1 className="text-lg font-medium">Process Payment</h1>
+          <span className="text-lg font-medium">Process Payment</span>
         </Modal.Header>
         <Modal.Body>
           <PaymentProvider price={price} orderId={orderId} />
@@ -76,7 +94,10 @@ const PaymentProvider: React.FC<{ price: number; orderId: string }> = ({
   }
 
   return (
-    <Elements stripe={stripePromise} options={{ clientSecret: clientSecret }}>
+    <Elements
+      stripe={stripePromise}
+      options={{ clientSecret: clientSecret, appearance }}
+    >
       <Payment />
     </Elements>
   );
@@ -167,7 +188,7 @@ const Payment: React.FC = () => {
       <button
         disabled={!stripe || isLoading}
         type="submit"
-        className="mt-4 rounded-md bg-gray-950 px-5 py-2 text-white"
+        className="mt-4 rounded-md bg-primary-900 px-5 py-2 text-white"
       >
         {isLoading ? "Loading..." : "Pay"}
       </button>

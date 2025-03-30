@@ -254,11 +254,12 @@ const useDriverDbOperations = (db: Firestore) => {
               collection(db, COLLECTION_NAME_ORDER),
               where(OrderEntityFields.clientId, "==", uid),
               where(OrderEntityFields.status, "!=", OrderStatus.COMPLETED),
-              where(
-                OrderEntityFields.status,
-                "!=",
-                OrderStatus.PENDING_PAYMENT,
-              ),
+              // TODO: handle pending payment directly with stripe.
+              // where(
+              //   OrderEntityFields.status,
+              //   "!=",
+              //   OrderStatus.PENDING_PAYMENT,
+              // ),
               limit(10),
             );
       const res = await getDocs<OrderEntity, OrderEntity>(

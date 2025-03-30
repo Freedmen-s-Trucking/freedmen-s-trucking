@@ -71,7 +71,7 @@ const BoxTruckSection: React.FC = () => {
                 specialty: specialty.sku,
               })}
               key={index}
-              className={`mb-2 flex h-20 w-full min-w-[100px] flex-row gap-1  self-center justify-self-center border-[1px] bg-white/80 p-2 md:h-32 md:w-[138px] md:flex-col md:px-4 lg:h-36 lg:w-[180px] ${isActive(specialty.sku) ? "border-red-400 opacity-70" : "border-gray-700"}`}
+              className={`mb-2 flex h-20 w-full min-w-[100px] flex-row gap-1  self-center justify-self-center border-[1px] bg-white/80 p-2 md:h-32 md:w-[138px] md:flex-col md:px-4 lg:h-36 lg:w-[180px] ${isActive(specialty.sku) ? "border-red-400 opacity-70" : "border-secondary-800"}`}
             >
               <AppImage
                 className={`m-0 h-5 w-5 self-center sm:h-8 sm:w-8 md:h-12 md:w-12 lg:h-16 lg:w-16`}

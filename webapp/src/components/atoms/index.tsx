@@ -1,4 +1,5 @@
-import { motion } from "motion/react";
+import { HTMLMotionProps, motion } from "motion/react";
+import React from "react";
 
 // Primary Color #553A26;
 // Secondary Color #F2E7D8;
@@ -46,18 +47,21 @@ export const BodyText: React.FC<
 // BUTTON COMPONENTS
 
 export const PrimaryButton: React.FC<
-  React.PropsWithChildren<{
-    onClick?: () => void;
-    className?: string;
-    isLoading?: boolean;
-    loadingText?: string;
-  }>
+  React.PropsWithChildren<
+    {
+      onClick?: () => void;
+      className?: string;
+      isLoading?: boolean;
+      loadingText?: string;
+    } & HTMLMotionProps<"button">
+  >
 > = ({
   children,
   onClick,
   className = "",
   isLoading = false,
   loadingText = "Loading...",
+  ...buttonProps
 }) => {
   const buttonVariants = {
     initial: {
@@ -70,6 +74,7 @@ export const PrimaryButton: React.FC<
 
   return (
     <motion.button
+      {...buttonProps}
       onClick={onClick}
       variants={buttonVariants}
       whileHover={{ scale: isLoading ? 1 : 1.05 }}
@@ -77,7 +82,7 @@ export const PrimaryButton: React.FC<
       disabled={isLoading}
       initial="initial"
       animate={isLoading ? "loading" : "initial"}
-      className={`flex h-[60px] flex-row items-center justify-center rounded-lg bg-primary-700  px-1 py-1 font-medium text-primary-100 transition-colors duration-300 hover:bg-primary-800 disabled:bg-primary-800 ${className}`}
+      className={`flex flex-row items-center justify-center rounded-lg bg-primary-700  p-4 font-medium text-primary-100 transition-colors duration-300 hover:bg-primary-800 disabled:bg-primary-800 ${className}`}
     >
       {isLoading ? (
         <motion.div
@@ -86,7 +91,7 @@ export const PrimaryButton: React.FC<
           className="flex w-full flex-row items-center justify-evenly gap-2"
           transition={{ type: "spring", stiffness: 100 }}
         >
-          <span className="border-primary-100/33 inline-block h-7 w-7 animate-spin rounded-full border-4 border-t-primary-100" />
+          <span className="inline-block h-7 w-7 animate-spin rounded-full border-4 border-primary-100/30 border-t-primary-50" />
           <span className="text-primary-100">{loadingText}</span>
         </motion.div>
       ) : (
@@ -97,18 +102,21 @@ export const PrimaryButton: React.FC<
 };
 
 export const SecondaryButton: React.FC<
-  React.PropsWithChildren<{
-    onClick?: () => void;
-    className?: string;
-    isLoading?: boolean;
-    loadingText?: string;
-  }>
+  React.PropsWithChildren<
+    {
+      onClick?: () => void;
+      className?: string;
+      isLoading?: boolean;
+      loadingText?: string;
+    } & HTMLMotionProps<"button">
+  >
 > = ({
   children,
   onClick,
   className = "",
   isLoading = false,
   loadingText = "Loading...",
+  ...buttonProps
 }) => {
   const buttonVariants = {
     initial: {
@@ -121,6 +129,7 @@ export const SecondaryButton: React.FC<
 
   return (
     <motion.button
+      {...buttonProps}
       onClick={onClick}
       variants={buttonVariants}
       whileHover={{ scale: isLoading ? 1 : 1.05 }}
@@ -128,7 +137,7 @@ export const SecondaryButton: React.FC<
       disabled={isLoading}
       initial="initial"
       animate={isLoading ? "loading" : "initial"}
-      className={`flex h-[60px] flex-row items-center justify-center rounded-lg border-2 border-primary-700/80 bg-primary-100 bg-primary-700/10 px-1 py-1 font-medium text-primary-700 transition-colors duration-300 hover:bg-primary-700/20 ${className}`}
+      className={`flex flex-row items-center justify-center rounded-lg border-2 border-primary-700/80 bg-primary-100 p-4 font-medium text-primary-700 transition-colors duration-300 hover:bg-primary-50 ${className}`}
     >
       {isLoading ? (
         <motion.div
@@ -137,7 +146,7 @@ export const SecondaryButton: React.FC<
           className="flex w-full flex-row items-center justify-evenly gap-2"
           transition={{ type: "spring", stiffness: 100 }}
         >
-          <span className="border-primary-700/33 inline-block h-7 w-7 animate-spin rounded-full border-4 border-t-primary-700" />
+          <span className="inline-block h-7 w-7 animate-spin rounded-full border-4 border-primary-700/30 border-t-primary-700" />
           <span className="text-primary-700">{loadingText}</span>
         </motion.div>
       ) : (
@@ -146,6 +155,18 @@ export const SecondaryButton: React.FC<
     </motion.button>
   );
 };
+
+// iNPUT COMPONENTS
+export const TextInput = React.forwardRef<
+  HTMLInputElement,
+  { className?: string } & React.ComponentProps<"input">
+>(({ className = "", ...inputProps }, ref) => (
+  <input
+    {...inputProps}
+    className={`block w-full rounded-lg border border-gray-300 bg-primary-50 p-2.5 py-3 text-sm text-secondary-950 focus:border-secondary-500 focus:ring-secondary-500 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+    ref={ref}
+  />
+));
 
 // CARD COMPONENTS
 

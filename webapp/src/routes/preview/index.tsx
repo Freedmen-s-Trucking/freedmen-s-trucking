@@ -173,7 +173,7 @@ const OurSpecialty: React.FC = () => {
                 specialty: specialty.sku,
               })}
               key={index}
-              className="h-42 mx-auto mb-8 block  w-4/5 self-center justify-self-center rounded-3xl border-[1px] border-gray-700 bg-white/20 p-3 md:w-[350px] lg:w-[300px]"
+              className="h-42 border-secondary-800 mx-auto mb-8  block w-4/5 self-center justify-self-center rounded-3xl border-[1px] bg-white/20 p-3 md:w-[350px] lg:w-[300px]"
             >
               <div className="inline-block rounded-full border-2 border-black bg-gray-400">
                 <AppImage
@@ -269,7 +269,7 @@ const Prices: React.FC = () => {
                 </li>
               ))}
             </ul>
-            <button className="self-center rounded-3xl border border-red-400 px-12 py-3 text-sm font-medium text-gray-900 hover:border-white hover:bg-red-500 hover:text-white focus:border-white focus:bg-red-500 focus:text-white">
+            <button className="text-secondary-950 self-center rounded-3xl border border-red-400 px-12 py-3 text-sm font-medium hover:border-white hover:bg-red-500 hover:text-white focus:border-white focus:bg-red-500 focus:text-white">
               Subscribe
             </button>
           </div>

@@ -1,31 +1,20 @@
-import { createRootRoute, Outlet } from "@tanstack/react-router";
+import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
-import { createTheme, Flowbite, ThemeProps } from "flowbite-react";
 
-import CustomProviders from "../provider/providers";
-
-const semanticColors = createTheme<ThemeProps>({
-  theme: {
-    button: {
-      color: {
-        primary: "bg-primary text-white",
-      }
-    },
-  },
-});
+import { AppUser } from "@/stores/controllers/auth-ctrl";
+import { RouteProviders } from "@/provider/providers";
 
 const Component: React.FC = () => {
   return (
     <>
-      <CustomProviders>
-        <Flowbite theme={semanticColors}>
-          <Outlet />
-        </Flowbite>
-        <TanStackRouterDevtools />
-      </CustomProviders>
+      <RouteProviders>
+        <Outlet />
+      </RouteProviders>
+      <TanStackRouterDevtools />
     </>
   );
 };
-export const Route = createRootRoute({
+
+export const Route = createRootRouteWithContext<{ user: AppUser | null }>()({
   component: Component,
 });

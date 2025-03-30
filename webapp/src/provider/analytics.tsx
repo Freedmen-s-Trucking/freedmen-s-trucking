@@ -9,7 +9,6 @@ const AnalyticsCtx = createContext<Analytics | null>(null);
 export const AnalyticsProvider: React.FC<{
   children: React.ReactNode;
 }> & { Ctx: React.Context<Analytics | null> } = ({ children }) => {
-  // const app = useFirebase();
   const analytics = useMemo(() => getAnalytics(), []);
   const { location } = useRouterState();
 
