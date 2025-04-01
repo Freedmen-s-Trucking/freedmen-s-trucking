@@ -1,3 +1,3 @@
-# Freed Men's
+# Freedmen's
 
 Reliable freight solutions with full insurance and real-time tracking
