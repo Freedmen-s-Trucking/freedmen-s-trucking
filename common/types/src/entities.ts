@@ -6,6 +6,7 @@ import {
   productWithQuantityType,
   type,
   vehicleType,
+  verificationStatus,
 } from "./types.js";
 
 export const withdrawalEntity = type({
@@ -22,7 +23,7 @@ export const userEntity = type({
   email: "string | null",
   phoneNumber: "string | null",
   photoURL: "string | null",
-  uploadedProfileStoragePath: "string | null",
+  uploadedProfileStoragePath: type("string | null").optional(),
   isEmailVerified: "boolean",
   isPhoneNumberVerified: "boolean",
   authMethods: authMethodType.array(),
@@ -36,7 +37,7 @@ export const driverEntity = type({
   driverLicense: certificateType,
   withdrawalHistory: withdrawalEntity.array(),
   paymentMethods: paymentMethodType.array(),
-  verificationStatus: "'pending' | 'verified' | 'failed'",
+  verificationStatus: verificationStatus,
   currentEarnings: "number | null",
   totalEarnings: "number | null",
   tasksCompleted: "number | null",

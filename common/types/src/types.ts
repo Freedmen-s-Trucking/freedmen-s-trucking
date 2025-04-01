@@ -20,9 +20,9 @@ export type PaymentMethod = typeof paymentMethodType.infer;
 
 export const authMethodType = type({
   provider: "string",
-  providerRowData: {
+  providerRowData: type({
     "[string]": "unknown",
-  },
+  }),
 });
 export type AuthMethod = typeof authMethodType.infer;
 
@@ -63,3 +63,6 @@ export const vehicleInfoType = type({
   maxWeightInLbs: "number",
 });
 export type VehicleInfo = typeof vehicleInfoType.infer;
+
+export const verificationStatus = type("'pending' | 'verified' | 'failed'");
+export type VerificationStatus = typeof verificationStatus.infer;

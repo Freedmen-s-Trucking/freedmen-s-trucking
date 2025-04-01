@@ -4,7 +4,7 @@ import { getRequestListener } from '@hono/node-server';
 import { calculateTheCheapestCombinationOfVehicles } from './utils/compute-delivery-estimationy.js';
 import { GeoRoutingService, GeoRoutingServiceType, GetDistanceInKilometerResponse } from './geocoding/georouting.js';
 import { convertKilometerToMiles } from './utils/convert.js';
-import { ComputeDeliveryEstimation } from '@freedman-trucking/types';
+import { ComputeDeliveryEstimation, VerificationStatus } from '@freedman-trucking/types';
 import _stripe from 'stripe';
 import { logger } from 'hono/logger';
 import { secureHeaders } from 'hono/secure-headers';
@@ -113,7 +113,9 @@ apiV1Route.post('/stripe/webhook', async (c) => {
       const firestore = getFirestore();
 
       const driverCollection = firestore.collection('drivers') as CollectionReference<DriverEntity, DriverEntity>;
-      const query = driverCollection.where('verificationStatus', '!=', 'failed').orderBy('activeTasks', 'asc');
+      const query = driverCollection
+        .where('verificationStatus', '==', 'verified' as VerificationStatus)
+        .orderBy('activeTasks', 'asc');
       const snapshot = await query.limit(1).get();
       const driverId = snapshot.empty ? null : snapshot.docs[0].id;
       const orderCollection = firestore.collection('orders') as CollectionReference<

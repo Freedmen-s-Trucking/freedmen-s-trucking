@@ -1,8 +1,4 @@
-import {
-  CustomerEntity,
-  DriverEntity,
-  UserEntity,
-} from "@freedman-trucking/types";
+import { DriverEntity, UserEntity } from "@freedman-trucking/types";
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { UserInfo, UserMetadata } from "firebase/auth";
@@ -10,7 +6,6 @@ import { UserInfo, UserMetadata } from "firebase/auth";
 export interface AppUser {
   readonly info: UserEntity;
   readonly driverInfo?: DriverEntity;
-  readonly customerInfo?: CustomerEntity;
   readonly meta: UserMetadata;
   readonly providerData: UserInfo[];
   readonly isAnonymous: boolean;

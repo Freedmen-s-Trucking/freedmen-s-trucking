@@ -7,15 +7,25 @@ permissions:
   checks: write
   contents: read
   pull-requests: write
+
+defaults:
+  run:
+    working-directory: webapp
+
 jobs:
   build_and_preview:
     if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
       - run: bun i && bun run build
+        env:
+          VITE_STRIPE_CLIENT_SECRET: ${{ secrets.STRIPE_CLIENT_SECRET_DEV }}
+          VITE_FIREBASE_CONFIG_JSON: ${{ secrets.FIREBASE_CONFIG_JSON_DEV }}
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_FREEDMAN_TRUCKING_DEV }}
           projectId: freedman-trucking-dev
+        
