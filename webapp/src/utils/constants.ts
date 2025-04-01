@@ -1,3 +1,4 @@
+import { FlowbiteTabsTheme } from "flowbite-react";
 import { isDevMode } from "./envs";
 
 export const SERVER_API = isDevMode
@@ -94,4 +95,27 @@ export const DEFAULT_REMOTE_CONFIG_MAP = {
   [RemoteConfigKeys.can_show_preview_landing_page]: false,
   [RemoteConfigKeys.test_number_key]: 1,
   [RemoteConfigKeys.test_string_key]: "test",
+};
+
+export type DeepPartial<T> = T extends object
+  ? {
+      [P in keyof T]?: DeepPartial<T[P]>;
+    }
+  : T;
+
+export const tabTheme: DeepPartial<FlowbiteTabsTheme> = {
+  tablist: {
+    // className="focus:[&>button]: focus:[&>button]:ring-secondary-800"
+    tabitem: {
+      styles: {
+        underline: {
+          base: "rounded-t-lg focus:outline-transparent focus:ring-transparent",
+          active: {
+            on: "active rounded-t-lg border-b-2 border-primary-700 text-primary-700",
+            off: "border-b-2 border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-600",
+          },
+        },
+      },
+    },
+  },
 };

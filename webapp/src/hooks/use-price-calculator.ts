@@ -4,6 +4,7 @@ import {
   coordinateType,
   OrderPriority,
   productWithQuantityType,
+  RequiredVehicleEntity,
   type,
 } from "@freedman-trucking/types";
 import { useQuery } from "@tanstack/react-query";
@@ -12,7 +13,6 @@ import { up } from "up-fetch";
 import {
   ProductWithQuantity,
   vehiclesInfoList,
-  VehicleType,
 } from "@freedman-trucking/types";
 
 const deliveryPriorityPricesAddons = {
@@ -30,8 +30,8 @@ export function calculateTheCheapestCombinationOfVehicles(
   packages: ProductWithQuantity[],
   distanceInMiles: number,
   priority: "standard" | "expedited" | "urgent",
-): { vehicles: { type: VehicleType; count: number }[]; cost: number } {
-  const vehicles: { type: VehicleType; count: number }[] = [];
+): { vehicles: RequiredVehicleEntity[]; cost: number } {
+  const vehicles: RequiredVehicleEntity[] = [];
   const totalWeight = CalculateTotalWeight(packages);
   const totalVolume = CalculateTotalVolume(packages);
 
@@ -48,7 +48,7 @@ export function calculateTheCheapestCombinationOfVehicles(
       vehicleFound || vehiclesInfoList[vehiclesInfoList.length - 1];
     if (vehicle) {
       totalCost += vehicle.pricePerMile * distanceInMiles;
-      vehicles.push({ type: vehicle.type, count: 1 });
+      vehicles.push({ type: vehicle.type, quantity: 1 });
       remainingWeight -= vehicle.maxWeightInLbs;
       remainingVolume -= vehicle.maxCapacityInCubicInches;
     }
@@ -91,7 +91,7 @@ function CalculateTotalVolume(packages: ProductWithQuantity[]): number {
  * @returns The distance in meters
  */
 const getDistance = (startingPoint: Coordinate, endPoint: Coordinate) => {
-  const url = `http://router.project-osrm.org/route/v1/driving/${endPoint.longitude},${endPoint.latitude};${startingPoint.longitude},${startingPoint.latitude}`;
+  const url = `https://router.project-osrm.org/route/v1/driving/${endPoint.longitude},${endPoint.latitude};${startingPoint.longitude},${startingPoint.latitude}`;
   const fetcher = up(fetch, () => ({
     retry: {
       attempts: 2,

@@ -69,3 +69,5 @@ export type VerificationStatus = typeof verificationStatus.infer;
 
 export const accountTypeType = type("'driver' | 'customer' | 'admin'");
 export type AccountType = typeof accountTypeType.infer;
+
+export type EntityWithPath<T> = { path: string; data: T };

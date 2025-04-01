@@ -6,11 +6,16 @@ import {
 } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import { STRIPE_CLIENT_SECRET } from "../../utils/envs";
-import axios from "axios";
 import { useState } from "react";
 import { Modal } from "flowbite-react";
 import { SERVER_API } from "@/utils/constants";
 import { useQuery } from "@tanstack/react-query";
+import { PrimaryButton } from "../atoms";
+import {
+  apiResScheduleDeliveryIntent,
+  NewOrder,
+} from "@freedman-trucking/types";
+import { up } from "up-fetch";
 
 const stripePromise = loadStripe(STRIPE_CLIENT_SECRET!);
 
@@ -30,9 +35,9 @@ const appearance = {
 const StripePayment: React.FC<{
   showInModal: boolean;
   price: number;
-  orderId: string;
+  order: NewOrder;
   onComplete: () => void;
-}> = ({ showInModal, price, orderId, onComplete }) => {
+}> = ({ showInModal, price, order, onComplete }) => {
   const [showModal, setShowModal] = useState(showInModal);
   const onCloseModal = () => {
     onComplete();
@@ -50,17 +55,34 @@ const StripePayment: React.FC<{
           <span className="text-lg font-medium">Process Payment</span>
         </Modal.Header>
         <Modal.Body>
-          <PaymentProvider price={price} orderId={orderId} />
+          <PaymentProvider price={price} order={order} />
         </Modal.Body>
       </Modal>
     );
   }
-  return <PaymentProvider price={price} orderId={orderId} />;
+  return <PaymentProvider price={price} order={order} />;
 };
 
-const PaymentProvider: React.FC<{ price: number; orderId: string }> = ({
+const scheduleDeliveryRequest = async (order: NewOrder) => {
+  const request = up(fetch, () => ({
+    baseUrl: SERVER_API,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${STRIPE_CLIENT_SECRET}`,
+    },
+  }));
+
+  const response = await request("/v1/stripe/create-payment-intent", {
+    method: "POST",
+    schema: apiResScheduleDeliveryIntent,
+    body: { metadata: order },
+  });
+  return response;
+};
+
+const PaymentProvider: React.FC<{ price: number; order: NewOrder }> = ({
   price,
-  orderId,
+  order,
 }) => {
   const {
     data: clientSecret,
@@ -69,16 +91,7 @@ const PaymentProvider: React.FC<{ price: number; orderId: string }> = ({
   } = useQuery({
     queryKey: ["payment-intent", price],
     select: (data) => data?.clientSecret,
-    queryFn: async () => {
-      const response = await axios.post(
-        `${SERVER_API}/v1/stripe/create-payment-intent`,
-        {
-          amount: price,
-          orderId,
-        },
-      );
-      return response.data;
-    },
+    queryFn: () => scheduleDeliveryRequest(order),
   });
 
   if (isLoading) {
@@ -151,8 +164,10 @@ const Payment: React.FC = () => {
     event.preventDefault();
 
     if (!stripe || !elements) {
+      console.log(`
       // Stripe.js hasn't yet loaded.
       // Make sure to disable form submission until Stripe.js has loaded.
+`);
       return;
     }
 
@@ -185,13 +200,13 @@ const Payment: React.FC = () => {
       className="m-0 flex flex-col items-stretch p-0"
     >
       <PaymentElement />
-      <button
-        disabled={!stripe || isLoading}
+      <PrimaryButton
+        isLoading={!stripe || isLoading}
         type="submit"
-        className="mt-4 rounded-md bg-primary-900 px-5 py-2 text-white"
+        className="mt-4 rounded-md px-5 py-2 text-white"
       >
         {isLoading ? "Loading..." : "Pay"}
-      </button>
+      </PrimaryButton>
       {/* Show error message to your customers */}
       {errorMessage && <div>{errorMessage}</div>}
     </form>

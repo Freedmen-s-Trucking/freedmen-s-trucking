@@ -4,12 +4,30 @@ import { getRequestListener } from '@hono/node-server';
 import { calculateTheCheapestCombinationOfVehicles } from './utils/compute-delivery-estimationy.js';
 import { GeoRoutingService, GeoRoutingServiceType, GetDistanceInKilometerResponse } from './geocoding/georouting.js';
 import { convertKilometerToMiles } from './utils/convert.js';
-import { ComputeDeliveryEstimation, VerificationStatus } from '@freedman-trucking/types';
+import {
+  apiReqScheduleDeliveryIntent,
+  CollectionName,
+  ComputeDeliveryEstimation,
+  DriverOrderStatus,
+  LATEST_PLATFORM_OVERVIEW_PATH,
+  newOrderEntity,
+  PaymentActorType,
+  PaymentEntity,
+  PaymentProvider,
+  PaymentStatus,
+  PaymentType,
+  PlatformOverviewEntity,
+  type,
+  UserEntity,
+  VerificationStatus,
+  DriverEntity,
+  OrderEntity,
+  OrderStatus,
+} from './types/index.js';
 import _stripe from 'stripe';
 import { logger } from 'hono/logger';
 import { secureHeaders } from 'hono/secure-headers';
-import { CollectionReference, FieldValue, getFirestore } from 'firebase-admin/firestore';
-import { DriverEntity, OrderEntity, OrderStatus } from '@freedman-trucking/types';
+import { CollectionReference, DocumentReference, FieldValue, getFirestore } from 'firebase-admin/firestore';
 console.log({
   api: process.env.STRIPE_SECRET_KEY,
   webhook: process.env.STRIPE_WEBHOOK_SECRET,
@@ -68,18 +86,17 @@ apiV1Route.post('/compute-delivery-estimation', async (c) => {
 });
 
 apiV1Route.post('/stripe/create-payment-intent', async (c) => {
-  const json = await c.req.json();
-  console.log({ reqdata: json });
-  const { amount: amountInUSD, orderId } = json;
-  if (!amountInUSD || !orderId) {
-    return c.json({ error: 'Invalid request: missing amount or orderId' }, 400);
+  const reqData = apiReqScheduleDeliveryIntent(await c.req.json());
+  if (reqData instanceof type.errors) {
+    return c.json({ error: reqData.summary }, 400);
   }
   const paymentIntent = await stripe.paymentIntents.create({
-    amount: Math.ceil(amountInUSD * 100),
+    amount: Math.ceil(reqData.metadata.priceInUSD * 100),
     currency: 'usd',
-    metadata: {
-      orderId,
-    },
+    metadata: Object.entries(reqData.metadata).reduce(
+      (acc, [key, value]) => ({ ...acc, [key]: typeof value === 'number' ? value : JSON.stringify(value) }),
+      {},
+    ),
   });
   return c.json({ clientSecret: paymentIntent.client_secret });
 });
@@ -104,37 +121,87 @@ apiV1Route.post('/stripe/webhook', async (c) => {
   switch (event.type) {
     case 'payment_intent.succeeded':
       const paymentIntent = event.data.object;
-      const orderId = paymentIntent.metadata.orderId;
-      if (!orderId) {
-        console.error('Invalid request: missing orderId');
-        return c.json({ error: 'Invalid request: missing orderId' }, 400);
+      const serializedOrder = paymentIntent.metadata;
+      if (!serializedOrder) {
+        console.error('Invalid request: missing serializedOrder');
+        return c.json({ error: 'Invalid request: missing serializedOrder' }, 400);
+      }
+
+      const newOrder = Object.entries(paymentIntent.metadata).reduce(
+        (acc, [key, value]) => {
+          acc[key] = typeof value === 'number' ? value : JSON.parse(value);
+          return acc;
+        },
+        {} as Record<string, unknown>,
+      );
+      const verifiedNewOrder = newOrderEntity(newOrder);
+      if (verifiedNewOrder instanceof type.errors) {
+        return c.json({ error: verifiedNewOrder.summary }, 400);
       }
 
       const firestore = getFirestore();
 
-      const driverCollection = firestore.collection('drivers') as CollectionReference<DriverEntity, DriverEntity>;
+      const driverCollection = firestore.collection(CollectionName.DRIVERS) as CollectionReference<
+        DriverEntity,
+        DriverEntity
+      >;
       const query = driverCollection
         .where('verificationStatus', '==', 'verified' as VerificationStatus)
         .orderBy('activeTasks', 'asc');
       const snapshot = await query.limit(1).get();
       const driverId = snapshot.empty ? null : snapshot.docs[0].id;
-      const orderCollection = firestore.collection('orders') as CollectionReference<
-        Partial<OrderEntity>,
-        Partial<OrderEntity>
+      const userCollection = firestore.collection('users') as CollectionReference<UserEntity, UserEntity>;
+      const user = await userCollection.doc(verifiedNewOrder.ownerId).get();
+
+      // Save the payment.
+      const paymentCollection = firestore.collection(CollectionName.PAYMENTS) as CollectionReference<
+        PaymentEntity,
+        PaymentEntity
       >;
-      await orderCollection.doc(orderId).set(
-        {
-          status: driverId ? OrderStatus.ASSIGNED_TO_DRIVER : OrderStatus.PAYMENT_RECEIVED,
-          driverId,
-          payment: {
-            paymentIntentId: paymentIntent.id,
-            amountInCents: `${paymentIntent.amount}`,
-          },
+      const paymentDocRef = await paymentCollection.add({
+        type: PaymentType.INCOME,
+        status: PaymentStatus.COMPLETED,
+        amountInUSD: paymentIntent.amount / 100,
+        provider: {
+          name: PaymentProvider.STRIPE,
+          ref: paymentIntent.id,
         },
-        { merge: true },
-      );
+        to: {
+          id: 'system',
+          name: "Freedmen's Trucking",
+          type: PaymentActorType.PLATFORM,
+        },
+        fee: 0,
+        receivedAmount: paymentIntent.amount / 100,
+        from: {
+          id: user.id,
+          name: user.data()?.displayName || '',
+          type: PaymentActorType.CUSTOMER,
+        },
+        date: new Date().toISOString(),
+      });
+
+      // Save the order.
+      const orderCollection = firestore.collection(CollectionName.ORDERS) as CollectionReference<
+        OrderEntity,
+        OrderEntity
+      >;
+      const order: OrderEntity = {
+        ...verifiedNewOrder,
+        clientName: user.data()?.displayName || '',
+        clientEmail: user.data()?.email || '',
+        clientPhone: user.data()?.phoneNumber || '',
+        driverStatus: DriverOrderStatus.WAITING,
+        status: driverId ? OrderStatus.ASSIGNED_TO_DRIVER : OrderStatus.PAYMENT_RECEIVED,
+        driverId,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        paymentRef: paymentDocRef.path,
+      };
+      await orderCollection.add(order);
+
+      // Update driver's active tasks.
       if (driverId) {
-        const driverCollection = firestore.collection('drivers') as CollectionReference<DriverEntity, DriverEntity>;
         await driverCollection.doc(driverId).set(
           {
             activeTasks: FieldValue.increment(1),
@@ -142,6 +209,16 @@ apiV1Route.post('/stripe/webhook', async (c) => {
           { merge: true },
         );
       }
+
+      // Update System summary.
+      await (firestore.doc(LATEST_PLATFORM_OVERVIEW_PATH) as DocumentReference<PlatformOverviewEntity>).set(
+        {
+          totalActiveOrders: FieldValue.increment(1),
+          totalEarnings: FieldValue.increment(paymentIntent.amount / 100),
+          ...(driverId ? {} : { totalUnassignedOrders: FieldValue.increment(1) }),
+        },
+        { merge: true },
+      );
       console.log({ paymentIntent, meta: paymentIntent.metadata });
       break;
     case 'payment_method.attached':
@@ -173,7 +250,7 @@ app.route('/api/v1', apiV1Route);
 
 export const httpServer = onRequest(
   {
-    timeoutSeconds: 5,
+    timeoutSeconds: 60,
   },
   getRequestListener(app.fetch),
 );

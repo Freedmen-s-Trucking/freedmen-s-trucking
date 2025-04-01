@@ -1,4 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { CiMenuKebab } from "react-icons/ci";
 import React, { useState } from "react";
 import {
   Tabs,
@@ -9,13 +10,14 @@ import {
   Accordion,
   Tooltip,
   Spinner,
+  Dropdown,
 } from "flowbite-react";
 import {
   HiAdjustments,
   HiClipboardList,
   HiEye,
   HiEyeOff,
-  HiHome,
+  HiLogout,
 } from "react-icons/hi";
 import { useAuth } from "@/hooks/use-auth";
 import { useStorageOperations } from "@/hooks/use-storage";
@@ -30,11 +32,12 @@ import {
 import { useAppDispatch } from "@/stores/hooks";
 import { BsTrainFreightFront } from "react-icons/bs";
 import { GiTruck } from "react-icons/gi";
-import { TbCarSuv } from "react-icons/tb";
+import { TbCarSuv, TbLayoutDashboard } from "react-icons/tb";
 import { PiPlus, PiVanBold } from "react-icons/pi";
 import { IoCarOutline } from "react-icons/io5";
 import { MdOutlineEdit } from "react-icons/md";
 import { CreateOrder } from "@/components/molecules/create-order";
+import { tabTheme } from "@/utils/constants";
 
 const tabs = ["active-orders", "history"] as const;
 
@@ -82,8 +85,16 @@ const CustomerDashboard = () => {
   );
   const [isCreateOrderModalOpen, setIsCreateOrderModalOpen] = useState(false);
   const [showCustomerId, setShowCustomerId] = useState(false);
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const dispatch = useAppDispatch();
+
+  const navigate = useNavigate();
+  const logOut = async () => {
+    await signOut();
+    setTimeout(() => {
+      location.href = "/";
+    }, 2000);
+  };
 
   const { data: activeOrders, isLoading: activeOrdersLoading } = useQuery({
     initialData: [],
@@ -212,22 +223,44 @@ const CustomerDashboard = () => {
         </div>
 
         <div className="flex flex-1 flex-col items-end justify-end md:flex-row">
-          <Tooltip content={"Return to home"} className="w-36">
-            <Link
-              to="/"
-              className="inline-flex items-center rounded-3xl border border-gray-300 bg-white p-2 text-sm font-medium text-secondary-950 hover:border-red-400 hover:text-red-400 focus:border-red-400 focus:text-red-400 disabled:pointer-events-none disabled:opacity-50"
-            >
-              <HiHome className="h-8 w-8" />
-            </Link>
-          </Tooltip>
+          <Dropdown
+            trigger="hover"
+            renderTrigger={() => (
+              <span className="inline-block items-center rounded-3xl border border-gray-300 bg-white p-2 text-sm font-medium text-secondary-950 hover:border-primary-700 hover:text-primary-700 focus:border-primary-700 focus:text-primary-700 disabled:pointer-events-none disabled:opacity-50">
+                <CiMenuKebab className="h-8 w-8" />
+              </span>
+            )}
+            label=""
+          >
+            {user.info.isAdmin && (
+              <Dropdown.Item
+                icon={TbLayoutDashboard}
+                onClick={() => navigate({ to: "/app/admin/dashboard" })}
+              >
+                Admin Dashboard
+              </Dropdown.Item>
+            )}
+            {user.driverInfo && (
+              <Dropdown.Item
+                icon={TbLayoutDashboard}
+                onClick={() => navigate({ to: "/app/driver/dashboard" })}
+              >
+                Driver Dashboard
+              </Dropdown.Item>
+            )}
+            <Dropdown.Divider />
+            <Dropdown.Item icon={HiLogout} onClick={logOut}>
+              Sign out
+            </Dropdown.Item>
+          </Dropdown>
         </div>
       </div>
 
       {/* Tabs */}
       <Tabs
-        // style="underline"
+        theme={tabTheme}
+        style="underline"
         onActiveTabChange={(tab) => setActiveTab(tabs[tab])}
-        // className="focus:[&>button]:outline-primary-700 focus:[&>button]:ring-secondary-800"
       >
         <Tabs.Item
           active={activeTab === "active-orders"}
@@ -246,7 +279,10 @@ const CustomerDashboard = () => {
           <div className="mb-4 flex flex-row items-center justify-between">
             <h2 className="text-xl font-bold">Active Orders</h2>
 
-            <Tooltip content={"Create new order"} className="w-40 bg-red-500">
+            <Tooltip
+              content={"Create new order"}
+              className="w-40 bg-secondary-800"
+            >
               <button
                 onClick={() => setIsCreateOrderModalOpen(true)}
                 className="inline-flex items-center rounded-3xl border border-gray-300 bg-white p-2 text-sm font-medium text-secondary-950 hover:border-teal-800 hover:text-teal-800 focus:border-teal-800 focus:text-teal-800 disabled:pointer-events-none disabled:opacity-50"
@@ -282,7 +318,7 @@ const CustomerDashboard = () => {
                       {getStatusBadge(order.data.status)}
                     </div>
                     <p className="text-lg font-bold text-secondary-950">
-                      ${order.data.price.toFixed(2)}
+                      ${order.data.priceInUSD.toFixed(2)}
                     </p>
                     <p className="text-sm text-gray-600">
                       <DisplayRequiredVehicles
@@ -383,7 +419,7 @@ const CustomerDashboard = () => {
                       {getStatusBadge(order.data.status)}
                     </div>
                     <p className="text-lg font-bold text-secondary-950">
-                      ${order.data.price.toFixed(2)}
+                      ${order.data.priceInUSD.toFixed(2)}
                     </p>
                     <p className="text-sm text-gray-600">
                       <DisplayRequiredVehicles
@@ -439,5 +475,13 @@ const CustomerDashboard = () => {
 };
 
 export const Route = createFileRoute("/app/customer/dashboard")({
+  beforeLoad({ context }) {
+    if (context.user?.isAnonymous === false) {
+      return;
+    }
+    throw redirect({
+      to: "/",
+    });
+  },
   component: CustomerDashboard,
 });

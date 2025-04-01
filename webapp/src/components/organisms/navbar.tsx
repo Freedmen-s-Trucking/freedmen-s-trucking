@@ -70,13 +70,21 @@ const ProfileDropdown: React.FC = () => {
           }}
           label=""
         >
-          <div className="text-secondary-950 px-4 py-3 text-sm">
+          <div className="px-4 py-3 text-sm text-secondary-950">
             {user.info.displayName && <div>{user.info.displayName}</div>}
             {user.info.email && (
               <div className="truncate font-medium">{user.info.email}</div>
             )}
           </div>
           <Dropdown.Divider />
+          {user.info.isAdmin && (
+            <Dropdown.Item
+              icon={TbLayoutDashboard}
+              onClick={() => navigate({ to: "/app/admin/dashboard" })}
+            >
+              Admin Dashboard
+            </Dropdown.Item>
+          )}
           {user.driverInfo && (
             <Dropdown.Item
               icon={TbLayoutDashboard}
@@ -117,7 +125,7 @@ const ProfileDropdown: React.FC = () => {
                     Not registered?&nbsp;
                     <button
                       onClick={() => setAuthAction("signup")}
-                      className="text-secondary-900 font-bold hover:underline"
+                      className="font-bold text-secondary-900 hover:underline"
                     >
                       {">>"}Create account
                     </button>
@@ -133,7 +141,7 @@ const ProfileDropdown: React.FC = () => {
                     Already have an account?&nbsp;
                     <button
                       onClick={() => setAuthAction("login")}
-                      className="text-secondary-950 font-bold hover:underline"
+                      className="font-bold text-secondary-950 hover:underline"
                     >
                       {">>"}Login
                     </button>

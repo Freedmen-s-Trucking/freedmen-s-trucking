@@ -7,8 +7,8 @@
     "backends/functions": {
       "name": "functions",
       "dependencies": {
-        "@freedman-trucking/types": "workspace:*",
         "@hono/node-server": "^1.13.8",
+        "arktype": "^2.1.10",
         "axios": "^1.8.4",
         "dotenv": "^16.4.7",
         "firebase-admin": "^12.6.0",
