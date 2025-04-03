@@ -12,7 +12,7 @@ import { DocumentReference, FieldValue, getFirestore } from 'firebase-admin/fire
 
 export { httpServer } from './http-server.js';
 
-const driverUpdateTrigger = onDocumentWritten(`${CollectionName.DRIVERS}/{driverId}`, ({ data, params }) => {
+export const driverUpdateTrigger = onDocumentWritten(`${CollectionName.DRIVERS}/{driverId}`, ({ data, params }) => {
   const before = data?.before?.data?.() as DriverEntity | undefined;
   const after = data?.after?.data?.() as DriverEntity | undefined;
   const bVstatus = before?.verificationStatus;

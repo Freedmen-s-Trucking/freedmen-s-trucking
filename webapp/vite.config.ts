@@ -12,7 +12,10 @@ export default defineConfig({
   resolve: {
     alias: {
       "~": path.resolve(__dirname, "./src"),
-      "@freedmen-s-trucking/types": path.resolve(__dirname, "../common/types"),
+      "@freedmen-s-trucking/types": path.resolve(
+        __dirname,
+        "../common/types/src/index.ts",
+      ),
     },
   },
 });
