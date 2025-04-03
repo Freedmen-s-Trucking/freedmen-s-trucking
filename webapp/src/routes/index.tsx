@@ -16,15 +16,17 @@ import { CreateOrder } from "@/components/molecules/create-order";
 
 export const Route = createFileRoute("/")({
   beforeLoad({ context }) {
-    if (!context.user) {
-      return;
-    }
-    if (context.user.driverInfo) {
+    if (context.user?.driverInfo) {
       throw redirect({
         to: "/app/driver/dashboard",
       });
     }
-    if (!context.user.isAnonymous) {
+    if (context.user?.info?.isAdmin) {
+      throw redirect({
+        to: "/app/admin/dashboard",
+      });
+    }
+    if (context.user?.isAnonymous === false) {
       throw redirect({
         to: "/app/customer/dashboard",
       });
@@ -37,12 +39,12 @@ function Index() {
   const [isSchedulingDelivery, setIsSchedulingDelivery] = useState(false);
   const scheduleDelivery = () => setIsSchedulingDelivery(true);
   const dispatch = useAppDispatch();
-  const requestSignIn = () =>
+  const signUpAsDriver = () =>
     dispatch(
       setRequestedAuthAction({
         type: "signup",
         targetAccount: "driver",
-        strict: true,
+        redirectToDashboard: true,
       }),
     );
 
@@ -112,7 +114,7 @@ function Index() {
               variants={itemVariants}
             >
               <PrimaryButton
-                onClick={requestSignIn}
+                onClick={signUpAsDriver}
                 className="text-md w-full px-1 sm:text-xl"
               >
                 Become a Driver

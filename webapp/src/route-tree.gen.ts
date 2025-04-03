@@ -20,6 +20,7 @@ import { Route as PreviewContactImport } from './routes/preview/contact'
 import { Route as PreviewAboutImport } from './routes/preview/about'
 import { Route as AppDriverDashboardImport } from './routes/app/driver/dashboard'
 import { Route as AppCustomerDashboardImport } from './routes/app/customer/dashboard'
+import { Route as AppAdminDashboardImport } from './routes/app/admin/dashboard'
 
 // Create/Update Routes
 
@@ -77,6 +78,12 @@ const AppCustomerDashboardRoute = AppCustomerDashboardImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const AppAdminDashboardRoute = AppAdminDashboardImport.update({
+  id: '/app/admin/dashboard',
+  path: '/app/admin/dashboard',
+  getParentRoute: () => rootRoute,
+} as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -130,6 +137,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PreviewIndexImport
       parentRoute: typeof rootRoute
     }
+    '/app/admin/dashboard': {
+      id: '/app/admin/dashboard'
+      path: '/app/admin/dashboard'
+      fullPath: '/app/admin/dashboard'
+      preLoaderRoute: typeof AppAdminDashboardImport
+      parentRoute: typeof rootRoute
+    }
     '/app/customer/dashboard': {
       id: '/app/customer/dashboard'
       path: '/app/customer/dashboard'
@@ -157,6 +171,7 @@ export interface FileRoutesByFullPath {
   '/preview/services': typeof PreviewServicesRoute
   '/preview/tracking': typeof PreviewTrackingRoute
   '/preview': typeof PreviewIndexRoute
+  '/app/admin/dashboard': typeof AppAdminDashboardRoute
   '/app/customer/dashboard': typeof AppCustomerDashboardRoute
   '/app/driver/dashboard': typeof AppDriverDashboardRoute
 }
@@ -169,6 +184,7 @@ export interface FileRoutesByTo {
   '/preview/services': typeof PreviewServicesRoute
   '/preview/tracking': typeof PreviewTrackingRoute
   '/preview': typeof PreviewIndexRoute
+  '/app/admin/dashboard': typeof AppAdminDashboardRoute
   '/app/customer/dashboard': typeof AppCustomerDashboardRoute
   '/app/driver/dashboard': typeof AppDriverDashboardRoute
 }
@@ -182,6 +198,7 @@ export interface FileRoutesById {
   '/preview/services': typeof PreviewServicesRoute
   '/preview/tracking': typeof PreviewTrackingRoute
   '/preview/': typeof PreviewIndexRoute
+  '/app/admin/dashboard': typeof AppAdminDashboardRoute
   '/app/customer/dashboard': typeof AppCustomerDashboardRoute
   '/app/driver/dashboard': typeof AppDriverDashboardRoute
 }
@@ -196,6 +213,7 @@ export interface FileRouteTypes {
     | '/preview/services'
     | '/preview/tracking'
     | '/preview'
+    | '/app/admin/dashboard'
     | '/app/customer/dashboard'
     | '/app/driver/dashboard'
   fileRoutesByTo: FileRoutesByTo
@@ -207,6 +225,7 @@ export interface FileRouteTypes {
     | '/preview/services'
     | '/preview/tracking'
     | '/preview'
+    | '/app/admin/dashboard'
     | '/app/customer/dashboard'
     | '/app/driver/dashboard'
   id:
@@ -218,6 +237,7 @@ export interface FileRouteTypes {
     | '/preview/services'
     | '/preview/tracking'
     | '/preview/'
+    | '/app/admin/dashboard'
     | '/app/customer/dashboard'
     | '/app/driver/dashboard'
   fileRoutesById: FileRoutesById
@@ -231,6 +251,7 @@ export interface RootRouteChildren {
   PreviewServicesRoute: typeof PreviewServicesRoute
   PreviewTrackingRoute: typeof PreviewTrackingRoute
   PreviewIndexRoute: typeof PreviewIndexRoute
+  AppAdminDashboardRoute: typeof AppAdminDashboardRoute
   AppCustomerDashboardRoute: typeof AppCustomerDashboardRoute
   AppDriverDashboardRoute: typeof AppDriverDashboardRoute
 }
@@ -243,6 +264,7 @@ const rootRouteChildren: RootRouteChildren = {
   PreviewServicesRoute: PreviewServicesRoute,
   PreviewTrackingRoute: PreviewTrackingRoute,
   PreviewIndexRoute: PreviewIndexRoute,
+  AppAdminDashboardRoute: AppAdminDashboardRoute,
   AppCustomerDashboardRoute: AppCustomerDashboardRoute,
   AppDriverDashboardRoute: AppDriverDashboardRoute,
 }
@@ -264,6 +286,7 @@ export const routeTree = rootRoute
         "/preview/services",
         "/preview/tracking",
         "/preview/",
+        "/app/admin/dashboard",
         "/app/customer/dashboard",
         "/app/driver/dashboard"
       ]
@@ -288,6 +311,9 @@ export const routeTree = rootRoute
     },
     "/preview/": {
       "filePath": "preview/index.tsx"
+    },
+    "/app/admin/dashboard": {
+      "filePath": "app/admin/dashboard.tsx"
     },
     "/app/customer/dashboard": {
       "filePath": "app/customer/dashboard.tsx"

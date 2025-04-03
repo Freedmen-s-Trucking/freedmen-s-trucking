@@ -2,14 +2,12 @@ import { Modal } from "flowbite-react";
 import { motion } from "motion/react";
 import { add, formatDuration, intervalToDuration } from "date-fns";
 import {
-  DriverOrderStatus,
+  NewOrder,
   OrderPriority,
-  OrderStatus,
   ProductWithQuantity,
 } from "@freedman-trucking/types";
 import { useState } from "react";
 import { CustomOSMSearchResult } from "@/hooks/use-geocoding";
-import { useDbOperations } from "@/hooks/use-firestore";
 import { setRequestedAuthAction } from "@/stores/controllers/app-ctrl";
 import { useAppDispatch } from "@/stores/hooks";
 import { FaTrash } from "react-icons/fa6";
@@ -74,7 +72,6 @@ export const CreateOrderForm: React.FC<{
   const { user } = useAuth();
   const [deliveryPriority, setDeliveryPriorityInput] =
     useState<(typeof OrderPriorities)[number]>();
-  const { createOrder } = useDbOperations();
   const [error, setError] = useState<string | null>(null);
   const formattedEstimation = () =>
     new Intl.NumberFormat("en-US", {
@@ -171,9 +168,7 @@ export const CreateOrderForm: React.FC<{
   };
 
   const [isScheduling, setIsScheduling] = useState(false);
-  const [processPayment, setProcessPayment] = useState<{
-    orderId: string;
-  } | null>(null);
+  const [processPayment, setProcessPayment] = useState<NewOrder | null>(null);
 
   const handleScheduleDelivery = async () => {
     if (
@@ -188,9 +183,9 @@ export const CreateOrderForm: React.FC<{
     }
     setIsScheduling(true);
     try {
-      const orderId = await createOrder({
-        clientName: user.info.displayName || user.info.email || "",
-        clientId: user.info.uid,
+      setProcessPayment({
+        ownerId: user.info.uid,
+        distanceInMiles: estimations.distanceInMiles || 0,
         pickupLocation: {
           address: pickupLocation?.display_name || "",
           latitude: +pickupLocation.latitude || 0,
@@ -203,13 +198,9 @@ export const CreateOrderForm: React.FC<{
         },
         products: packages,
         priority: deliveryPriority?.value || "standard",
-        status: OrderStatus.PENDING_PAYMENT,
-        driverStatus: DriverOrderStatus.WAITING,
-        price: +estimations.cost,
-        requiredVehicles: [],
-        createdAt: new Date().toISOString(),
+        priceInUSD: +estimations.cost,
+        requiredVehicles: estimations.vehicles,
       });
-      setProcessPayment({ orderId });
     } catch (error) {
       console.error("Error creating order:", error);
     } finally {
@@ -296,6 +287,7 @@ export const CreateOrderForm: React.FC<{
         />
         <Dropdown
           label=""
+          className="-mt-4 rounded-b-lg rounded-t-none bg-primary-50 shadow-md shadow-primary-700"
           trigger="click"
           renderTrigger={() => (
             <TextInput
@@ -313,6 +305,7 @@ export const CreateOrderForm: React.FC<{
             <Dropdown.Item
               key={props.label}
               onClick={() => onDeliveryPriorityChanged(props)}
+              className="hover:bg-primary-100"
             >
               {props.label}
             </Dropdown.Item>
@@ -434,7 +427,7 @@ export const CreateOrderForm: React.FC<{
           <span className="block">
             Required Vehicle Type:{" "}
             {estimations?.vehicles
-              ?.map((v) => `${v.count}*${v.type}`)
+              ?.map((v) => `${v.quantity}*${v.type}`)
               .join(", ") || "N/A"}
           </span>
           <span className="block">
@@ -475,12 +468,7 @@ export const CreateOrderForm: React.FC<{
           {error}
         </motion.div>
         {user.isAnonymous ? (
-          <PrimaryButton
-            type="submit"
-            // className={`rounded-xl  border bg-transparent px-5 py-3 text-sm shadow-md transition-all duration-100  ${brightness === "dark" ? "text-white shadow-gray-300/70  hover:bg-gray-200 hover:text-secondary-900" : "text-secondary-950 shadow-secondary-900/70 hover:bg-secondary-900 hover:text-white  "}`}
-            // className="rounded-full bg-white px-5 py-3 text-secondary-900"
-            disabled={isEstimationLoading}
-          >
+          <PrimaryButton onClick={requestSignIn}>
             Sign In To Continue
           </PrimaryButton>
         ) : (
@@ -489,7 +477,7 @@ export const CreateOrderForm: React.FC<{
               <StripePayment
                 showInModal
                 price={estimations.cost}
-                orderId={processPayment.orderId}
+                order={processPayment}
                 onComplete={onPaymentComplete}
               />
             )}

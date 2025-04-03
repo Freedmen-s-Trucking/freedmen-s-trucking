@@ -2,7 +2,6 @@ import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "../../hooks/use-auth";
 import { FirebaseError } from "firebase/app";
 import { UserCredential } from "firebase/auth";
-import { Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import { Label, Popover, Spinner } from "flowbite-react";
 import { GoogleSignIn } from "./google-sign-in";
@@ -262,7 +261,7 @@ const SignUpUser: React.FC<{
             onChange={onConfirmPasswordChanged}
             value={confirmPassword}
             maxLength={32}
-            autoComplete="new-password"
+            autoComplete="current-password"
             id="password2"
             type="password"
             required
@@ -648,7 +647,10 @@ const Confirm: React.FC<{ accountType: AccountType }> = ({ accountType }) => {
     },
   ] as const;
   const dispatch = useAppDispatch();
-  const onCloseModal = () => dispatch(setRequestedAuthAction(null));
+  const onCloseModal = (link: string) => {
+    dispatch(setRequestedAuthAction(null));
+    location.href = link;
+  };
   return (
     <div className="mx-auto max-w-md space-y-4 text-secondary-800">
       <h1 className="text-3xl font-bold">Sign Up Completed 🎉</h1>
@@ -666,9 +668,8 @@ const Confirm: React.FC<{ accountType: AccountType }> = ({ accountType }) => {
               key={step.title}
               className="rounded-lg border border-gray-500 p-3"
             >
-              <Link
-                to={step.link}
-                onClick={onCloseModal}
+              <button
+                onClick={() => onCloseModal(step.link)}
                 className="flex flex-col items-center"
               >
                 <span className="flex w-full flex-row items-center justify-between">
@@ -676,7 +677,7 @@ const Confirm: React.FC<{ accountType: AccountType }> = ({ accountType }) => {
                   <IoArrowForwardCircleOutline className="text-2xl" />
                 </span>
                 <span className="text-xl">{step.title}</span>
-              </Link>
+              </button>
             </motion.li>
           ),
         )}
@@ -711,9 +712,12 @@ const SignUp: React.FC<{ account?: AccountType }> = ({ account }) => {
   };
 
   useEffect(() => {
-    if (account === "driver" && !user.isAnonymous) {
+    console.log({ accountType, user, activeStep });
+    if (accountType === "driver" && !user.isAnonymous) {
       if (activeStep && activeStep < 2) {
         setActiveStep(2);
+      } else {
+        setActiveStep(activeStep || 3);
       }
     } else if (!user.isAnonymous) {
       setActiveStep(3);
@@ -722,7 +726,7 @@ const SignUp: React.FC<{ account?: AccountType }> = ({ account }) => {
     } else {
       setActiveStep(0);
     }
-  }, [account, accountType, user, activeStep]);
+  }, [accountType, user, activeStep]);
 
   if (activeStep === undefined) return null;
   return (

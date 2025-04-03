@@ -1,9 +1,10 @@
 import { DEFAULT_REMOTE_CONFIG_MAP } from "@/utils/constants";
-import { APP_ENV } from "@/utils/envs";
+import { APP_ENV, isDevMode } from "@/utils/envs";
 import {
   RemoteConfig,
   getRemoteConfig,
   fetchAndActivate,
+  getAll,
 } from "firebase/remote-config";
 import { createContext, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -13,6 +14,7 @@ const RemoteConfigCtx = createContext<RemoteConfig | null>(null);
 // The default and recommended production fetch interval for Remote Config is 12 hours
 const twelveHoursMillis = 43200000;
 const oneHourMillis = 3600000;
+const oneMinuteMillis = 60000;
 
 export const RemoteConfigProvider: React.FC<{
   children: React.ReactNode;
@@ -20,15 +22,21 @@ export const RemoteConfigProvider: React.FC<{
   const remoteConfig = useMemo(() => getRemoteConfig(), []);
 
   useEffect(() => {
-    remoteConfig.settings.minimumFetchIntervalMillis =
-      APP_ENV === "dev" ? oneHourMillis : twelveHoursMillis;
+    remoteConfig.settings.minimumFetchIntervalMillis = isDevMode
+      ? oneMinuteMillis
+      : APP_ENV === "dev"
+        ? oneHourMillis
+        : twelveHoursMillis;
 
     remoteConfig.defaultConfig = DEFAULT_REMOTE_CONFIG_MAP;
   }, [remoteConfig]);
 
   const { isLoading } = useQuery({
     queryKey: ["remote-config"],
-    queryFn: () => fetchAndActivate(remoteConfig),
+    queryFn: async () => {
+      await fetchAndActivate(remoteConfig);
+      return getAll(remoteConfig);
+    },
   });
 
   if (isLoading) {

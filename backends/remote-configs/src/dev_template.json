@@ -3,7 +3,7 @@
   "parameters": {
     "can_show_preview_landing_page": {
       "defaultValue": {
-        "value": "false"
+        "value": "true"
       },
       "description": "Boolean used to enable or disable the preview landing page.",
       "valueType": "BOOLEAN"

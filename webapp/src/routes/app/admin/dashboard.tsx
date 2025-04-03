@@ -1,0 +1,212 @@
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
+import { Tabs, Badge } from "flowbite-react";
+import {
+  MdDashboard,
+  MdDirectionsCar,
+  MdShoppingCart,
+  MdPayment,
+} from "react-icons/md";
+import { motion } from "framer-motion";
+
+// Import components
+import AdminHeader from "@/components/atoms/admin/admin-header";
+import Overview from "@/components/atoms/admin/tab-overview";
+import Drivers from "@/components/atoms/admin/tab-drivers";
+import Orders from "@/components/atoms/admin/tab-orders";
+import Transactions from "@/components/atoms/admin/tab-transactions";
+import { useDbOperations } from "@/hooks/use-firestore";
+import {
+  EntityWithPath,
+  PlatformOverviewEntity,
+} from "@freedman-trucking/types";
+import { tabTheme } from "@/utils/constants";
+
+// Mock API functions (replace with your actual API calls)
+const AdminDashboard: React.FC = () => {
+  const [activeTab, setActiveTab] = useState("overview");
+
+  const { fetchPlatformOverview } = useDbOperations();
+  const [overview, setData] =
+    useState<EntityWithPath<PlatformOverviewEntity> | null>(null);
+
+  useEffect(() => {
+    fetchPlatformOverview((arg) =>
+      setData(
+        arg ||
+          ({ data: {}, path: "" } as EntityWithPath<PlatformOverviewEntity>),
+      ),
+    );
+  }, [fetchPlatformOverview]);
+
+  const onActiveTabChange = (tabindex: number) => {
+    switch (tabindex) {
+      case 0:
+        setActiveTab("overview");
+        break;
+      case 1:
+        setActiveTab("driverManagement");
+        break;
+      case 2:
+        setActiveTab("orders");
+        break;
+      case 3:
+        setActiveTab("transactions");
+        break;
+    }
+  };
+
+  const fadeVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { duration: 0.3 } },
+  };
+
+  return (
+    <div className="flex min-h-screen flex-col items-center bg-gray-50">
+      <AdminHeader />
+
+      <div className="container w-full px-4 py-6">
+        <Tabs
+          theme={tabTheme}
+          aria-label="Admin Dashboard Tabs"
+          style="underline"
+          className="mb-4"
+          onActiveTabChange={onActiveTabChange}
+        >
+          <Tabs.Item
+            title={
+              <div className="flex items-center gap-2">
+                <MdDashboard className="h-5 w-5" />
+                <span>Overview</span>
+              </div>
+            }
+            active={activeTab === "overview"}
+          >
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={fadeVariants}
+            >
+              <Overview overview={overview} />
+            </motion.div>
+          </Tabs.Item>
+
+          <Tabs.Item
+            title={
+              <div className="flex items-center gap-2">
+                <MdDirectionsCar className="h-5 w-5" />
+                <span>Driver Management</span>
+                {(overview?.data.totalPendingVerificationDrivers && (
+                  <Badge
+                    color="warning"
+                    className="ml-2 rounded-full bg-accent-300 text-primary-50"
+                  >
+                    {overview?.data.totalPendingVerificationDrivers}
+                  </Badge>
+                )) ||
+                  null}
+              </div>
+            }
+            active={activeTab === "driverManagement"}
+          >
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={fadeVariants}
+            >
+              <Drivers />
+            </motion.div>
+          </Tabs.Item>
+
+          <Tabs.Item
+            title={
+              <div className="flex items-center gap-2">
+                <MdShoppingCart className="h-5 w-5" />
+                <span>Orders</span>
+              </div>
+            }
+            active={activeTab === "orders"}
+          >
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={fadeVariants}
+            >
+              <Orders />
+            </motion.div>
+          </Tabs.Item>
+
+          <Tabs.Item
+            title={
+              <div className="flex items-center gap-2">
+                <MdPayment className="h-5 w-5" />
+                <span>Transactions</span>
+              </div>
+            }
+            active={activeTab === "transactions"}
+          >
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={fadeVariants}
+            >
+              <Transactions />
+            </motion.div>
+          </Tabs.Item>
+
+          {/* <Tabs.Item
+            title={
+              <div className="flex items-center gap-2">
+                <MdPeople className="h-5 w-5" />
+                <span>Users</span>
+              </div>
+            }
+            active={activeTab === "users"}
+          >
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={fadeVariants}
+            >
+              <Users data={usersData} />
+            </motion.div>
+          </Tabs.Item>
+
+          <Tabs.Item
+            title={
+              <div className="flex items-center gap-2">
+                <MdList className="h-5 w-5" />
+                <span>Waitlist</span>
+                {updatedWaitlistCount && (
+                  <Badge color="info" className="ml-2">
+                    Updated
+                  </Badge>
+                )}
+              </div>
+            }
+            active={activeTab === "waitlist"}
+          >
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={fadeVariants}
+            >
+              <Waitlist data={waitlistData} />
+            </motion.div>
+          </Tabs.Item> */}
+        </Tabs>
+      </div>
+    </div>
+  );
+};
+
+export const Route = createFileRoute("/app/admin/dashboard")({
+  beforeLoad({ context }) {
+    if (!context.user?.info?.isAdmin) {
+      throw redirect({
+        to: "/",
+      });
+    }
+  },
+  component: AdminDashboard,
+});

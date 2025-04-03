@@ -32,3 +32,13 @@ export const vehiclesInfoList: VehicleInfo[] = [
     maxWeightInLbs: 10000,
   },
 ];
+
+export enum CollectionName {
+  DRIVERS = "drivers",
+  ORDERS = "orders",
+  PAYMENTS = "payments",
+  PLATFORM_OVERVIEW = "platformOverviews",
+  USERS = "users",
+}
+
+export const LATEST_PLATFORM_OVERVIEW_PATH = `${CollectionName.PLATFORM_OVERVIEW}/latest`;

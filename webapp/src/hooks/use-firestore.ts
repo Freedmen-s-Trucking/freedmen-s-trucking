@@ -3,11 +3,13 @@ import { FireStoreProvider } from "../provider/firestore";
 import {
   collection,
   doc,
+  DocumentReference,
   Firestore,
   getDoc,
   getDocs,
   increment,
   limit,
+  onSnapshot,
   Query,
   query,
   setDoc,
@@ -16,17 +18,17 @@ import {
 import {
   DriverEntity,
   DriverOrderStatus,
+  EntityWithPath,
   OrderEntity,
   OrderEntityFields,
   OrderStatus,
+  PaymentEntity,
+  PlatformOverviewEntity,
   UserEntity,
+  CollectionName,
+  LATEST_PLATFORM_OVERVIEW_PATH,
 } from "@freedman-trucking/types";
 import { checkFalsyAndThrow } from "../utils/functions";
-
-const COLLECTION_NAME_USERS = "users";
-const COLLECTION_NAME_DRIVERS = "drivers";
-const COLLECTION_NAME_ORDER = "orders";
-// const COLLECTION_NAME_NOTIFICATIONS = "notifications";
 
 const useFirestore = () => {
   const context = useContext(FireStoreProvider.Ctx);
@@ -78,9 +80,9 @@ const useOrderDbOperations = (db: Firestore) => {
    * Create order if it doesn't exist.
    */
   const createOrder = useCallback(
-    async (order: Omit<OrderEntity, "id">) => {
+    async (order: OrderEntity) => {
       const uuid = generateUUID();
-      const docRef = doc(collection(db, COLLECTION_NAME_ORDER), uuid);
+      const docRef = doc(collection(db, CollectionName.ORDERS), uuid);
       await setDoc(docRef, JSON.parse(JSON.stringify(order)), {
         merge: true,
       });
@@ -103,7 +105,7 @@ const useOrderDbOperations = (db: Firestore) => {
         "FirestoreError::updateOrderStatus",
       );
       const orderId = orderPath.split("/").pop();
-      const docRef = doc(collection(db, COLLECTION_NAME_ORDER), orderId);
+      const docRef = doc(collection(db, CollectionName.ORDERS), orderId);
       const docSnapshot = await getDoc(docRef);
       if (!docSnapshot.exists()) {
         throw new Error("Order not found");
@@ -126,7 +128,7 @@ const useOrderDbOperations = (db: Firestore) => {
       });
 
       if (driverStatus === DriverOrderStatus.DELIVERED) {
-        const docRef = doc(collection(db, COLLECTION_NAME_DRIVERS), userId);
+        const docRef = doc(collection(db, CollectionName.DRIVERS), userId);
         const docSnapshot = await getDoc(docRef);
         if (!docSnapshot.exists()) {
           throw new Error("Driver not found");
@@ -155,7 +157,7 @@ const useUserDbOperations = (db: Firestore) => {
    */
   const createUser = useCallback(
     async (user: UserEntity) => {
-      const docRef = doc(collection(db, COLLECTION_NAME_USERS), user.uid);
+      const docRef = doc(collection(db, CollectionName.USERS), user.uid);
       const userSnapshot = await getDoc(docRef);
       if (!userSnapshot.exists()) {
         await setDoc(docRef, JSON.parse(JSON.stringify(user)), { merge: true });
@@ -170,7 +172,7 @@ const useUserDbOperations = (db: Firestore) => {
   const insertUser = useCallback(
     async (uid: string, user: Partial<UserEntity>) => {
       checkFalsyAndThrow({ uid, user }, "FirestoreError::insertUser");
-      const docRef = doc(collection(db, COLLECTION_NAME_USERS), uid);
+      const docRef = doc(collection(db, CollectionName.USERS), uid);
       await setDoc(docRef, JSON.parse(JSON.stringify(user)), { merge: true });
     },
     [db],
@@ -182,7 +184,7 @@ const useUserDbOperations = (db: Firestore) => {
   const getUser = useCallback(
     async (uid: string) => {
       checkFalsyAndThrow({ uid }, "FirestoreError::getUser");
-      const docRef = doc(collection(db, COLLECTION_NAME_USERS), uid);
+      const docRef = doc(collection(db, CollectionName.USERS), uid);
       const userSnapshot = await getDoc(docRef);
       if (userSnapshot.exists()) {
         return userSnapshot.data() as UserEntity;
@@ -205,7 +207,7 @@ const useDriverDbOperations = (db: Firestore) => {
         { uid, driver },
         "FirestoreError::updateDriverCertificates",
       );
-      const docRef = doc(collection(db, COLLECTION_NAME_DRIVERS), uid);
+      const docRef = doc(collection(db, CollectionName.DRIVERS), uid);
       await setDoc(docRef, JSON.parse(JSON.stringify(driver)), { merge: true });
     },
     [db],
@@ -217,7 +219,7 @@ const useDriverDbOperations = (db: Firestore) => {
         { uid },
         "FirestoreError::getDriver uid must not be falsy",
       );
-      const docRef = doc(collection(db, COLLECTION_NAME_DRIVERS), uid);
+      const docRef = doc(collection(db, CollectionName.DRIVERS), uid);
       const docSnapshot = await getDoc(docRef);
       if (docSnapshot.exists()) {
         return docSnapshot.data() as DriverEntity;
@@ -236,7 +238,7 @@ const useDriverDbOperations = (db: Firestore) => {
       const q =
         userType === "driver"
           ? query(
-              collection(db, COLLECTION_NAME_ORDER),
+              collection(db, CollectionName.ORDERS),
               where(OrderEntityFields.driverId, "==", uid),
               where(
                 OrderEntityFields.status,
@@ -251,8 +253,8 @@ const useDriverDbOperations = (db: Firestore) => {
               limit(10),
             )
           : query(
-              collection(db, COLLECTION_NAME_ORDER),
-              where(OrderEntityFields.clientId, "==", uid),
+              collection(db, CollectionName.ORDERS),
+              where(OrderEntityFields.ownerId, "==", uid),
               where(OrderEntityFields.status, "!=", OrderStatus.COMPLETED),
               // TODO: handle pending payment directly with stripe.
               // where(
@@ -286,7 +288,7 @@ const useDriverDbOperations = (db: Firestore) => {
       const q =
         userType === "driver"
           ? query(
-              collection(db, COLLECTION_NAME_ORDER),
+              collection(db, CollectionName.ORDERS),
               where(OrderEntityFields.driverId, "==", uid),
               where(
                 OrderEntityFields.driverStatus,
@@ -296,8 +298,8 @@ const useDriverDbOperations = (db: Firestore) => {
               limit(20),
             )
           : query(
-              collection(db, COLLECTION_NAME_ORDER),
-              where(OrderEntityFields.clientId, "==", uid),
+              collection(db, CollectionName.ORDERS),
+              where(OrderEntityFields.ownerId, "==", uid),
               where(OrderEntityFields.status, "==", OrderStatus.COMPLETED),
               limit(20),
             );
@@ -323,22 +325,106 @@ const useDriverDbOperations = (db: Firestore) => {
   };
 };
 
-// export const useNotificationDbOperations = (db: Firestore) => {
-//   const fetchNotifications = useCallback(
-//     async (uid: string) => {
-//       checkFalsyAndThrow({ uid }, "FirestoreError::fetchNotifications");
-//       const q = query(
-//         collection(db, COLLECTION_NAME_NOTIFICATIONS),
-//         where(NotificationEntityFields.userId, "==", uid),
-//       );
-//       return getDocs<NotificationEntity, NotificationEntity>(
-//         q as Query<NotificationEntity, NotificationEntity>,
-//       );
-//     },
-//     [db],
-//   );
-//   return { fetchNotifications };
-// };
+const useAdminDbOperations = (db: Firestore) => {
+  /**
+   * Fetches orders from the database.
+   */
+  const fetchOrders = useCallback(async () => {
+    const q = query(collection(db, CollectionName.ORDERS));
+    const res = await getDocs<OrderEntity, OrderEntity>(
+      q as Query<OrderEntity, OrderEntity>,
+    );
+    const result = <{ path: string; data: OrderEntity }[]>[];
+
+    res.forEach((doc) => {
+      if (!doc.exists()) return;
+      result.push({ path: doc.ref.path, data: doc.data() });
+    });
+    return result;
+  }, [db]);
+
+  /**
+   * Fetches drivers from the database.
+   * Note: Firebase security rules is the one responsible to grant access to the data, not client code.
+   */
+  const fetchDrivers = useCallback(async () => {
+    const q = query(collection(db, CollectionName.DRIVERS));
+    const driversQuerySnapshot = await getDocs<DriverEntity, DriverEntity>(
+      q as Query<DriverEntity, DriverEntity>,
+    );
+    const result = <
+      { path: string; data: DriverEntity & { user: UserEntity } }[]
+    >[];
+
+    for (const snapshot of driversQuerySnapshot.docs) {
+      if (!snapshot.exists()) continue;
+
+      const userDocRef = doc(collection(db, CollectionName.USERS), snapshot.id);
+      const user = await getDoc<UserEntity, UserEntity>(
+        userDocRef as DocumentReference<UserEntity, UserEntity>,
+      );
+
+      if (!user.exists()) continue;
+
+      result.push({
+        path: snapshot.ref.path,
+        data: { ...snapshot.data(), user: user.data() },
+      });
+    }
+
+    return result;
+  }, [db]);
+
+  /**
+   * Fetches the overview of the platform.
+   * Note: Firebase security rules is the one responsible to grant access to the data, not client code.
+   */
+  const fetchPlatformOverview = useCallback(
+    async (
+      onValue: (arg: EntityWithPath<PlatformOverviewEntity> | null) => void,
+    ) => {
+      const docRef = doc(db, LATEST_PLATFORM_OVERVIEW_PATH);
+      const unsubscribe = onSnapshot<
+        PlatformOverviewEntity,
+        PlatformOverviewEntity
+      >(
+        docRef as DocumentReference<
+          PlatformOverviewEntity,
+          PlatformOverviewEntity
+        >,
+        (snapshot) => {
+          const res = snapshot.exists()
+            ? { path: docRef.path, data: snapshot.data() }
+            : null;
+          return onValue(res);
+        },
+      );
+      return unsubscribe;
+    },
+    [db],
+  );
+
+  const fetchPayments = useCallback(async () => {
+    const q = query(collection(db, CollectionName.PAYMENTS));
+    const res = await getDocs<PaymentEntity, PaymentEntity>(
+      q as Query<PaymentEntity, PaymentEntity>,
+    );
+    const result = <{ path: string; data: PaymentEntity }[]>[];
+
+    res.forEach((doc) => {
+      if (!doc.exists()) return;
+      result.push({ path: doc.ref.path, data: doc.data() });
+    });
+    return result;
+  }, [db]);
+
+  return {
+    fetchOrders,
+    fetchDrivers,
+    fetchPlatformOverview,
+    fetchPayments,
+  };
+};
 
 export const useDbOperations = () => {
   const db = useFirestore();
@@ -352,7 +438,9 @@ export const useDbOperations = () => {
     fetchCompletedOrder,
     fetchCurrentActiveOrders,
   } = useDriverDbOperations(db);
-  // const { fetchNotifications } = useNotificationDbOperations(db);
+
+  const { fetchOrders, fetchDrivers, fetchPlatformOverview, fetchPayments } =
+    useAdminDbOperations(db);
 
   return {
     insertUser,
@@ -364,5 +452,9 @@ export const useDbOperations = () => {
     updateDriver,
     getDriver,
     updateOrderStatus,
+    fetchOrders,
+    fetchDrivers,
+    fetchPlatformOverview,
+    fetchPayments,
   };
 };

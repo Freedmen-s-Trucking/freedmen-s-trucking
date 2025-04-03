@@ -8,6 +8,7 @@
     "build:esm": "tsc -p tsconfig.mjs.json",
     "build:cjs": "tsc -p tsconfig.cjs.json",
     "dev": "tsc -w",
+    "pack": "npm run build && npm pack",
     "watch": "tsc -w"
   },
   "types": "src/index.ts",

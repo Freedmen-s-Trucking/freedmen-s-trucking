@@ -2,7 +2,7 @@
   "name": "functions",
   "scripts": {
     "lint": "eslint --ext .js,.ts .",
-    "prebuild": "npm --prefix ../../common/types run build",
+    "prebuild": "npm --prefix ../../common/types run pack && cp ../../common/types/freedman-trucking-types-1.0.0.tgz .",
     "build": "tsc",
     "build:watch": "tsc --watch",
     "serve": "npm run build && firebase emulators:start --only functions",
@@ -12,13 +12,13 @@
     "logs": "firebase functions:log"
   },
   "engines": {
-    "node": "20"
+    "node": "22"
   },
   "type": "module",
   "main": "lib/index.js",
   "dependencies": {
-    "@freedman-trucking/types": "workspace:*",
     "@hono/node-server": "^1.13.8",
+    "arktype": "^2.1.10",
     "axios": "^1.8.4",
     "dotenv": "^16.4.7",
     "firebase-admin": "^12.6.0",

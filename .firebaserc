@@ -1,5 +1,22 @@
 {
   "projects": {
     "default": "freedman-trucking-dev"
-  }
+  },
+  "targets": {
+    "freedmen-s-trucking": {
+      "hosting": {
+        "webapp": [
+          "freedmen-s-trucking"
+        ]
+      }
+    },
+    "freedman-trucking-dev": {
+      "hosting": {
+        "webapp": [
+          "freedman-trucking-dev"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }

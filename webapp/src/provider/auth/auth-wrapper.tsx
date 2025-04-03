@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Modal } from "flowbite-react";
 import SignIn from "@/components/molecules/sign-in";
 import SignUp from "@/components/molecules/sign-up";
 import { useAppDispatch, useAppSelector } from "../../stores/hooks";
 import { setRequestedAuthAction } from "../../stores/controllers/app-ctrl";
 import { useAuth } from "@/hooks/use-auth";
+import { AppUser } from "@/stores/controllers/auth-ctrl";
 
 export const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -14,11 +15,20 @@ export const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({
   const [authAction, setAuthAction] = useState(
     requestedAuthAction?.type || null,
   );
+  const uref = useRef<AppUser>();
   const dispatch = useAppDispatch();
   const onCloseModal = () => dispatch(setRequestedAuthAction(null));
   const onSignInComplete = () => {
+    if (requestedAuthAction?.redirectToDashboard) {
+      // TODO: Properly redirect to the right dashboard instead of relying on the main route redirection status.
+      setTimeout(() => (location.href = "/"), 1000);
+    }
     onCloseModal();
   };
+
+  useEffect(() => {
+    uref.current = user;
+  }, [user]);
 
   useEffect(() => {
     setAuthAction(requestedAuthAction?.type || null);
@@ -32,7 +42,7 @@ export const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({
         onClose={onCloseModal}
         size="lg"
         position="center"
-        className="bg-black bg-opacity-30 [&>div>div]:bg-primary-50/95 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-end md:[&>div]:h-auto"
+        className="bg-black bg-opacity-30 [&>div>div]:bg-primary-50/95 [&>div]:mb-[1vh] [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-end  md:[&>div]:h-auto"
       >
         <Modal.Header>
           {authAction === "login" ? "Login" : "Sign Up"}

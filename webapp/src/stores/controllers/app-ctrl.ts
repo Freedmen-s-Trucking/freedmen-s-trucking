@@ -6,6 +6,7 @@ export interface AppState {
   requestedAuthAction: {
     type: "login" | "signup" | null;
     targetAccount?: AccountType;
+    redirectToDashboard?: boolean;
     strict?: boolean;
   } | null;
 }
