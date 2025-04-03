@@ -1,15 +1,15 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { UserEntity } from "@freedman-trucking/types";
-import home2LogoBlured from "@/assets/images/home-2-blur.webp";
-import home2Logo from "@/assets/images/home-2.webp";
-import Hero from "@/components/molecules/hero";
-import FAQ from "@/components/molecules/faq";
-import AppFooter from "@/components/organisms/footer";
-import scheduleDeliveryHeroImg from "@/assets/images/schedule-delivery-hero.webp";
-import scheduleDeliveryHeroImgBlured from "@/assets/images/schedule-delivery-hero-blur.webp";
-import { AppImageBackground } from "@/components/atoms/image-background";
-import { useAuth } from "@/hooks/use-auth";
-import { CreateOrderForm } from "@/components/molecules/create-order";
+import { UserEntity } from "@freedmen-s-trucking/types";
+import home2LogoBlured from "~/assets/images/home-2-blur.webp";
+import home2Logo from "~/assets/images/home-2.webp";
+import Hero from "~/components/molecules/hero";
+import FAQ from "~/components/molecules/faq";
+import AppFooter from "~/components/organisms/footer";
+import scheduleDeliveryHeroImg from "~/assets/images/schedule-delivery-hero.webp";
+import scheduleDeliveryHeroImgBlured from "~/assets/images/schedule-delivery-hero-blur.webp";
+import { AppImageBackground } from "~/components/atoms/image-background";
+import { useAuth } from "~/hooks/use-auth";
+import { CreateOrderForm } from "~/components/molecules/create-order";
 
 export const Route = createFileRoute("/preview/schedule-delivery")({
   beforeLoad({ context }) {

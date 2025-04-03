@@ -1,16 +1,16 @@
 import React from "react";
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
-import homeHeroImg from "@/assets/images/hero.webp";
-import homeHeroImgBlured from "@/assets/images/hero-blur.webp";
-import home2LogoBlured from "@/assets/images/home-2-blur.webp";
-import home2Logo from "@/assets/images/home-2.webp";
-import { AppImage } from "@/components/atoms/image";
-import AppFooter from "@/components/organisms/footer";
-import FAQ from "@/components/molecules/faq";
-import Testimonials from "@/components/molecules/testimonials";
-import Hero from "@/components/molecules/hero";
-import { SPECIALTIES_DATA } from "@/utils/constants";
-import { AppImageBackground } from "@/components/atoms/image-background";
+import homeHeroImg from "~/assets/images/hero.webp";
+import homeHeroImgBlured from "~/assets/images/hero-blur.webp";
+import home2LogoBlured from "~/assets/images/home-2-blur.webp";
+import home2Logo from "~/assets/images/home-2.webp";
+import { AppImage } from "~/components/atoms/image";
+import AppFooter from "~/components/organisms/footer";
+import FAQ from "~/components/molecules/faq";
+import Testimonials from "~/components/molecules/testimonials";
+import Hero from "~/components/molecules/hero";
+import { SPECIALTIES_DATA } from "~/utils/constants";
+import { AppImageBackground } from "~/components/atoms/image-background";
 
 export const Route = createFileRoute("/preview/")({
   beforeLoad({ context }) {

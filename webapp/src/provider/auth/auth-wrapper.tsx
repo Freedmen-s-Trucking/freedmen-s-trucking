@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { Modal } from "flowbite-react";
-import SignIn from "@/components/molecules/sign-in";
-import SignUp from "@/components/molecules/sign-up";
+import SignIn from "~/components/molecules/sign-in";
+import SignUp from "~/components/molecules/sign-up";
 import { useAppDispatch, useAppSelector } from "../../stores/hooks";
 import { setRequestedAuthAction } from "../../stores/controllers/app-ctrl";
-import { useAuth } from "@/hooks/use-auth";
-import { AppUser } from "@/stores/controllers/auth-ctrl";
+import { useAuth } from "~/hooks/use-auth";
+import { AppUser } from "~/stores/controllers/auth-ctrl";
 
 export const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({
   children,

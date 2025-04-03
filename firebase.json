@@ -10,13 +10,19 @@
         "firebase-debug.*.log",
         "*.local"
       ],
-      "predeploy": ["npm --prefix \"$RESOURCE_DIR\" run build"]
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" run build"
+      ]
     }
   ],
   "hosting": {
     "target": "webapp",
     "public": "webapp/dist",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
     "rewrites": [
       {
         "source": "/api/v1/**",
@@ -48,7 +54,16 @@
     "ui": {
       "enabled": true
     },
-    "singleProjectMode": true
+    "singleProjectMode": true,
+    "auth": {
+      "port": 9099
+    },
+    "pubsub": {
+      "port": 8085
+    },
+    "eventarc": {
+      "port": 9299
+    }
   },
   "firestore": {
     "rules": "backends/services-configs/firestore.rules",

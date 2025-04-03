@@ -1,16 +1,29 @@
 {
   "compilerOptions": {
-    "module": "ES2022",
+    /* --- Updated Build Options for ES2022 & ESM --- */
+    "target": "ES2022", // Set target to ES2022
+    "module": "NodeNext", // Use Node.js's modern module resolution for ESM (or ESNext/ES2022)
+    "moduleResolution": "NodeNext", // Aligns with the 'module' setting for modern Node.js behavior (or "Bundler")
+    "outDir": "lib",
+    "rootDir": ".",
+
+    /* --- General Build Options --- */
     "esModuleInterop": true,
-    "moduleResolution": "node",
     "noImplicitReturns": true,
     "noUnusedLocals": true,
-    "outDir": "lib",
     "sourceMap": true,
     "strict": true,
     "skipLibCheck": true,
-    "target": "es2017"
+    "isolatedModules": true,
+
+    /* --- Path Aliases --- */
+    "baseUrl": ".",
+    "paths": {
+      "@freedmen-s-trucking/types": ["../common/types"],
+      "~*": ["./*"]
+    }
   },
   "compileOnSave": true,
-  "include": ["src", "src/.types"]
+  "include": ["src"],
+  "exclude": ["node_modules", "lib", "build.js"]
 }

@@ -1,4 +1,4 @@
-import { AccountType } from "@freedman-trucking/types";
+import { AccountType } from "@freedmen-s-trucking/types";
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 

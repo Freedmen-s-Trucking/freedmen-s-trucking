@@ -23,7 +23,7 @@ import {
   DriverEntity,
   OrderEntity,
   OrderStatus,
-} from './types/index.js';
+} from '@freedmen-s-trucking/types';
 import _stripe from 'stripe';
 import { logger } from 'hono/logger';
 import { secureHeaders } from 'hono/secure-headers';

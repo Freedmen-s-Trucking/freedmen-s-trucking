@@ -6,14 +6,14 @@ import {
   productWithQuantityType,
   RequiredVehicleEntity,
   type,
-} from "@freedman-trucking/types";
+} from "@freedmen-s-trucking/types";
 import { useQuery } from "@tanstack/react-query";
 import { up } from "up-fetch";
 
 import {
   ProductWithQuantity,
   vehiclesInfoList,
-} from "@freedman-trucking/types";
+} from "@freedmen-s-trucking/types";
 
 const deliveryPriorityPricesAddons = {
   standard: 0,

@@ -9,10 +9,10 @@ import {
   PrimaryButton,
   SecondaryButton,
   Container,
-} from "@/components/atoms";
-import { useAppDispatch } from "@/stores/hooks";
-import { setRequestedAuthAction } from "@/stores/controllers/app-ctrl";
-import { CreateOrder } from "@/components/molecules/create-order";
+} from "~/components/atoms";
+import { useAppDispatch } from "~/stores/hooks";
+import { setRequestedAuthAction } from "~/stores/controllers/app-ctrl";
+import { CreateOrder } from "~/components/molecules/create-order";
 
 export const Route = createFileRoute("/")({
   beforeLoad({ context }) {

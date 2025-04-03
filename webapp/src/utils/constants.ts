@@ -2,7 +2,7 @@ import { FlowbiteTabsTheme } from "flowbite-react";
 import { isDevMode } from "./envs";
 
 export const SERVER_API = isDevMode
-  ? "http://127.0.0.1:5001/freedman-trucking-dev/us-central1/httpServer/api"
+  ? "http://127.0.0.1:5001/freedmen-s-trucking-dev/us-central1/httpServer/api"
   : "/api";
 
 export const PAGE_ROUTES = [

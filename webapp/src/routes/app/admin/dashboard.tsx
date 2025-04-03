@@ -10,17 +10,17 @@ import {
 import { motion } from "framer-motion";
 
 // Import components
-import AdminHeader from "@/components/atoms/admin/admin-header";
-import Overview from "@/components/atoms/admin/tab-overview";
-import Drivers from "@/components/atoms/admin/tab-drivers";
-import Orders from "@/components/atoms/admin/tab-orders";
-import Transactions from "@/components/atoms/admin/tab-transactions";
-import { useDbOperations } from "@/hooks/use-firestore";
+import AdminHeader from "~/components/atoms/admin/admin-header";
+import Overview from "~/components/atoms/admin/tab-overview";
+import Drivers from "~/components/atoms/admin/tab-drivers";
+import Orders from "~/components/atoms/admin/tab-orders";
+import Transactions from "~/components/atoms/admin/tab-transactions";
+import { useDbOperations } from "~/hooks/use-firestore";
 import {
   EntityWithPath,
   PlatformOverviewEntity,
-} from "@freedman-trucking/types";
-import { tabTheme } from "@/utils/constants";
+} from "@freedmen-s-trucking/types";
+import { tabTheme } from "~/utils/constants";
 
 // Mock API functions (replace with your actual API calls)
 const AdminDashboard: React.FC = () => {

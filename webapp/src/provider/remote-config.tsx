@@ -1,5 +1,5 @@
-import { DEFAULT_REMOTE_CONFIG_MAP } from "@/utils/constants";
-import { APP_ENV, isDevMode } from "@/utils/envs";
+import { DEFAULT_REMOTE_CONFIG_MAP } from "~/utils/constants";
+import { APP_ENV, isDevMode } from "~/utils/envs";
 import {
   RemoteConfig,
   getRemoteConfig,

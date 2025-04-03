@@ -10,7 +10,7 @@ import { motion } from "framer-motion";
 import {
   EntityWithPath,
   PlatformOverviewEntity,
-} from "@freedman-trucking/types";
+} from "@freedmen-s-trucking/types";
 
 const StatCard: React.FC<{
   title: string;

@@ -2,12 +2,17 @@ import 'source-map-support/register.js';
 import 'dotenv/config';
 import './config.js';
 import { onDocumentWritten } from 'firebase-functions/v2/firestore';
-import { CollectionName, DriverEntity, LATEST_PLATFORM_OVERVIEW_PATH, PlatformOverviewEntity } from './types/index.js';
+import {
+  CollectionName,
+  DriverEntity,
+  LATEST_PLATFORM_OVERVIEW_PATH,
+  PlatformOverviewEntity,
+} from '@freedmen-s-trucking/types';
 import { DocumentReference, FieldValue, getFirestore } from 'firebase-admin/firestore';
 
 export { httpServer } from './http-server.js';
 
-export const driverUpdateTrigger = onDocumentWritten(`${CollectionName.DRIVERS}/{driverId}`, ({ data, params }) => {
+const driverUpdateTrigger = onDocumentWritten(`${CollectionName.DRIVERS}/{driverId}`, ({ data, params }) => {
   const before = data?.before?.data?.() as DriverEntity | undefined;
   const after = data?.after?.data?.() as DriverEntity | undefined;
   const bVstatus = before?.verificationStatus;

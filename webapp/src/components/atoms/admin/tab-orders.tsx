@@ -27,8 +27,8 @@ import {
   OrderEntity,
   OrderPriority,
   OrderStatus,
-} from "@freedman-trucking/types";
-import { useDbOperations } from "@/hooks/use-firestore";
+} from "@freedmen-s-trucking/types";
+import { useDbOperations } from "~/hooks/use-firestore";
 import { useQuery } from "@tanstack/react-query";
 
 const Orders: React.FC = () => {
