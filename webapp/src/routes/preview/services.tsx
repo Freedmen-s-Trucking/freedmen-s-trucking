@@ -1,4 +1,9 @@
-import { createFileRoute, Link, useRouterState } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  redirect,
+  Link,
+  useRouterState,
+} from "@tanstack/react-router";
 import {
   Accordion,
   AccordionContent,
@@ -44,6 +49,13 @@ const ACCORDION_THEME = {
   },
 };
 export const Route = createFileRoute("/preview/services")({
+  beforeLoad({ context }) {
+    if (!context.remoteConfigs.canShowPreviewLandingPage) {
+      throw redirect({
+        to: "/",
+      });
+    }
+  },
   component: RouteComponent,
 });
 

@@ -15,16 +15,16 @@ import { setRequestedAuthAction } from "@/stores/controllers/app-ctrl";
 import { CreateOrder } from "@/components/molecules/create-order";
 
 export const Route = createFileRoute("/")({
-  beforeLoad(ctx) {
-    if (!ctx.context.user) {
+  beforeLoad({ context }) {
+    if (!context.user) {
       return;
     }
-    if (ctx.context.user.driverInfo) {
+    if (context.user.driverInfo) {
       throw redirect({
         to: "/app/driver/dashboard",
       });
     }
-    if (!ctx.context.user.isAnonymous) {
+    if (!context.user.isAnonymous) {
       throw redirect({
         to: "/app/customer/dashboard",
       });

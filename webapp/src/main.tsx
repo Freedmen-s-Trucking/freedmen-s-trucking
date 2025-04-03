@@ -5,9 +5,14 @@ import { routeTree } from "@/route-tree.gen";
 import "@/index.css";
 import { RootProviders } from "./provider/providers";
 import { useAppSelector } from "./stores/hooks";
+import { useGetRemoteConfig } from "./hooks/use-remote-config";
+import { RemoteConfigKeys } from "./utils/constants";
 
 // Create a new router instance
-const router = createRouter({ routeTree, context: { user: null } });
+const router = createRouter({
+  routeTree,
+  context: { user: null, remoteConfigs: {} },
+});
 
 // Register the router instance for type safety
 declare module "@tanstack/react-router" {
@@ -18,8 +23,16 @@ declare module "@tanstack/react-router" {
 
 export const CustomRouter: React.FC = () => {
   const { user } = useAppSelector((state) => state.authCtrl);
+  const canShowPreviewLandingPage = useGetRemoteConfig(
+    RemoteConfigKeys.can_show_preview_landing_page,
+  );
 
-  return <RouterProvider router={router} context={{ user }} />;
+  return (
+    <RouterProvider
+      router={router}
+      context={{ user, remoteConfigs: { canShowPreviewLandingPage } }}
+    />
+  );
 };
 
 // Render the app

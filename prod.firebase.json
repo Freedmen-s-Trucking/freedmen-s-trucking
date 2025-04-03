@@ -18,10 +18,14 @@
   ],
   "hosting": {
     "public": "webapp/dist",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"]
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
   },
   "remoteconfig": {
-    "template": "backends/remote-configs/src/dev_template.json"
+    "template": "backends/remote-configs/src/prod/template.json"
   },
   "emulators": {
     "functions": {
@@ -42,10 +46,10 @@
     "singleProjectMode": true
   },
   "firestore": {
-    "rules": "backends/services-configs/firestore.rules",
-    "indexes": "backends/services-configs/firestore.indexes.json"
+    "rules": "backends/services-configs/prod.firestore.rules",
+    "indexes": "backends/services-configs/prod.firestore.indexes.json"
   },
   "storage": {
-    "rules": "backends/services-configs/storage.rules"
+    "rules": "backends/storage.rules"
   }
 }

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import home2Logo from "@/assets/images/home-2.webp";
 import FAQ from "@/components/molecules/faq";
 import home2LogoBlured from "@/assets/images/home-2-blur.webp";
@@ -9,6 +9,13 @@ import contactHeroImgBlured from "@/assets/images/contact-us-hero-blur.webp";
 import { AppImageBackground } from "@/components/atoms/image-background";
 
 export const Route = createFileRoute("/preview/contact")({
+  beforeLoad({ context }) {
+    if (!context.remoteConfigs.canShowPreviewLandingPage) {
+      throw redirect({
+        to: "/",
+      });
+    }
+  },
   component: RouteComponent,
 });
 

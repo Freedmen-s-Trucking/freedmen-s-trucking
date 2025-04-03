@@ -80,3 +80,18 @@ export const SPECIALTIES_DATA = [
     serviceImageBlur: "/images/our-services-may-trucks-blur.webp",
   },
 ] as const;
+
+/**
+ * The set of keys used in Remote Config
+ */
+export enum RemoteConfigKeys {
+  can_show_preview_landing_page = "can_show_preview_landing_page",
+  test_number_key = "test_number_key",
+  test_string_key = "test_string_key",
+}
+
+export const DEFAULT_REMOTE_CONFIG_MAP = {
+  [RemoteConfigKeys.can_show_preview_landing_page]: false,
+  [RemoteConfigKeys.test_number_key]: 1,
+  [RemoteConfigKeys.test_string_key]: "test",
+};
