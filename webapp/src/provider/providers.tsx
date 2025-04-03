@@ -12,7 +12,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { isDevMode } from "../utils/envs";
 
 const queryClient = new QueryClient();
-const Providers: React.FC<{
+export const RootProviders: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
   return (
@@ -21,23 +21,21 @@ const Providers: React.FC<{
         <PerformanceMonitoringProvider>
           <StorageProvider>
             <FireStoreProvider>
-              <AnalyticsProvider>
-                <QueryClientProvider client={queryClient}>
-                  <Provider store={store}>
-                    <PersistGate loading={null} persistor={persistor}>
-                      <AuthProvider>
-                        {children}
-                        {isDevMode && (
-                          <ReactQueryDevtools
-                            initialIsOpen={false}
-                            client={queryClient}
-                          />
-                        )}
-                      </AuthProvider>
-                    </PersistGate>
-                  </Provider>
-                </QueryClientProvider>
-              </AnalyticsProvider>
+              <QueryClientProvider client={queryClient}>
+                <Provider store={store}>
+                  <PersistGate loading={null} persistor={persistor}>
+                    <AuthProvider>
+                      {children}
+                      {isDevMode && (
+                        <ReactQueryDevtools
+                          initialIsOpen={false}
+                          client={queryClient}
+                        />
+                      )}
+                    </AuthProvider>
+                  </PersistGate>
+                </Provider>
+              </QueryClientProvider>
             </FireStoreProvider>
           </StorageProvider>
         </PerformanceMonitoringProvider>
@@ -46,4 +44,12 @@ const Providers: React.FC<{
   );
 };
 
-export default Providers;
+export const RouteProviders: React.FC<{
+  children: React.ReactNode;
+}> = ({ children }) => {
+  return (
+    <>
+      <AnalyticsProvider>{children}</AnalyticsProvider>
+    </>
+  );
+};

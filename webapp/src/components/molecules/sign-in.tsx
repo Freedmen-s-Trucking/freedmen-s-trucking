@@ -2,9 +2,10 @@ import { ChangeEvent, useCallback, useRef, useState } from "react";
 import { useAuth } from "../../hooks/use-auth";
 import { FirebaseError } from "firebase/app";
 import { UserCredential } from "firebase/auth";
-import { Button, Label, Popover, Spinner, TextInput } from "flowbite-react";
+import { Label, Popover, Spinner, TextInput } from "flowbite-react";
 import { GoogleSignIn } from "./google-sign-in";
 import { IoCheckmark, IoClose } from "react-icons/io5";
+import { PrimaryButton } from "../atoms";
 const PASSWORD_SECURITY_LEVELS = [
   {
     label: "weak",
@@ -159,7 +160,7 @@ const SignIn: React.FC<{
         onSignInCompleted={onComplete}
         onSignInError={onGoogleSignInError}
       />
-      <h4 className="mb-2 flex min-w-60 items-center justify-center gap-4 text-lg font-bold text-gray-700 before:h-[2px] before:flex-1 before:bg-gray-700 after:h-[2px] after:flex-1 after:bg-gray-700 md:justify-start">
+      <h4 className="mb-2 flex min-w-60 items-center justify-center gap-4 text-lg font-bold text-secondary-800 opacity-20 before:h-[2px] before:flex-1 before:bg-secondary-800 after:h-[2px] after:flex-1 after:bg-secondary-800 md:justify-start">
         Or
       </h4>
       <form className="flex max-w-md flex-col gap-4" onSubmit={handleSubmit}>
@@ -243,10 +244,14 @@ const SignIn: React.FC<{
             />
           </Popover>
         </div>
-        <Button color="dark" type="submit" disabled={isLoading}>
+        <PrimaryButton
+          className="self-center justify-self-end px-8 py-3 text-xl"
+          type="submit"
+          disabled={isLoading}
+        >
           {isLoading && <Spinner aria-label="Spinner" size="sm" />}
           Sign In{isLoading ? "..." : ""}
-        </Button>
+        </PrimaryButton>
       </form>
       {error && <p className="py-2 text-sm text-red-500">{error}</p>}
     </div>

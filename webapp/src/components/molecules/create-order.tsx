@@ -1,4 +1,5 @@
 import { Modal } from "flowbite-react";
+import { motion } from "motion/react";
 import { add, formatDuration, intervalToDuration } from "date-fns";
 import {
   DriverOrderStatus,
@@ -20,6 +21,7 @@ import {
 } from "@/components/atoms/address-search-input";
 import { useAuth } from "@/hooks/use-auth";
 import { useComputeDeliveryEstimation } from "@/hooks/use-price-calculator";
+import { PrimaryButton, SecondaryButton, TextInput } from "../atoms";
 
 const OrderPriorities = [
   {
@@ -47,12 +49,17 @@ export const CreateOrder: React.FC<{
   };
   if (showInModal) {
     return (
-      <Modal show={showModal} onClose={onCloseModal} size={"lg"}>
+      <Modal
+        show={showModal}
+        onClose={onCloseModal}
+        size={"lg"}
+        className=" bg-black bg-opacity-30 [&>div>div]:bg-primary-50 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-end md:[&>div]:h-auto"
+      >
         <Modal.Header>
-          <h1 className="text-lg font-medium">Schedule Delivery</h1>
+          <span className="text-lg font-medium">Schedule Delivery</span>
         </Modal.Header>
-        <Modal.Body className="p-0">
-          <CreateOrderForm brightness={brightness} />
+        <Modal.Body className="max-h-[80vh] overflow-y-auto p-4">
+          <CreateOrderForm brightness={brightness} className="border-none" />
         </Modal.Body>
       </Modal>
     );
@@ -60,9 +67,10 @@ export const CreateOrder: React.FC<{
   return <CreateOrderForm brightness={brightness} />;
 };
 
-export const CreateOrderForm: React.FC<{ brightness: "dark" | "light" }> = ({
-  brightness,
-}) => {
+export const CreateOrderForm: React.FC<{
+  brightness: "dark" | "light";
+  className?: string;
+}> = ({ brightness, className }) => {
   const { user } = useAuth();
   const [deliveryPriority, setDeliveryPriorityInput] =
     useState<(typeof OrderPriorities)[number]>();
@@ -111,7 +119,10 @@ export const CreateOrderForm: React.FC<{ brightness: "dark" | "light" }> = ({
   });
 
   const dispatch = useAppDispatch();
-  const requestSignIn = () => dispatch(setRequestedAuthAction("login"));
+  const requestSignIn = () =>
+    dispatch(
+      setRequestedAuthAction({ type: "login", targetAccount: "customer" }),
+    );
   const handlePackageChange =
     (index: number) =>
     (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -230,6 +241,10 @@ export const CreateOrderForm: React.FC<{ brightness: "dark" | "light" }> = ({
     return null;
   };
 
+  const onPaymentComplete = () => {
+    setProcessPayment(null);
+  };
+
   const handleComputeEstimation = async (e: React.FormEvent) => {
     e.preventDefault();
     const validationResult = validateForm();
@@ -256,7 +271,7 @@ export const CreateOrderForm: React.FC<{ brightness: "dark" | "light" }> = ({
 
   return (
     <div
-      className={`flex flex-col items-center gap-4 rounded-3xl border p-8 ${brightness === "dark" ? "border-white bg-white/20" : ""}`}
+      className={`flex flex-col items-center gap-4 rounded-3xl border p-8 ${brightness === "dark" ? "border-white bg-white/20" : ""} ${className}`}
     >
       <form
         className="flex flex-col items-center gap-4"
@@ -283,7 +298,7 @@ export const CreateOrderForm: React.FC<{ brightness: "dark" | "light" }> = ({
           label=""
           trigger="click"
           renderTrigger={() => (
-            <input
+            <TextInput
               spellCheck
               minLength={10}
               readOnly
@@ -303,13 +318,13 @@ export const CreateOrderForm: React.FC<{ brightness: "dark" | "light" }> = ({
             </Dropdown.Item>
           ))}
         </Dropdown>
-        <div className="flex max-h-[400px] flex-col gap-4 overflow-y-auto py-2">
+        <div className="flex max-h-[400px] w-full flex-col gap-4 overflow-y-auto py-2">
           {packages.map((packageProps, index) => (
             <div
               key={index}
               className={`flex flex-col items-center justify-between gap-4 rounded-xl border p-2 ${brightness === "dark" ? "border-gray-300" : ""}`}
             >
-              <input
+              <TextInput
                 required
                 type="text"
                 name="name"
@@ -322,7 +337,7 @@ export const CreateOrderForm: React.FC<{ brightness: "dark" | "light" }> = ({
               <div className="flex flex-row items-center gap-2">
                 <label className="flex flex-col items-center gap-1">
                   <span>Quantity</span>
-                  <input
+                  <TextInput
                     required
                     type="number"
                     min={1}
@@ -337,7 +352,7 @@ export const CreateOrderForm: React.FC<{ brightness: "dark" | "light" }> = ({
                 </label>
                 <label className="flex flex-col items-center gap-1">
                   <span>Weight (lbs)</span>
-                  <input
+                  <TextInput
                     required
                     type="number"
                     min={1}
@@ -354,7 +369,7 @@ export const CreateOrderForm: React.FC<{ brightness: "dark" | "light" }> = ({
               <div className="flex flex-row items-center justify-between gap-2">
                 <label className="flex flex-col items-center gap-1">
                   <span>Height (in)</span>
-                  <input
+                  <TextInput
                     required
                     type="number"
                     min={1}
@@ -369,7 +384,7 @@ export const CreateOrderForm: React.FC<{ brightness: "dark" | "light" }> = ({
                 </label>
                 <label className="flex flex-col items-center gap-1">
                   <span>Width (in)</span>
-                  <input
+                  <TextInput
                     required
                     type="number"
                     min={1}
@@ -384,7 +399,7 @@ export const CreateOrderForm: React.FC<{ brightness: "dark" | "light" }> = ({
                 </label>
                 <label className="flex flex-col items-center gap-1">
                   <span>Length (in)</span>
-                  <input
+                  <TextInput
                     required
                     type="number"
                     min={1}
@@ -406,15 +421,15 @@ export const CreateOrderForm: React.FC<{ brightness: "dark" | "light" }> = ({
               </button>
             </div>
           ))}
-          <button
-            className={`rounded-xl border border-gray-300 bg-transparent px-4 py-2 transition-all duration-100 hover:bg-gray-200 hover:text-gray-800 ${brightness === "dark" ? "text-white shadow-sm shadow-gray-300/70" : "text-gray-800 shadow-sm shadow-gray-800/70"}`}
+          <SecondaryButton
+            className={`self-center rounded-xl border bg-transparent px-4 py-2 transition-all duration-100  hover:text-secondary-900 ${brightness === "dark" ? "text-white" : "text-secondary-900"}`}
             onClick={handleAddPackage}
           >
             Add Package
-          </button>
+          </SecondaryButton>
         </div>
         <div
-          className={`block w-full text-wrap rounded-xl border  p-3 text-sm  focus:outline-none focus:ring-transparent sm:text-[16px] ${brightness === "dark" ? "border-gray-300 bg-amber-400/30 text-white focus:border-red-400" : "border-gray-300 bg-amber-200/30 text-gray-800 focus:border-red-900"}`}
+          className={`block w-full text-wrap rounded-xl border  p-3 text-sm  focus:outline-none focus:ring-transparent sm:text-[16px] ${brightness === "dark" ? "border-gray-300 bg-amber-400/30 text-white focus:border-red-400" : "border-gray-300 bg-amber-200/30 text-secondary-900 focus:border-red-900"}`}
         >
           <span className="block">
             Required Vehicle Type:{" "}
@@ -424,7 +439,7 @@ export const CreateOrderForm: React.FC<{ brightness: "dark" | "light" }> = ({
           </span>
           <span className="block">
             Estimated Delivery Cost:{" "}
-            {estimations?.cost ? formattedEstimation() : "N/A"}
+            {estimations?.cost !== undefined ? formattedEstimation() : "N/A"}
           </span>
           <span className="block">
             Estimated Delivery Time:{" "}
@@ -442,25 +457,32 @@ export const CreateOrderForm: React.FC<{ brightness: "dark" | "light" }> = ({
           </span>
           <span className="block">
             Estimated Distance:{" "}
-            {estimations?.distanceInMiles
+            {estimations?.distanceInMiles !== undefined
               ? `${estimations.distanceInMiles.toFixed(3)} miles`
               : "N/A"}
           </span>
         </div>
-        <div
-          className={`inline-block w-full rounded-lg p-1 text-center text-red-500 transition-all duration-500 ${error ? "" : "hidden"} ${brightness === "dark" ? "bg-white " : "bg-gray-950"}`}
+        <motion.div
+          initial={{ opacity: 0, scaleY: 0, scaleX: 0.8 }}
+          animate={{
+            opacity: 1,
+            scaleY: 1,
+            scaleX: 1,
+            transition: { duration: 0.2, type: "spring", stiffness: 300 },
+          }}
+          className={`inline-block w-full rounded-lg p-1 text-center text-red-500 transition-all duration-500 ${error ? "" : "hidden"} ${brightness === "dark" ? "bg-white " : ""}`}
         >
           {error}
-        </div>
+        </motion.div>
         {user.isAnonymous ? (
-          <button
+          <PrimaryButton
             type="submit"
-            className={`rounded-xl  border bg-transparent px-5 py-3 text-sm shadow-md transition-all duration-100  ${brightness === "dark" ? "text-white shadow-gray-300/70  hover:bg-gray-200 hover:text-gray-800" : "text-gray-900 shadow-gray-800/70 hover:bg-gray-800 hover:text-white  "}`}
-            // className="rounded-full bg-white px-5 py-3 text-gray-800"
+            // className={`rounded-xl  border bg-transparent px-5 py-3 text-sm shadow-md transition-all duration-100  ${brightness === "dark" ? "text-white shadow-gray-300/70  hover:bg-gray-200 hover:text-secondary-900" : "text-secondary-950 shadow-secondary-900/70 hover:bg-secondary-900 hover:text-white  "}`}
+            // className="rounded-full bg-white px-5 py-3 text-secondary-900"
             disabled={isEstimationLoading}
           >
             Sign In To Continue
-          </button>
+          </PrimaryButton>
         ) : (
           <>
             {estimations && processPayment && (
@@ -468,18 +490,17 @@ export const CreateOrderForm: React.FC<{ brightness: "dark" | "light" }> = ({
                 showInModal
                 price={estimations.cost}
                 orderId={processPayment.orderId}
-                onComplete={() => setProcessPayment(null)}
+                onComplete={onPaymentComplete}
               />
             )}
-            <button
+            <PrimaryButton
               type="submit"
-              className="rounded-xl bg-green-900/90 px-5 py-3 text-white"
               disabled={isEstimationLoading || isScheduling}
             >
               {isScheduling
                 ? "Scheduling..."
                 : `Schedule Now For ${formattedEstimation()}`}
-            </button>
+            </PrimaryButton>
           </>
         )}
       </form>

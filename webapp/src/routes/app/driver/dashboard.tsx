@@ -416,7 +416,7 @@ const DriverDashboard = () => {
           <Tooltip content={"Return to home"} className="w-36">
             <Link
               to="/"
-              className="inline-flex items-center rounded-3xl border border-gray-300 bg-white p-2 text-sm font-medium text-gray-900 hover:border-red-400 hover:text-red-400 focus:border-red-400 focus:text-red-400 disabled:pointer-events-none disabled:opacity-50"
+              className="text-secondary-950 inline-flex items-center rounded-3xl border border-gray-300 bg-white p-2 text-sm font-medium hover:border-red-400 hover:text-red-400 focus:border-red-400 focus:text-red-400 disabled:pointer-events-none disabled:opacity-50"
             >
               <HiHome className="h-8 w-8" />
             </Link>
@@ -437,7 +437,7 @@ const DriverDashboard = () => {
         >
           <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
-              <h5 className="text-lg font-bold tracking-tight text-gray-900">
+              <h5 className="text-secondary-950 text-lg font-bold tracking-tight">
                 Current Earnings
               </h5>
               <p className="text-3xl font-bold text-blue-600">
@@ -445,7 +445,7 @@ const DriverDashboard = () => {
               </p>
             </Card>
             <Card>
-              <h5 className="text-lg font-bold tracking-tight text-gray-900">
+              <h5 className="text-secondary-950 text-lg font-bold tracking-tight">
                 Total Earnings
               </h5>
               <p className="text-3xl font-bold text-green-600">
@@ -453,7 +453,7 @@ const DriverDashboard = () => {
               </p>
             </Card>
             <Card>
-              <h5 className="text-lg font-bold tracking-tight text-gray-900">
+              <h5 className="text-secondary-950 text-lg font-bold tracking-tight">
                 Tasks Completed
               </h5>
               <p className="text-3xl font-bold text-purple-600">
@@ -461,7 +461,7 @@ const DriverDashboard = () => {
               </p>
             </Card>
             <Card>
-              <h5 className="text-lg font-bold tracking-tight text-gray-900">
+              <h5 className="text-secondary-950 text-lg font-bold tracking-tight">
                 Active Tasks
               </h5>
               <p className="text-3xl font-bold text-orange-600">
@@ -497,10 +497,10 @@ const DriverDashboard = () => {
                 >
                   <div className="flex items-start justify-between">
                     <div>
-                      <h5 className="text-lg font-bold tracking-tight text-gray-900">
+                      <h5 className="text-secondary-950 text-lg font-bold tracking-tight">
                         {order.data.clientName}
                       </h5>
-                      <p className="mb-2 font-normal text-gray-700 dark:text-gray-400">
+                      <p className="text-secondary-800 mb-2 font-normal dark:text-gray-400">
                         ORD:{order.path.split("/").pop()?.slice(0, 8)}-****-****
                         <DisplayRequiredVehicles
                           vehicles={order.data.requiredVehicles || []}
@@ -557,7 +557,7 @@ const DriverDashboard = () => {
                     <li key={order.path} className="py-3 sm:py-4">
                       <div className="flex items-center space-x-4">
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium text-gray-900">
+                          <p className="text-secondary-950 truncate text-sm font-medium">
                             {order.data.clientName}
                           </p>
                           <p className="truncate text-sm text-gray-500">
@@ -568,7 +568,7 @@ const DriverDashboard = () => {
                               formatDate(order.data.createdAt)}
                           </p>
                         </div>
-                        <div className="inline-flex items-center text-base font-semibold text-gray-900">
+                        <div className="text-secondary-950 inline-flex items-center text-base font-semibold">
                           ${order.data.price.toFixed(2)}
                         </div>
                         <div>{getStatusBadge(order.data.driverStatus)}</div>
@@ -611,10 +611,10 @@ const DriverDashboard = () => {
               >
                 <div className="flex flex-col justify-between md:flex-row">
                   <div className="mb-3 md:mb-0">
-                    <h5 className="text-lg font-bold tracking-tight text-gray-900">
+                    <h5 className="text-secondary-950 text-lg font-bold tracking-tight">
                       Order {order.path.split("/").pop()?.slice(0, 13)}-****
                     </h5>
-                    <p className="font-normal text-gray-700 dark:text-gray-400">
+                    <p className="text-secondary-800 font-normal dark:text-gray-400">
                       Client: {order.data.clientName}
                     </p>
                     <p className="text-sm text-gray-500">
@@ -626,7 +626,7 @@ const DriverDashboard = () => {
                     <div className="mb-2">
                       {getStatusBadge(order.data.driverStatus)}
                     </div>
-                    <p className="text-lg font-bold text-gray-900">
+                    <p className="text-secondary-950 text-lg font-bold">
                       ${order.data.price.toFixed(2)}
                     </p>
                     <p className="text-sm text-gray-600">
@@ -640,13 +640,13 @@ const DriverDashboard = () => {
                 <div className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-2">
                   <div>
                     <p className="text-sm font-semibold">Pickup Location:</p>
-                    <p className="text-sm text-gray-700">
+                    <p className="text-secondary-800 text-sm">
                       {order.data.pickupLocation.address}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm font-semibold">Dropoff Location:</p>
-                    <p className="text-sm text-gray-700">
+                    <p className="text-secondary-800 text-sm">
                       {order.data.deliveryLocation.address}
                     </p>
                   </div>
@@ -655,7 +655,7 @@ const DriverDashboard = () => {
                 <div className="mt-4 flex items-center justify-between">
                   <Accordion collapseAll className="w-full">
                     <Accordion.Panel>
-                      <Accordion.Title className="bg-gray-200 p-2 text-gray-900">
+                      <Accordion.Title className="text-secondary-950 bg-gray-200 p-2">
                         View Map
                       </Accordion.Title>
                       <Accordion.Content>
@@ -717,10 +717,10 @@ const DriverDashboard = () => {
               <Card key={order.path}>
                 <div className="flex flex-col justify-between md:flex-row">
                   <div className="mb-3 md:mb-0">
-                    <h5 className="text-lg font-bold tracking-tight text-gray-900">
+                    <h5 className="text-secondary-950 text-lg font-bold tracking-tight">
                       Order {order.path.split("/").pop()?.slice(0, 13)}-****
                     </h5>
-                    <p className="font-normal text-gray-700 dark:text-gray-400">
+                    <p className="text-secondary-800 font-normal dark:text-gray-400">
                       Client: {order.data.clientName}
                     </p>
                     <p className="text-sm text-gray-500">
@@ -731,7 +731,7 @@ const DriverDashboard = () => {
                     <div className="mb-2">
                       {getStatusBadge(order.data.driverStatus)}
                     </div>
-                    <p className="text-lg font-bold text-gray-900">
+                    <p className="text-secondary-950 text-lg font-bold">
                       ${order.data.price.toFixed(2)}
                     </p>
                     <p className="text-sm text-gray-600">
@@ -745,13 +745,13 @@ const DriverDashboard = () => {
                 <div className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-2">
                   <div>
                     <p className="text-sm font-semibold">Pickup Location:</p>
-                    <p className="text-sm text-gray-700">
+                    <p className="text-secondary-800 text-sm">
                       {order.data.pickupLocation.address}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm font-semibold">Dropoff Location:</p>
-                    <p className="text-sm text-gray-700">
+                    <p className="text-secondary-800 text-sm">
                       {order.data.deliveryLocation.address}
                     </p>
                   </div>
@@ -760,7 +760,7 @@ const DriverDashboard = () => {
                 <div className="mt-4 flex items-center justify-between">
                   <Accordion collapseAll className="w-full">
                     <Accordion.Panel>
-                      <Accordion.Title className="bg-gray-200 p-2 text-gray-900">
+                      <Accordion.Title className="text-secondary-950 bg-gray-200 p-2">
                         View Map
                       </Accordion.Title>
                       <Accordion.Content>
@@ -798,7 +798,7 @@ const DriverDashboard = () => {
                 </div>
                 <div className="flex-1 space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="text-secondary-800 block text-sm font-medium">
                       Full Name
                     </label>
                     <input
@@ -809,7 +809,7 @@ const DriverDashboard = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="text-secondary-800 block text-sm font-medium">
                       Email Address
                     </label>
                     <input
@@ -827,7 +827,7 @@ const DriverDashboard = () => {
                 <h5 className="mb-3 text-lg font-bold">
                   Driver License Information
                 </h5>
-                <div className="rounded-lg bg-gray-50 p-4">
+                <div className="rounded-lg bg-primary-50 p-4">
                   <div className="mb-3 flex items-start justify-between">
                     <AppImage
                       fallback={<MdHideImage className="h-8 w-8" />}
@@ -898,7 +898,7 @@ const DriverDashboard = () => {
                 <h5 className="mb-3 text-lg font-bold">
                   Insurance Information
                 </h5>
-                <div className="rounded-lg bg-gray-50 p-4">
+                <div className="rounded-lg bg-primary-50 p-4">
                   <div className="mb-3 flex items-start justify-between">
                     <AppImage
                       fallback={<MdHideImage className="h-8 w-8" />}

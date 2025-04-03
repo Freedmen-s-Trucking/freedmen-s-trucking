@@ -1,17 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
-import aboutUsHeroImg from "../assets/images/about-us-hero.webp";
-import aboutUsHeroImgBlured from "../assets/images/about-us-hero-blur.webp";
-import home2Logo from "../assets/images/home-2.webp";
-import home2LogoBlured from "../assets/images/home-2-blur.webp";
-import Hero from "../components/molecules/hero";
-import Testimonials from "../components/molecules/testimonials";
-import FAQ from "../components/molecules/faq";
-import AppFooter from "../components/organisms/footer";
-import aboutUsTruck from "../assets/images/about-us-truck-1.webp";
-import { AppImage } from "../components/atoms/image";
-import { AppImageBackground } from "../components/atoms/image-background";
+import aboutUsHeroImg from "@/assets/images/about-us-hero.webp";
+import aboutUsHeroImgBlured from "@/assets/images/about-us-hero-blur.webp";
+import home2Logo from "@/assets/images/home-2.webp";
+import home2LogoBlured from "@/assets/images/home-2-blur.webp";
+import Hero from "@/components/molecules/hero";
+import Testimonials from "@/components/molecules/testimonials";
+import FAQ from "@/components/molecules/faq";
+import AppFooter from "@/components/organisms/footer";
+import aboutUsTruck from "@/assets/images/about-us-truck-1.webp";
+import { AppImage } from "@/components/atoms/image";
+import { AppImageBackground } from "@/components/atoms/image-background";
 
-export const Route = createFileRoute("/about")({
+export const Route = createFileRoute("/preview/about")({
   component: About,
 });
 const AboutUsSection: React.FC = () => {

@@ -3,7 +3,8 @@ import { useAuth } from "../../hooks/use-auth";
 import { FirebaseError } from "firebase/app";
 import { UserCredential } from "firebase/auth";
 import { Link } from "@tanstack/react-router";
-import { Button, Label, Popover, Spinner, TextInput } from "flowbite-react";
+import { motion } from "motion/react";
+import { Label, Popover, Spinner } from "flowbite-react";
 import { GoogleSignIn } from "./google-sign-in";
 import {
   IoArrowForwardCircleOutline,
@@ -15,9 +16,11 @@ import { TbLayoutDashboard, TbTruckDelivery } from "react-icons/tb";
 import { MdOutlinePostAdd } from "react-icons/md";
 import { useDbOperations } from "../../hooks/use-firestore";
 import { useStorageOperations } from "../../hooks/use-storage";
-import { DriverEntity } from "@freedman-trucking/types";
+import { AccountType, DriverEntity } from "@freedman-trucking/types";
 import { useAppDispatch } from "@/stores/hooks";
 import { setUser } from "@/stores/controllers/auth-ctrl";
+import { PrimaryButton, TextInput } from "../atoms";
+import { setRequestedAuthAction } from "@/stores/controllers/app-ctrl";
 const PASSWORD_SECURITY_LEVELS = [
   {
     label: "weak",
@@ -165,10 +168,13 @@ const SignUpUser: React.FC<{
         onSignInCompleted={onComplete}
         onSignInError={onGoogleSignInError}
       />
-      <h4 className="mb-2 flex min-w-60 items-center justify-center gap-4 text-lg font-bold text-gray-700 before:h-[2px] before:flex-1 before:bg-gray-700 after:h-[2px] after:flex-1 after:bg-gray-700 md:justify-start">
+      <h4 className="mb-2 flex min-w-60 items-center justify-center gap-4 text-lg font-bold text-secondary-800 opacity-20 before:h-[2px] before:flex-1 before:bg-secondary-800 after:h-[2px] after:flex-1 after:bg-secondary-800 md:justify-start">
         Or
       </h4>
-      <form className="flex max-w-md flex-col gap-4" onSubmit={handleSubmit}>
+      <form
+        className="flex max-w-md flex-col gap-4 text-secondary-800"
+        onSubmit={handleSubmit}
+      >
         <div>
           <div className="mb-2 block">
             <Label htmlFor="email1" value="Your email" />
@@ -183,12 +189,14 @@ const SignUpUser: React.FC<{
             required
           />
         </div>
-        <div>
+        <div className="z-10">
           <div className="mb-2 block">
             <Label htmlFor="password1" value="Your password" />
           </div>
           <Popover
+            tabIndex={-1}
             trigger="hover"
+            className="absolute z-auto inline-block w-max max-w-[100vw] rounded-lg border border-gray-200 bg-primary-100 shadow-sm outline-none dark:border-gray-600 dark:bg-secondary-900 [&>div>div:first-child]:border-none [&>div>div:first-child]:bg-primary-100 [&>div>div:last-child]:-mt-[2px]"
             content={
               <div className="space-y-2 p-3">
                 {password.length < 8 && (
@@ -261,29 +269,46 @@ const SignUpUser: React.FC<{
             color={password === confirmPassword ? "gray" : "failure"}
           />
         </div>
-        <Button color="dark" type="submit" disabled={isLoading}>
+        {error && (
+          <motion.p
+            initial={{ opacity: 0, scaleY: 0, scaleX: 0.8 }}
+            animate={{
+              opacity: 1,
+              scaleY: 1,
+              scaleX: 1,
+              transition: { duration: 0.2, type: "spring", stiffness: 300 },
+            }}
+            className="py-2 text-sm text-red-500"
+          >
+            {error}
+          </motion.p>
+        )}
+        <PrimaryButton
+          type="submit"
+          isLoading={isLoading}
+          className="self-center justify-self-end px-8 py-3 text-xl"
+        >
           {isLoading && <Spinner aria-label="Spinner" size="sm" />}
           Sign Up{isLoading ? "..." : ""}
-        </Button>
+        </PrimaryButton>
       </form>
-      {error && <p className="py-2 text-sm text-red-500">{error}</p>}
     </div>
   );
 };
 
 const AccountSelection: React.FC<{
-  onAccountSelected: (type: "client" | "driver") => void;
+  onAccountSelected: (type: AccountType) => void;
 }> = ({ onAccountSelected }) => {
   return (
-    <div className="mx-auto max-w-md space-y-4">
-      <h1 className="text-center text-2xl font-bold">
+    <div className="mx-auto max-w-md space-y-4 text-secondary-950">
+      <h1 className="text-center text-2xl font-bold ">
         Join as a client or driver
       </h1>
       <div className="flex space-x-4">
         <button
           type="button"
-          className="flex flex-1 flex-col items-center space-x-3 rounded-lg border border-red-400/90 px-4 py-2 font-bold text-red-400/90 hover:bg-red-400 hover:text-white"
-          onClick={() => onAccountSelected("client")}
+          className="flex flex-1 flex-col items-center space-x-3 rounded-lg border border-primary-700/90 px-4 py-2 font-bold text-primary-700 hover:bg-primary-700 hover:text-white"
+          onClick={() => onAccountSelected("customer")}
         >
           <FaHouseUser className="text-7xl" />
           {/* TODO: Update this text. */}
@@ -293,7 +318,7 @@ const AccountSelection: React.FC<{
         </button>
         <button
           type="button"
-          className="flex flex-1 flex-col items-center space-x-3 rounded-lg border border-gray-900 px-4 py-2 font-bold text-gray-800 hover:bg-gray-800/95 hover:text-white"
+          className="flex flex-1 flex-col items-center space-x-3 rounded-lg border border-secondary-800/90 px-4 py-2 font-bold text-secondary-800 hover:bg-secondary-800 hover:text-white"
           onClick={() => onAccountSelected("driver")}
         >
           <TbTruckDelivery className="text-7xl" />
@@ -315,11 +340,11 @@ const Stepper: React.FC<{ activeStep: number; steps: string[] }> = ({
         {steps.map((step, index) => (
           <li
             key={index}
-            className={`flex flex-row items-center ${index <= activeStep ? "text-gray-800 " : "text-gray-500"}`}
+            className={`flex flex-row items-center ${index <= activeStep ? "text-secondary-950 " : "text-gray-500"}`}
           >
             <span className="flex flex-col items-center  justify-center">
               <span
-                className={`mb-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${index === activeStep ? "" : "border"} ${index < activeStep ? "border-gray-900 " : "border-gray-500"}`}
+                className={`mb-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${index === activeStep ? "" : "border"} ${index < activeStep ? "border-secondary-950 " : "border-gray-500"}`}
               >
                 {index + 1}
               </span>
@@ -483,35 +508,35 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
     }
   };
   return (
-    <div className="mx-auto max-w-md space-y-4">
+    <div className="mx-auto max-w-md space-y-4 text-secondary-800">
       <h1 className="text-3xl font-bold">Additional Info</h1>
       <form className="flex flex-col space-y-2" onSubmit={handleSubmit}>
         <label className="block">
-          <span className="block text-sm font-medium text-gray-700">
+          <span className="block text-sm font-medium text-secondary-800">
             Full Name<span className="text-lg text-red-400">*</span>
           </span>
-          <input
+          <TextInput
             type="text"
             value={fullName}
             onChange={onFullNameChanged}
             required
             autoComplete="billing name"
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+            // className="mt-1 block w-full rounded-md border-gray-300 py-4 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
           />
         </label>
         <label className="block">
-          <span className="block text-sm font-medium text-gray-700">
+          <span className="block text-sm font-medium text-secondary-800">
             Phone Number
           </span>
-          <input
+          <TextInput
             type="text"
             autoComplete="tel"
             value={phoneNumber}
             onChange={onPhoneNumberChanged}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+            // className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
           />
         </label>
-        <span className="block text-sm font-medium text-gray-700">
+        <span className="block text-sm font-medium text-secondary-800">
           Driver License
           <span className="text-lg text-red-400">*</span>
         </span>
@@ -547,7 +572,7 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
             </label>
           )}
         </div>
-        <span className="block text-sm font-medium text-gray-700">
+        <span className="block text-sm font-medium text-secondary-800">
           Driver Insurance
           <span className="text-lg text-red-400">*</span>
         </span>
@@ -583,30 +608,27 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
             </label>
           )}
         </div>
-        <button
-          color="dark"
+        <PrimaryButton
           type="submit"
-          disabled={isLoading}
-          className="flex flex-row items-center justify-center gap-2 rounded-md bg-gray-900 px-10 py-2 text-white disabled:cursor-not-allowed disabled:bg-gray-700"
+          isLoading={isLoading}
+          // className="disabled:bg-secondary-800 bg-secondary-950 flex flex-row items-center justify-center gap-2 rounded-md px-10 py-2 text-white disabled:cursor-not-allowed"
         >
           {isLoading && <Spinner aria-label="Spinner" size="sm" />}
           <span>Save{isLoading ? "..." : ""}</span>
-        </button>
+        </PrimaryButton>
       </form>
       {error && <p className="py-2 text-sm text-red-500">{error}</p>}
     </div>
   );
 };
 
-const Confirm: React.FC<{ accountType: "client" | "driver" }> = ({
-  accountType,
-}) => {
+const Confirm: React.FC<{ accountType: AccountType }> = ({ accountType }) => {
   const clientNextSteps = [
     {
       title: "Schedule Delivery",
       description: "Schedule your first delivery",
       Icon: (props: Record<string, unknown>) => <TbTruckDelivery {...props} />,
-      link: "/schedule-delivery",
+      link: "/preview/schedule-delivery",
     },
     {
       title: "Go to Dashboard",
@@ -625,29 +647,37 @@ const Confirm: React.FC<{ accountType: "client" | "driver" }> = ({
       link: "/app/driver/dashboard",
     },
   ] as const;
+  const dispatch = useAppDispatch();
+  const onCloseModal = () => dispatch(setRequestedAuthAction(null));
   return (
-    <div className="mx-auto max-w-md space-y-4">
+    <div className="mx-auto max-w-md space-y-4 text-secondary-800">
       <h1 className="text-3xl font-bold">Sign Up Completed 🎉</h1>
-      <p className="text-sm text-gray-700">
+      <p className="text-sm">
         You have successfully signed up as a {accountType}!
       </p>
       <br />
-      <h3 className="text-sm text-gray-700">Now what next?</h3>
-      <ol className="shadow-xs mb-8 flex w-full items-center space-x-3 overflow-hidden rounded-lg text-center text-sm font-medium">
-        {(accountType === "client" ? clientNextSteps : driverNextSteps).map(
+      <h3 className="text-sm">Now what next?</h3>
+      <ol className="shadow-xs mb-8 flex w-full items-center space-x-3 overflow-hidden rounded-lg p-2 text-center text-sm font-medium">
+        {(accountType === "customer" ? clientNextSteps : driverNextSteps).map(
           (step) => (
-            <li
+            <motion.li
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.975 }}
               key={step.title}
               className="rounded-lg border border-gray-500 p-3"
             >
-              <Link to={step.link} className="flex flex-col items-center">
+              <Link
+                to={step.link}
+                onClick={onCloseModal}
+                className="flex flex-col items-center"
+              >
                 <span className="flex w-full flex-row items-center justify-between">
                   <step.Icon className="text-5xl" />
                   <IoArrowForwardCircleOutline className="text-2xl" />
                 </span>
                 <span className="text-xl">{step.title}</span>
               </Link>
-            </li>
+            </motion.li>
           ),
         )}
       </ol>
@@ -655,40 +685,59 @@ const Confirm: React.FC<{ accountType: "client" | "driver" }> = ({
   );
 };
 
-const SignUp: React.FC = () => {
+const SignUp: React.FC<{ account?: AccountType }> = ({ account }) => {
   const steps = ["Account Type", "User Info", "Additional Info", "Confirm"];
-  const [activeStep, setActiveStep] = useState(0);
-  const [accountType, setAccountType] = useState<"client" | "driver">("driver");
+  const { user } = useAuth();
+  const [activeStep, setActiveStep] = useState<number>();
+  const [accountType, setAccountType] = useState<AccountType | undefined>(
+    account,
+  );
 
   const moveToNextStep = () => {
-    setActiveStep((prev) => prev + 1);
+    setActiveStep((prev) => (prev || 0) + 1);
   };
 
-  const onAccountSelected = (type: "client" | "driver") => {
+  const onAccountSelected = (type: AccountType) => {
     setAccountType(type);
-    setActiveStep((prev) => prev + 1);
+    setActiveStep((prev) => (prev || 0) + 1);
   };
 
-  const onUserCreated = (userCredential: UserCredential) => {
-    console.log({ userCredential });
-    if (accountType === "driver") {
-      setActiveStep((prev) => prev + 1);
+  const onUserCreated = () => {
+    // if (accountType === "driver" && !user.isAnonymous) {
+    //   setActiveStep((prev) => prev + 1);
+    // } else {
+    //   setActiveStep((prev) => prev + 2);
+    // }
+  };
+
+  useEffect(() => {
+    if (account === "driver" && !user.isAnonymous) {
+      if (activeStep && activeStep < 2) {
+        setActiveStep(2);
+      }
+    } else if (!user.isAnonymous) {
+      setActiveStep(3);
+    } else if (accountType) {
+      setActiveStep(1);
     } else {
-      setActiveStep((prev) => prev + 2);
+      setActiveStep(0);
     }
-  };
+  }, [account, accountType, user, activeStep]);
 
+  if (activeStep === undefined) return null;
   return (
     <div className="mx-auto max-w-md">
       <Stepper activeStep={activeStep} steps={steps} />
       {activeStep === 0 && (
         <AccountSelection onAccountSelected={onAccountSelected} />
       )}
-      {activeStep === 1 && <SignUpUser onComplete={onUserCreated} />}
-      {activeStep === 2 && (
+      {activeStep === 1 && accountType && (
+        <SignUpUser onComplete={onUserCreated} />
+      )}
+      {activeStep === 2 && accountType && (
         <AdditionalInfo onAdditionalInfoAdded={moveToNextStep} />
       )}
-      {activeStep === 3 && <Confirm accountType={accountType} />}
+      {activeStep === 3 && accountType && <Confirm accountType={accountType} />}
     </div>
   );
 };

@@ -70,7 +70,7 @@ const ProfileDropdown: React.FC = () => {
           }}
           label=""
         >
-          <div className="px-4 py-3 text-sm text-gray-900">
+          <div className="text-secondary-950 px-4 py-3 text-sm">
             {user.info.displayName && <div>{user.info.displayName}</div>}
             {user.info.email && (
               <div className="truncate font-medium">{user.info.email}</div>
@@ -117,7 +117,7 @@ const ProfileDropdown: React.FC = () => {
                     Not registered?&nbsp;
                     <button
                       onClick={() => setAuthAction("signup")}
-                      className="font-bold text-gray-800 hover:underline"
+                      className="text-secondary-900 font-bold hover:underline"
                     >
                       {">>"}Create account
                     </button>
@@ -133,7 +133,7 @@ const ProfileDropdown: React.FC = () => {
                     Already have an account?&nbsp;
                     <button
                       onClick={() => setAuthAction("login")}
-                      className="font-bold text-gray-900 hover:underline"
+                      className="text-secondary-950 font-bold hover:underline"
                     >
                       {">>"}Login
                     </button>
@@ -151,7 +151,7 @@ const ProfileDropdown: React.FC = () => {
 const AppNavbar: React.FC = () => {
   const router = useRouterState();
   const inactiveClasses =
-    "block py-2 px-3 text-gray-900 rounded-sm hover:bg-red-100 md:hover:bg-transparent md:text-white md:hover:text-red-400 md:p-0";
+    "block py-2 px-3 text-secondary-950 rounded-sm hover:bg-red-100 md:hover:bg-transparent md:text-white md:hover:text-red-400 md:p-0";
   const activeClasses =
     "block py-2 px-3 text-white bg-red-400 rounded-sm md:bg-transparent md:text-red-400 md:p-0 pointer-events-none";
   return (
@@ -219,11 +219,9 @@ const AppNavbar: React.FC = () => {
         className="bg-white md:bg-transparent"
       >
         {PAGE_ROUTES.map((item, index) => (
-          // <Navbar.Link key={index} className="m-0 space-x-0">
           <Link
             key={index}
             to={item.href}
-            // className={`md:mx-0 lg:mx-3 ${
             className={`lg:mx-3 ${
               router.location.pathname === item.href
                 ? activeClasses
@@ -232,7 +230,6 @@ const AppNavbar: React.FC = () => {
           >
             {item.name}
           </Link>
-          // </Navbar.Link>
         ))}
       </Navbar.Collapse>
     </Navbar>

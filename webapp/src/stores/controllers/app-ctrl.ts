@@ -1,8 +1,13 @@
+import { AccountType } from "@freedman-trucking/types";
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
 export interface AppState {
-  requestedAuthAction: "login" | "signup" | null;
+  requestedAuthAction: {
+    type: "login" | "signup" | null;
+    targetAccount?: AccountType;
+    strict?: boolean;
+  } | null;
 }
 
 const initialState: AppState = {
@@ -15,7 +20,7 @@ export const appCtrl = createSlice({
   reducers: {
     setRequestedAuthAction: (
       state,
-      action: PayloadAction<"login" | "signup" | null>,
+      action: PayloadAction<AppState["requestedAuthAction"]>,
     ) => {
       state.requestedAuthAction = action.payload;
     },

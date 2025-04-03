@@ -32,7 +32,7 @@ const Hero: React.FC<{
       >
         <div className="mx-auto max-w-screen-xl px-4 py-8  md:px-8 md:py-12 lg:px-16">
           <div
-            className={`fixed left-0 right-0 top-0 z-50 transition-colors duration-300 md:relative md:bg-transparent ${isScrolled ? "bg-gray-900" : ""}`}
+            className={`fixed left-0 right-0 top-0 z-50 transition-colors duration-300 md:relative md:bg-transparent ${isScrolled ? "bg-secondary-950" : ""}`}
           >
             <AppNavbar />
           </div>

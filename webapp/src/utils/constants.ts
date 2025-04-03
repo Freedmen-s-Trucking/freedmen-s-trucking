@@ -5,11 +5,11 @@ export const SERVER_API = isDevMode
   : "/api";
 
 export const PAGE_ROUTES = [
-  { name: "Home", href: "/" },
-  { name: "About", href: "/about" },
-  { name: "Services", href: "/services" },
-  { name: "Contact", href: "/contact" },
-  { name: "Tracking", href: "/tracking" },
+  { name: "Home", href: "/preview" },
+  { name: "About", href: "/preview/about" },
+  { name: "Services", href: "/preview/services" },
+  { name: "Contact", href: "/preview/contact" },
+  { name: "Tracking", href: "/preview/tracking" },
 ] as const;
 
 export const SPECIALTIES_DATA = [

@@ -66,3 +66,6 @@ export type VehicleInfo = typeof vehicleInfoType.infer;
 
 export const verificationStatus = type("'pending' | 'verified' | 'failed'");
 export type VerificationStatus = typeof verificationStatus.infer;
+
+export const accountTypeType = type("'driver' | 'customer' | 'admin'");
+export type AccountType = typeof accountTypeType.infer;
