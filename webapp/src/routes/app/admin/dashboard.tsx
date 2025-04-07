@@ -65,7 +65,7 @@ const AdminDashboard: React.FC = () => {
     <div className="flex min-h-screen flex-col items-center bg-gray-50">
       <AdminHeader />
 
-      <div className="container w-full px-4 py-6">
+      <div className="w-full max-w-5xl px-4 py-6">
         <Tabs
           theme={tabTheme}
           aria-label="Admin Dashboard Tabs"

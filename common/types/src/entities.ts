@@ -163,6 +163,8 @@ export enum OrderEntityFields {
   updatedAt = "updatedAt",
   paymentRef = "paymentRef",
   driverName = "driverName",
+  driverEmail = "driverEmail",
+  driverPhone = "driverPhone",
 }
 export const newOrderEntity = type({
   [OrderEntityFields.ownerId]: "string",
@@ -184,6 +186,8 @@ export const orderEntity = newOrderEntity.merge({
   [OrderEntityFields.driverStatus]: type.valueOf(DriverOrderStatus),
   [OrderEntityFields.driverId]: type("string | null").optional(),
   [OrderEntityFields.driverName]: type("string | null").optional(),
+  [OrderEntityFields.driverEmail]: type("string | null").optional(),
+  [OrderEntityFields.driverPhone]: type("string | null").optional(),
   [OrderEntityFields.createdAt]: type("string | null").optional(),
   [OrderEntityFields.updatedAt]: type("string | null").optional(),
   [OrderEntityFields.paymentRef]: "string",

@@ -1,27 +1,19 @@
-import {
-  DriverOrderStatus,
-  OrderEntity,
-  RequiredVehicleEntity,
-} from "@freedmen-s-trucking/types";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { DriverOrderStatus } from "@freedmen-s-trucking/types";
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import {
-  Accordion,
   Avatar,
   Badge,
   Button,
   Card,
   Dropdown,
-  Modal,
   Spinner,
   Tabs,
   Tooltip,
 } from "flowbite-react";
 import { motion } from "motion/react";
 import React, { useState } from "react";
-import { BsTrainFreightFront } from "react-icons/bs";
 import { CiMenuKebab } from "react-icons/ci";
-import { GiTruck } from "react-icons/gi";
 import {
   HiAdjustments,
   HiClipboardList,
@@ -31,11 +23,9 @@ import {
   HiUserCircle,
   HiViewGrid,
 } from "react-icons/hi";
-import { IoCarOutline } from "react-icons/io5";
-import { PiVanBold } from "react-icons/pi";
-import { TbCarSuv, TbLayoutDashboard } from "react-icons/tb";
-import { SecondaryButton } from "~/components/atoms/base";
+import { TbLayoutDashboard } from "react-icons/tb";
 import { DriverProfile } from "~/components/molecules/driver/tab-profile";
+import { Order } from "~/components/molecules/order-details";
 import { useAuth } from "~/hooks/use-auth";
 import { useDbOperations } from "~/hooks/use-firestore";
 import { driverVerificationBadges, tabTheme } from "~/utils/constants";
@@ -97,46 +87,9 @@ const statusMap: Record<
   },
 };
 
-// const getStatusBadge = (status: DriverOrderStatus) => {
-//   switch (status) {
-//     case DriverOrderStatus.DELIVERED:
-//       return <Badge color="success">Delivered</Badge>;
-//     case DriverOrderStatus.ACCEPTED:
-//       return <Badge color="success">Accepted</Badge>;
-//     case DriverOrderStatus.ON_THE_WAY_TO_PICKUP:
-//       return <Badge color="indigo">On The Way To Pick Up</Badge>;
-//     case DriverOrderStatus.ON_THE_WAY_TO_DELIVER:
-//       return <Badge color="info">On The Way To Deliver</Badge>;
-//     case DriverOrderStatus.WAITING:
-//     default:
-//       return <Badge color="warning">Waiting Action</Badge>;
-//   }
-// };
-
 const fadeVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { duration: 0.3 } },
-};
-
-const DisplayRequiredVehicles: React.FC<{
-  vehicles: RequiredVehicleEntity[] | undefined;
-}> = ({ vehicles }) => {
-  const vehicleIcons: Record<RequiredVehicleEntity["type"], React.ReactNode> = {
-    SEDAN: <IoCarOutline />,
-    SUV: <TbCarSuv />,
-    VAN: <PiVanBold />,
-    TRUCK: <GiTruck />,
-    FREIGHT: <BsTrainFreightFront />,
-  };
-  return (
-    <>
-      {(vehicles || []).map((vehicle) => (
-        <span key={vehicle.type}>
-          {vehicle.quantity} * {vehicleIcons[vehicle.type]}
-        </span>
-      ))}
-    </>
-  );
 };
 
 const getVerificationBadge = (
@@ -151,88 +104,6 @@ const getVerificationBadge = (
         {!iconOnly && badge.label}
       </Badge>
     </Tooltip>
-  );
-};
-const GetNextActionButton: React.FC<{
-  orderPath: string;
-  order: OrderEntity;
-}> = ({ orderPath, order }) => {
-  const { user } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
-  const { updateOrderStatus } = useDbOperations();
-  const action = statusMap[order.driverStatus];
-  const [showStatusChangeModal, setShowStatusChangeModal] = useState(false);
-  // Access the client
-  const queryClient = useQueryClient();
-
-  const { mutate: moveToNextStatus } = useMutation({
-    mutationFn: async () => {
-      if (!action.nextStatus) return;
-      return updateOrderStatus(user.info.uid, orderPath, action.nextStatus);
-    },
-    onMutate: () => {
-      console.log("Moving to next status for order", orderPath);
-      setIsLoading(true);
-    },
-    onSuccess: () => {
-      setIsLoading(false);
-      setShowStatusChangeModal(false);
-      queryClient.invalidateQueries({ queryKey: ["activeOrders"] });
-      queryClient.invalidateQueries({ queryKey: ["historyOrders"] });
-      queryClient.invalidateQueries({ queryKey: ["driverInfo"] });
-    },
-    onError: (error) => {
-      console.error("Failed to update order status:", error);
-      setIsLoading(false);
-      setShowStatusChangeModal(false);
-    },
-  });
-
-  if (!action) return null;
-
-  return (
-    <>
-      <Tooltip content={action.nextStatusDescription} placement="top">
-        <Button
-          color={action.color}
-          size="sm"
-          className={`disabled:opacity-100 [&>span]:flex [&>span]:flex-row [&>span]:items-center [&>span]:justify-center [&>span]:gap-2`}
-          disabled={isLoading || !action.nextStatus}
-          onClick={() => setShowStatusChangeModal(true)}
-        >
-          {isLoading && <Spinner />}
-          {action.action}
-        </Button>
-      </Tooltip>
-      <Modal
-        size="sm"
-        className=" bg-black bg-opacity-70 [&>div>div]:bg-primary-50 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-end md:[&>div]:h-auto"
-        show={showStatusChangeModal}
-        onClose={() => setShowStatusChangeModal(false)}
-      >
-        <Modal.Header className="[&>button]:rounded-full [&>button]:bg-accent-400 [&>button]:p-[1px] [&>button]:text-primary-100 [&>button]:transition-all  [&>button]:duration-300  hover:[&>button]:scale-110 hover:[&>button]:text-primary-950 ">
-          <span className="text-lg font-medium">Confirm Action</span>
-        </Modal.Header>
-        <Modal.Body className="text-secondary-950">
-          <p className="mb-4">{action.nextStatusConfirmation}</p>
-          <form
-            onSubmit={(ev) => {
-              ev.preventDefault();
-              moveToNextStatus();
-            }}
-            className="flex flex-col gap-8"
-          >
-            <SecondaryButton
-              type="submit"
-              isLoading={isLoading}
-              className="self-end border-teal-500 bg-teal-200 py-2 text-secondary-950"
-            >
-              Confirm
-            </SecondaryButton>
-          </form>
-        </Modal.Body>
-      </Modal>
-    </>
   );
 };
 
@@ -298,7 +169,7 @@ const DriverDashboard = () => {
   }
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="mx-auto max-w-5xl p-4">
       {/* Driver Header */}
       <div className="mb-6 flex flex-col items-center rounded-lg bg-white p-4 shadow md:flex-row">
         <div className="relative mb-4 md:mb-0 md:mr-6">
@@ -437,46 +308,7 @@ const DriverDashboard = () => {
                 </Card>
               )}
               {activeOrders.slice(0, 2).map((order) => (
-                <Card
-                  key={order.path}
-                  className={
-                    order.data.updatedAt ? "border-l-4 border-blue-500" : ""
-                  }
-                >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h5 className="text-lg font-bold tracking-tight text-secondary-950">
-                        {order.data.clientName}
-                      </h5>
-                      <p className="mb-2 font-normal text-secondary-800 dark:text-gray-400">
-                        ORD:{order.path.split("/").pop()?.slice(0, 8)}-****-****
-                        <DisplayRequiredVehicles
-                          vehicles={order.data.requiredVehicles || []}
-                        />
-                      </p>
-                    </div>
-                    <div>{statusMap[order.data.driverStatus].badge}</div>
-                  </div>
-                  <div className="mt-2 space-y-1 text-sm">
-                    <p>
-                      <strong>Pickup:</strong>{" "}
-                      {order.data.pickupLocation.address}
-                    </p>
-                    <p>
-                      <strong>Dropoff:</strong>{" "}
-                      {order.data.deliveryLocation.address}
-                    </p>
-                    <p className="mt-2 text-lg font-bold">
-                      ${order.data.priceInUSD.toFixed(2)}
-                    </p>
-                  </div>
-                  <div className="mt-3 flex justify-end">
-                    <GetNextActionButton
-                      orderPath={order.path}
-                      order={order.data}
-                    />
-                  </div>
-                </Card>
+                <Order order={order} viewType="driver" key={order.path} />
               ))}
             </div>
           </div>
@@ -544,84 +376,17 @@ const DriverDashboard = () => {
           icon={HiAdjustments}
         >
           <h2 className="mb-4 text-xl font-bold">Active Orders</h2>
-          <div className="space-y-4">
+          <div className="mb-8 space-y-4">
             {activeOrdersLoading && (
               <p className="text-xs text-gray-500">Loading active orders...</p>
             )}
             {activeOrders.map((order) => (
-              <Card
+              <Order.Details
                 key={order.path}
-                className={
-                  order.data.driverStatus === DriverOrderStatus.WAITING
-                    ? "border-l-4 border-blue-500"
-                    : ""
-                }
-              >
-                <div className="flex flex-col justify-between md:flex-row">
-                  <div className="mb-3 md:mb-0">
-                    <h5 className="text-lg font-bold tracking-tight text-secondary-950">
-                      Order {order.path.split("/").pop()?.slice(0, 13)}-****
-                    </h5>
-                    <p className="font-normal text-secondary-800 dark:text-gray-400">
-                      Client: {order.data.clientName}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Created:{" "}
-                      {order.data.createdAt && formatDate(order.data.createdAt)}
-                    </p>
-                  </div>
-                  <div className="flex flex-col items-end">
-                    <div className="mb-2">
-                      {statusMap[order.data.driverStatus].badge}
-                    </div>
-                    <p className="text-lg font-bold text-secondary-950">
-                      ${order.data.priceInUSD.toFixed(2)}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      <DisplayRequiredVehicles
-                        vehicles={order.data.requiredVehicles || []}
-                      />
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-2">
-                  <div>
-                    <p className="text-sm font-semibold">Pickup Location:</p>
-                    <p className="text-sm text-secondary-800">
-                      {order.data.pickupLocation.address}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold">Dropoff Location:</p>
-                    <p className="text-sm text-secondary-800">
-                      {order.data.deliveryLocation.address}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-4 flex items-center justify-between">
-                  <Accordion collapseAll className="w-full">
-                    <Accordion.Panel>
-                      <Accordion.Title className="bg-gray-200 p-2 text-secondary-950">
-                        View Map
-                      </Accordion.Title>
-                      <Accordion.Content>
-                        <div className="flex h-64 items-center justify-center bg-gray-200 text-gray-500">
-                          <p>Map with route would appear here</p>
-                        </div>
-                      </Accordion.Content>
-                    </Accordion.Panel>
-                  </Accordion>
-                </div>
-
-                <div className="mt-3 flex justify-end">
-                  <GetNextActionButton
-                    orderPath={order.path}
-                    order={order.data}
-                  />
-                </div>
-              </Card>
+                showInModal={false}
+                order={order}
+                viewType="driver"
+              />
             ))}
 
             {activeOrders.length === 0 && (
@@ -662,64 +427,12 @@ const DriverDashboard = () => {
               </Card>
             )}
             {historyOrders.map((order) => (
-              <Card key={order.path}>
-                <div className="flex flex-col justify-between md:flex-row">
-                  <div className="mb-3 md:mb-0">
-                    <h5 className="text-lg font-bold tracking-tight text-secondary-950">
-                      Order {order.path.split("/").pop()?.slice(0, 13)}-****
-                    </h5>
-                    <p className="font-normal text-secondary-800 dark:text-gray-400">
-                      Client: {order.data.clientName}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {order.data.createdAt && formatDate(order.data.createdAt)}
-                    </p>
-                  </div>
-                  <div className="flex flex-col items-end">
-                    <div className="mb-2">
-                      {statusMap[order.data.driverStatus].badge}
-                    </div>
-                    <p className="text-lg font-bold text-secondary-950">
-                      ${order.data.priceInUSD.toFixed(2)}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      <DisplayRequiredVehicles
-                        vehicles={order.data.requiredVehicles}
-                      />
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-2">
-                  <div>
-                    <p className="text-sm font-semibold">Pickup Location:</p>
-                    <p className="text-sm text-secondary-800">
-                      {order.data.pickupLocation.address}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold">Dropoff Location:</p>
-                    <p className="text-sm text-secondary-800">
-                      {order.data.deliveryLocation.address}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-4 flex items-center justify-between">
-                  <Accordion collapseAll className="w-full">
-                    <Accordion.Panel>
-                      <Accordion.Title className="bg-gray-200 p-2 text-secondary-950">
-                        View Map
-                      </Accordion.Title>
-                      <Accordion.Content>
-                        <div className="flex h-64 items-center justify-center bg-gray-200 text-gray-500">
-                          <p>Map with route would appear here</p>
-                        </div>
-                      </Accordion.Content>
-                    </Accordion.Panel>
-                  </Accordion>
-                </div>
-              </Card>
+              <Order.Details
+                key={order.path}
+                showInModal={false}
+                order={order}
+                viewType="driver"
+              />
             ))}
           </div>
         </Tabs.Item>

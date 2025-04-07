@@ -11,9 +11,22 @@ export function checkFalsyAndThrow(
   }
 }
 
-export function formatPaymentAmount(amount: number) {
+export function formatPrice(amount: number) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
   }).format(amount);
 }
+
+export const formatDate = (date: Date, space: string = " ") => {
+  return date
+    .toLocaleTimeString([], {
+      weekday: "short",
+      year: "2-digit",
+      month: "short",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+    .replace(/, /g, `,${space}`);
+};

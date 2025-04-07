@@ -19,6 +19,7 @@
     "@stripe/stripe-js": "^6.1.0",
     "@tanstack/react-query": "5.68.0",
     "@tanstack/react-router": "1.114.17",
+    "@vis.gl/react-google-maps": "^1.5.2",
     "arktype": "^2.1.10",
     "axios": "^1.8.4",
     "date-fns": "^4.1.0",

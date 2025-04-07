@@ -5,22 +5,15 @@ import {
   Button,
   TextInput,
   Select,
-  Modal,
-  Card,
   Spinner,
   Avatar,
 } from "flowbite-react";
 import {
   HiSearch,
-  HiLocationMarker,
   HiCurrencyDollar,
   HiClock,
   HiCheck,
-  HiUser,
   HiTruck,
-  HiPhone,
-  HiMail,
-  HiArrowRight,
 } from "react-icons/hi";
 import {
   EntityWithPath,
@@ -30,6 +23,7 @@ import {
 } from "@freedmen-s-trucking/types";
 import { useDbOperations } from "~/hooks/use-firestore";
 import { useQuery } from "@tanstack/react-query";
+import { Order } from "../order-details";
 
 const Orders: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -230,174 +224,14 @@ const Orders: React.FC = () => {
       </div>
 
       {/* Order Details Modal */}
-      <Modal
-        show={showModal}
-        onClose={() => setShowModal(false)}
-        size="5xl"
-        className=" bg-black bg-opacity-30 [&>div>div]:bg-primary-50 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-end md:[&>div]:h-auto"
-      >
-        <Modal.Header>Order Details</Modal.Header>
-        <Modal.Body className="max-h-[70vh] overflow-y-auto p-4">
-          {currentOrder && (
-            <div>
-              <div className="mb-6 flex items-center justify-between">
-                <div>
-                  <h3 className="text-xl font-bold">
-                    Order #{currentOrder.path.substring(0, 8)}
-                  </h3>
-                  <div className="mt-1 flex items-center gap-2">
-                    {renderStatusBadge(currentOrder.data.status)}
-                    {renderPriorityBadge(currentOrder.data.priority)}
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold">
-                    ${currentOrder.data.priceInUSD}
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    Created:{" "}
-                    {new Date(
-                      currentOrder.data.createdAt || "",
-                    ).toLocaleString()}
-                  </div>
-                </div>
-              </div>
-
-              <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-3">
-                <Card>
-                  <h4 className="mb-3 text-lg font-semibold">
-                    Customer Information
-                  </h4>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <HiUser className="text-gray-500" />
-                      <span>{currentOrder.data.clientName}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <HiMail className="text-gray-500" />
-                      <span>{currentOrder.data.clientEmail}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <HiPhone className="text-gray-500" />
-                      <span>{currentOrder.data.clientPhone}</span>
-                    </div>
-                  </div>
-                </Card>
-
-                <Card>
-                  <h4 className="mb-3 text-lg font-semibold">
-                    Pickup Location
-                  </h4>
-                  <div className="mb-2 flex items-start gap-2">
-                    <HiLocationMarker className="mt-1 flex-shrink-0 text-gray-500" />
-                    <span className="font-medium">
-                      {currentOrder.data.pickupLocation?.address}
-                    </span>
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    Coordinates:{" "}
-                    {currentOrder.data.pickupLocation?.latitude?.toFixed(6)},{" "}
-                    {currentOrder.data.pickupLocation?.longitude?.toFixed(6)}
-                  </div>
-                </Card>
-
-                <Card>
-                  <h4 className="mb-3 text-lg font-semibold">
-                    Delivery Location
-                  </h4>
-                  <div className="mb-2 flex items-start gap-2">
-                    <HiLocationMarker className="mt-1 flex-shrink-0 text-gray-500" />
-                    <span className="font-medium">
-                      {currentOrder.data.deliveryLocation?.address}
-                    </span>
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    Coordinates:{" "}
-                    {currentOrder.data.deliveryLocation?.latitude?.toFixed(6)},{" "}
-                    {currentOrder.data.deliveryLocation?.longitude?.toFixed(6)}
-                  </div>
-                </Card>
-              </div>
-
-              <div className="mb-6">
-                <Card>
-                  <div className="mb-4 flex items-center justify-between">
-                    <h4 className="text-lg font-semibold">Order Summary</h4>
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-1">
-                        <HiArrowRight className="text-gray-500" />
-                        <span className="text-sm font-medium">
-                          {currentOrder.data.distanceInMiles?.toFixed(1)} miles
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mb-4">
-                    <h5 className="mb-2 font-medium">Required Vehicles</h5>
-                    <div className="flex flex-wrap gap-2">
-                      {currentOrder.data.requiredVehicles?.map((req, index) => (
-                        <Badge key={index} color="dark">
-                          {req.type} x{req.quantity}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <h5 className="mb-2 font-medium">Products</h5>
-                    <div className="overflow-x-auto">
-                      <Table>
-                        <Table.Head>
-                          <Table.HeadCell>Product</Table.HeadCell>
-                          <Table.HeadCell>Dimensions</Table.HeadCell>
-                          <Table.HeadCell>Weight</Table.HeadCell>
-                          <Table.HeadCell>Quantity</Table.HeadCell>
-                        </Table.Head>
-                        <Table.Body>
-                          {currentOrder.data.products?.map((product, index) => (
-                            <Table.Row key={index}>
-                              <Table.Cell className="font-medium">
-                                {product.name}
-                              </Table.Cell>
-                              <Table.Cell>
-                                {product.dimensions.lengthInInches}" x{" "}
-                                {product.dimensions.widthInInches}" x{" "}
-                                {product.dimensions.heightInInches}"
-                              </Table.Cell>
-                              <Table.Cell>{product.weightInLbs} lbs</Table.Cell>
-                              <Table.Cell>{product.quantity}</Table.Cell>
-                            </Table.Row>
-                          ))}
-                        </Table.Body>
-                      </Table>
-                    </div>
-                  </div>
-                </Card>
-              </div>
-
-              {currentOrder.data.driverId && (
-                <Card>
-                  <h4 className="mb-3 text-lg font-semibold">
-                    Assigned Driver
-                  </h4>
-                  <div className="flex items-center gap-3">
-                    <Avatar size="md" rounded />
-                    <div>
-                      <div className="font-medium">
-                        {currentOrder.data.driverName || "Unknown Driver"}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        ID: {currentOrder.data.driverId}
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              )}
-            </div>
-          )}
-        </Modal.Body>
-      </Modal>
+      {showModal && currentOrder && (
+        <Order.Details
+          showInModal
+          onClose={() => setShowModal(false)}
+          order={currentOrder}
+          viewType="admin"
+        />
+      )}
     </div>
   );
 };
