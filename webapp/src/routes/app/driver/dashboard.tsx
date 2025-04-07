@@ -29,6 +29,7 @@ import { Order } from "~/components/molecules/order-details";
 import { useAuth } from "~/hooks/use-auth";
 import { useDbOperations } from "~/hooks/use-firestore";
 import { driverVerificationBadges, tabTheme } from "~/utils/constants";
+import { getDriverVerificationStatus } from "~/utils/functions";
 
 const tabs = ["overview", "active-orders", "history", "profile"] as const;
 
@@ -180,7 +181,10 @@ const DriverDashboard = () => {
             size="lg"
           />
           <div className="absolute -right-2 -top-2">
-            {getVerificationBadge(driverInfo.verificationStatus, true)}
+            {getVerificationBadge(
+              getDriverVerificationStatus(driverInfo),
+              true,
+            )}
           </div>
         </div>
         <div className="text-center md:text-left">

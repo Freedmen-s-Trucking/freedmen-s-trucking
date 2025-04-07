@@ -46,6 +46,11 @@ service cloud.firestore {
       allow read: if isAdmin();
     }
 
+    match /platformSettings/{content=**} {
+      allow read: if isNotAnonymous();
+      allow create, update: if isAdmin();
+    }
+
     match /users/{uid} {
       allow read, create: if isNotAnonymous();
       allow update, delete: if isResourceOwner() || isAdmin();

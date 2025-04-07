@@ -1,6 +1,6 @@
 import {
   authMethodType,
-  certificateType,
+  placeLocationType,
   locationType,
   paymentMethodType,
   productWithQuantityType,
@@ -16,41 +16,47 @@ export const withdrawalEntity = type({
   status: "'pending' | 'completed' | 'failed'",
 });
 export type WithdrawalEntity = typeof withdrawalEntity.infer;
+export const timestampType = type({
+  seconds: "number",
+  nanoseconds: "number",
+});
+export type TimestampType = typeof timestampType.infer;
 
 export const userEntity = type({
   uid: "string",
   displayName: "string",
+  authenticateAccessCode: "string",
+  firstName: "string",
+  lastName: "string",
   email: "string | null",
   phoneNumber: "string | null",
   photoURL: "string | null",
+  birthDate: type("string | null").or(timestampType),
   uploadedProfileStoragePath: type("string | null").optional(),
   isEmailVerified: "boolean",
   isPhoneNumberVerified: "boolean",
   isAdmin: type("boolean").optional(),
   isDriver: type("boolean").optional(),
   authMethods: authMethodType.array(),
-  createdAt: type("string | null").or(
-    type({
-      seconds: "number",
-      nanoseconds: "number",
-    })
-  ),
-  updatedAt: type("string | null").or(
-    type({
-      seconds: "number",
-      nanoseconds: "number",
-    })
-  ),
+  createdAt: type("string | null").or(timestampType),
+  updatedAt: type("string | null").or(timestampType),
 });
 export type UserEntity = typeof userEntity.infer;
 
 export const driverEntity = type({
-  driverInsurance: certificateType,
-  driverLicense: certificateType,
+  driverInsuranceVerificationStatus: verificationStatus,
+  driverInsuranceStoragePath: "string | null",
+  driverInsuranceVerificationIssues: "string[]",
+  driverLicenseFrontStoragePath: "string | null",
+  driverLicenseBackStoragePath: "string | null",
+  driverLicenseVerificationStatus: verificationStatus,
+  driverLicenseVerificationIssues: "string[] | null",
   location: locationType.optional(),
   vehicles: type({
     type: vehicleType,
-    insurance: certificateType.optional(),
+    insuranceStoragePath: type("string | null").optional(),
+    insuranceVerificationStatus: verificationStatus.optional(),
+    insuranceVerificationIssues: type("string[] | null").optional(),
   })
     .array()
     .optional(),
@@ -58,12 +64,18 @@ export const driverEntity = type({
   paymentMethods: paymentMethodType.array(),
   verificationStatus: verificationStatus,
   verificationMessage: "string | null",
+  authenticateAccessCode: "string",
   currentEarnings: "number | null",
   totalEarnings: "number | null",
   tasksCompleted: "number | null",
   activeTasks: "number | null",
 });
 export type DriverEntity = typeof driverEntity.infer;
+
+export const platformSettingsEntity = type({
+  availableCities: placeLocationType.array().or("null"),
+});
+export type PlatformSettingsEntity = typeof platformSettingsEntity.infer;
 
 export const platformOverviewEntity = type({
   updatedAt: type("string | null").or(

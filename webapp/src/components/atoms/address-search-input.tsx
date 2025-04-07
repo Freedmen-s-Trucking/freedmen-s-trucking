@@ -1,16 +1,21 @@
 import { Popover } from "flowbite-react";
-import { useGeocoding, CustomOSMSearchResult } from "../../hooks/use-geocoding";
+import { useGeocoding } from "../../hooks/use-geocoding";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { TextInput } from "./base";
+import { useQuery } from "@tanstack/react-query";
+import { MinPlaceLocation, PlaceLocation } from "@freedmen-s-trucking/types";
 
 export type OnAddressChangedParams = {
-  possibleValues: CustomOSMSearchResult[];
+  possibleValues: MinPlaceLocation[];
   query: string;
-  address: CustomOSMSearchResult | null;
+  place: PlaceLocation | null;
 };
 
 export type AddressSearchInputProps = {
   onAddressChanged: (params: OnAddressChangedParams) => void;
+  restrictedGMARecBounds?: PlaceLocation["viewPort"][];
+  primaryTypes?: string[];
+  geocodingType?: "OSRM" | "GMAP";
 } & Omit<
   React.ComponentProps<"input">,
   "onChange" | "type" | "ref" | "autoComplete"
@@ -18,15 +23,19 @@ export type AddressSearchInputProps = {
 
 export const AddressSearchInput: React.FC<AddressSearchInputProps> = ({
   onAddressChanged,
+  restrictedGMARecBounds,
+  primaryTypes,
+  geocodingType = "GMAP",
   ...inputProps
 }) => {
-  const { searchPlaceOSM, data, query, isFetching } = useGeocoding();
-  const [dataCached, setDataCached] = useState<CustomOSMSearchResult[]>([]);
+  const { searchPlaceOSM, fetchPlaceDetails, data, query, isFetching } =
+    useGeocoding(geocodingType);
+  const [dataCached, setDataCached] = useState<MinPlaceLocation[]>([]);
   const [searchOptionsOpen, setSearchOptionOpen] = useState(false);
   const [addressInfo, setAddressInfo] = useState<{
     query: string;
-    address: CustomOSMSearchResult | null;
-  } | null>(null);
+    address: MinPlaceLocation | null;
+  }>({ query: "", address: null });
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -35,40 +44,63 @@ export const AddressSearchInput: React.FC<AddressSearchInputProps> = ({
     }
   }, [isFetching, data]);
 
+  useQuery({
+    initialData: null,
+    enabled: !!addressInfo.address?.placeId,
+    queryKey: [addressInfo.address?.placeId],
+    retry: false,
+    queryFn: async () => {
+      if (addressInfo.address) {
+        const res = await fetchPlaceDetails(addressInfo.address);
+        onAddressChanged({
+          query: query,
+          place: res,
+          possibleValues: dataCached || [],
+        });
+        return res;
+      }
+      return null;
+    },
+    throwOnError(error, query) {
+      console.log({ error, query });
+      return false;
+    },
+  });
+
   const onItemClick = useCallback(
-    (address: CustomOSMSearchResult | null) => {
-      onAddressChanged({
-        query: query,
-        address,
-        possibleValues: dataCached || [],
-      });
+    async (address: MinPlaceLocation | null) => {
       setAddressInfo({
         query: query,
         address,
       });
-
       if (inputRef.current && address) {
-        inputRef.current.value = address.display_name || "";
+        inputRef.current.value = address.address || "";
       }
       if (address) {
         setSearchOptionOpen(false);
         return;
       }
     },
-    [onAddressChanged, query, dataCached],
+    [query],
   );
 
   useEffect(() => {
-    if (addressInfo?.query !== query) {
+    if (addressInfo.query !== query) {
       onItemClick(null);
     }
-  }, [onItemClick, query, addressInfo?.query]);
+  }, [onItemClick, query, addressInfo.query]);
 
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.oninput = () => {
         console.log(inputRef.current?.value);
-        searchPlaceOSM(inputRef.current?.value || "");
+        searchPlaceOSM({
+          query: inputRef.current?.value || "",
+          options: {
+            restrictedGMARecBounds,
+            primaryTypes,
+          },
+        });
         setSearchOptionOpen(query.length > 1);
         setTimeout(() => inputRef.current?.focus(), 10);
       };
@@ -81,7 +113,13 @@ export const AddressSearchInput: React.FC<AddressSearchInputProps> = ({
         setTimeout(() => inputRef.current?.focus(), 10);
       };
     }
-  }, [query, searchOptionsOpen, searchPlaceOSM]);
+  }, [
+    query,
+    searchOptionsOpen,
+    searchPlaceOSM,
+    restrictedGMARecBounds,
+    primaryTypes,
+  ]);
 
   return (
     <>
@@ -99,13 +137,13 @@ export const AddressSearchInput: React.FC<AddressSearchInputProps> = ({
                 </div>
               )}
               {dataCached.map((item) => (
-                <span key={item.place_id}>
+                <span key={item.placeId}>
                   <hr className="border-gray-300" />
                   <button
                     onClick={() => onItemClick(item)}
                     className="w-full cursor-pointer px-4 py-2 text-sm hover:bg-primary-100"
                   >
-                    {item.display_name}
+                    {item.address}
                   </button>
                 </span>
               ))}

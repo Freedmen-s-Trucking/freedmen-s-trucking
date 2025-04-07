@@ -2,14 +2,6 @@ import { type } from "arktype";
 
 export { type };
 
-export const certificateType = type({
-  storagePath: "string",
-  status: "'pending' | 'verified' | 'failed'",
-  expiry: "string | null",
-  issues: "string[]",
-});
-export type Certificate = typeof certificateType.infer;
-
 export const paymentMethodType = type({
   id: "string",
   type: "'BANK'",
@@ -48,9 +40,22 @@ export const locationType = type({
   longitude: "number",
 });
 export type Location = typeof locationType.infer;
+
 export const coordinateType = locationType.omit("address");
 export type Coordinate = typeof coordinateType.infer;
 
+export const placeLocationType = locationType.and({
+  placeId: "string",
+  viewPort: {
+    low: coordinateType,
+    high: coordinateType,
+  },
+});
+export type PlaceLocation = typeof placeLocationType.infer;
+export type MinPlaceLocation = Omit<
+  PlaceLocation,
+  "viewPort" | "longitude" | "latitude"
+>;
 export const vehicleType = type(
   "'SEDAN' | 'SUV' | 'VAN' | 'TRUCK' | 'FREIGHT'"
 );

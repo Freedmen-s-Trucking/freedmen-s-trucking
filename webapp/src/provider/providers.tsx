@@ -9,8 +9,9 @@ import { FireStoreProvider } from "./firestore";
 import { StorageProvider } from "./storage";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { isDevMode } from "../utils/envs";
+import { GOOGLE_MAPS_API_KEY, isDevMode } from "../utils/envs";
 import { RemoteConfigProvider } from "./remote-config";
+import { APIProvider } from "@vis.gl/react-google-maps";
 
 const queryClient = new QueryClient();
 export const RootProviders: React.FC<{
@@ -18,31 +19,33 @@ export const RootProviders: React.FC<{
 }> = ({ children }) => {
   return (
     <>
-      <QueryClientProvider client={queryClient}>
-        <FirebaseProvider>
-          <PerformanceMonitoringProvider>
-            <StorageProvider>
-              <FireStoreProvider>
-                <RemoteConfigProvider>
-                  <Provider store={store}>
-                    <PersistGate loading={null} persistor={persistor}>
-                      <AuthProvider>
-                        {children}
-                        {isDevMode && (
-                          <ReactQueryDevtools
-                            initialIsOpen={false}
-                            client={queryClient}
-                          />
-                        )}
-                      </AuthProvider>
-                    </PersistGate>
-                  </Provider>
-                </RemoteConfigProvider>
-              </FireStoreProvider>
-            </StorageProvider>
-          </PerformanceMonitoringProvider>
-        </FirebaseProvider>
-      </QueryClientProvider>
+      <APIProvider apiKey={GOOGLE_MAPS_API_KEY}>
+        <QueryClientProvider client={queryClient}>
+          <FirebaseProvider>
+            <PerformanceMonitoringProvider>
+              <StorageProvider>
+                <FireStoreProvider>
+                  <RemoteConfigProvider>
+                    <Provider store={store}>
+                      <PersistGate loading={null} persistor={persistor}>
+                        <AuthProvider>
+                          {children}
+                          {isDevMode && (
+                            <ReactQueryDevtools
+                              initialIsOpen={false}
+                              client={queryClient}
+                            />
+                          )}
+                        </AuthProvider>
+                      </PersistGate>
+                    </Provider>
+                  </RemoteConfigProvider>
+                </FireStoreProvider>
+              </StorageProvider>
+            </PerformanceMonitoringProvider>
+          </FirebaseProvider>
+        </QueryClientProvider>
+      </APIProvider>
     </>
   );
 };

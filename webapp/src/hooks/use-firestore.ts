@@ -16,6 +16,7 @@ import {
   serverTimestamp,
   setDoc,
   where,
+  WithFieldValue,
 } from "firebase/firestore";
 import {
   DriverEntity,
@@ -29,6 +30,8 @@ import {
   UserEntity,
   CollectionName,
   LATEST_PLATFORM_OVERVIEW_PATH,
+  LATEST_PLATFORM_SETTINGS_PATH,
+  PlatformSettingsEntity,
 } from "@freedmen-s-trucking/types";
 import { checkFalsyAndThrow } from "../utils/functions";
 
@@ -420,14 +423,51 @@ const useAdminDbOperations = (db: Firestore) => {
       if (!doc.exists()) return;
       result.push({ path: doc.ref.path, data: doc.data() });
     });
+
     return result;
   }, [db]);
+
+  const fetchPlatformSettings = useCallback(async () => {
+    const docRef = doc(db, LATEST_PLATFORM_SETTINGS_PATH);
+    const snapshot = await getDoc<
+      PlatformSettingsEntity,
+      PlatformSettingsEntity
+    >(
+      docRef as DocumentReference<
+        PlatformSettingsEntity,
+        PlatformSettingsEntity
+      >,
+    );
+    return {
+      path: docRef.path,
+      data: snapshot.exists()
+        ? snapshot.data()
+        : ({} as PlatformSettingsEntity),
+    };
+  }, [db]);
+
+  const updatePlatformSettings = useCallback(
+    async (settings: WithFieldValue<PlatformSettingsEntity>) => {
+      const docRef = doc(db, LATEST_PLATFORM_SETTINGS_PATH);
+      await setDoc<PlatformSettingsEntity, PlatformSettingsEntity>(
+        docRef as DocumentReference<
+          PlatformSettingsEntity,
+          PlatformSettingsEntity
+        >,
+        settings,
+        { merge: true },
+      );
+    },
+    [db],
+  );
 
   return {
     fetchOrders,
     fetchDrivers,
     fetchPlatformOverview,
     fetchPayments,
+    updatePlatformSettings,
+    fetchPlatformSettings,
   };
 };
 
@@ -444,8 +484,14 @@ export const useDbOperations = () => {
     fetchCurrentActiveOrders,
   } = useDriverDbOperations(db);
 
-  const { fetchOrders, fetchDrivers, fetchPlatformOverview, fetchPayments } =
-    useAdminDbOperations(db);
+  const {
+    fetchOrders,
+    fetchDrivers,
+    fetchPlatformOverview,
+    fetchPayments,
+    updatePlatformSettings,
+    fetchPlatformSettings,
+  } = useAdminDbOperations(db);
 
   return {
     insertUser,
@@ -457,9 +503,11 @@ export const useDbOperations = () => {
     updateDriver,
     getDriver,
     updateOrderStatus,
+    updatePlatformSettings,
     fetchOrders,
     fetchDrivers,
     fetchPlatformOverview,
     fetchPayments,
+    fetchPlatformSettings,
   };
 };

@@ -2,12 +2,14 @@ import { Modal } from "flowbite-react";
 import { motion } from "motion/react";
 import { add, formatDuration, intervalToDuration } from "date-fns";
 import {
+  LATEST_PLATFORM_SETTINGS_PATH,
   NewOrder,
   OrderPriority,
+  PlaceLocation,
+  PlatformSettingsEntity,
   ProductWithQuantity,
 } from "@freedmen-s-trucking/types";
 import { useState } from "react";
-import { CustomOSMSearchResult } from "~/hooks/use-geocoding";
 import { setRequestedAuthAction } from "~/stores/controllers/app-ctrl";
 import { useAppDispatch, useAppSelector } from "~/stores/hooks";
 import { FaTrash } from "react-icons/fa6";
@@ -19,6 +21,8 @@ import {
 } from "~/components/atoms/address-search-input";
 import { useComputeDeliveryEstimation } from "~/hooks/use-price-calculator";
 import { PrimaryButton, SecondaryButton, TextInput } from "../atoms/base";
+import { useQuery } from "@tanstack/react-query";
+import { useDbOperations } from "~/hooks/use-firestore";
 
 const OrderPriorities = [
   {
@@ -86,15 +90,29 @@ export const CreateOrderForm: React.FC<{
 
   const [packages, setPackages] = useState<ProductWithQuantity[]>([]);
 
-  const [pickupLocation, setPickupLocation] =
-    useState<CustomOSMSearchResult | null>(null);
+  const [pickupLocation, setPickupLocation] = useState<PlaceLocation | null>(
+    null,
+  );
+
+  const { fetchPlatformSettings } = useDbOperations();
+
+  const { data: platformSettings } = useQuery({
+    initialData: null,
+    queryKey: [LATEST_PLATFORM_SETTINGS_PATH],
+    queryFn: fetchPlatformSettings,
+    select: (result) => {
+      return (
+        result?.data || ({ availableCities: [] } as PlatformSettingsEntity)
+      );
+    },
+  });
 
   const [deliveryLocation, setDeliveryLocation] =
-    useState<CustomOSMSearchResult | null>(null);
+    useState<PlaceLocation | null>(null);
 
   const onPickupLocationChanged = (params: OnAddressChangedParams) => {
     console.log({ onPickupLocationChanged: params });
-    setPickupLocation(params.address);
+    setPickupLocation(params.place);
   };
 
   const onDeliveryPriorityChanged = (
@@ -106,7 +124,7 @@ export const CreateOrderForm: React.FC<{
 
   const onDeliveryLocationChanged = (params: OnAddressChangedParams) => {
     console.log({ onDeliveryLocationChanged: params });
-    setDeliveryLocation(params.address);
+    setDeliveryLocation(params.place);
   };
 
   const {
@@ -193,12 +211,12 @@ export const CreateOrderForm: React.FC<{
         ownerId: user.info.uid,
         distanceInMiles: estimations.distanceInMiles || 0,
         pickupLocation: {
-          address: pickupLocation?.display_name || "",
+          address: pickupLocation?.address || "",
           latitude: +pickupLocation.latitude || 0,
           longitude: +pickupLocation.longitude || 0,
         },
         deliveryLocation: {
-          address: deliveryLocation?.display_name || "",
+          address: deliveryLocation?.address || "",
           latitude: +deliveryLocation.latitude || 0,
           longitude: +deliveryLocation.longitude || 0,
         },
@@ -281,6 +299,9 @@ export const CreateOrderForm: React.FC<{
         <AddressSearchInput
           onAddressChanged={onPickupLocationChanged}
           required
+          restrictedGMARecBounds={platformSettings?.availableCities?.map(
+            (city) => city.viewPort,
+          )}
           id="pickup-location-input"
           maxLength={250}
           className={`block w-full rounded-xl border p-3 text-center text-sm text-black placeholder:text-lg focus:border-red-400 focus:outline-none focus:ring-transparent ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
@@ -289,6 +310,9 @@ export const CreateOrderForm: React.FC<{
         <AddressSearchInput
           onAddressChanged={onDeliveryLocationChanged}
           required
+          restrictedGMARecBounds={platformSettings?.availableCities?.map(
+            (city) => city.viewPort,
+          )}
           id="enter-delivery-input"
           maxLength={250}
           className={`block w-full rounded-xl border p-3 text-center text-sm text-black placeholder:text-lg focus:border-red-400 focus:outline-none focus:ring-transparent ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}

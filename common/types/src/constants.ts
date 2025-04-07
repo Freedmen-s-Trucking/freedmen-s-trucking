@@ -38,7 +38,9 @@ export enum CollectionName {
   ORDERS = "orders",
   PAYMENTS = "payments",
   PLATFORM_OVERVIEW = "platformOverviews",
+  PLATFORM_SETTINGS = "platformSettings",
   USERS = "users",
 }
 
 export const LATEST_PLATFORM_OVERVIEW_PATH = `${CollectionName.PLATFORM_OVERVIEW}/latest`;
+export const LATEST_PLATFORM_SETTINGS_PATH = `${CollectionName.PLATFORM_SETTINGS}/latest`;

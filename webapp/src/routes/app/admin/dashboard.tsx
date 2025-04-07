@@ -6,6 +6,7 @@ import {
   MdDirectionsCar,
   MdShoppingCart,
   MdPayment,
+  MdSettings,
 } from "react-icons/md";
 import { motion } from "framer-motion";
 
@@ -15,6 +16,7 @@ import Overview from "~/components/molecules/admin/tab-overview";
 import Drivers from "~/components/molecules/admin/tab-drivers";
 import Orders from "~/components/molecules/admin/tab-orders";
 import Transactions from "~/components/molecules/admin/tab-transactions";
+import PlatformSettings from "~/components/molecules/admin/tab-settings";
 import { useDbOperations } from "~/hooks/use-firestore";
 import {
   EntityWithPath,
@@ -151,6 +153,24 @@ const AdminDashboard: React.FC = () => {
               variants={fadeVariants}
             >
               <Transactions />
+            </motion.div>
+          </Tabs.Item>
+
+          <Tabs.Item
+            title={
+              <div className="flex items-center gap-2">
+                <MdSettings className="h-5 w-5" />
+                <span>Settings</span>
+              </div>
+            }
+            active={activeTab === "settings"}
+          >
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={fadeVariants}
+            >
+              <PlatformSettings />
             </motion.div>
           </Tabs.Item>
 
