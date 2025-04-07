@@ -1,4 +1,5 @@
 import { useState, useEffect, forwardRef } from "react";
+import { isDevMode } from "~/utils/envs";
 
 interface ImageProps {
   src: string;
@@ -36,7 +37,7 @@ export const AppImage = forwardRef<HTMLImageElement, ImageProps>(
       };
       img.onerror = (e) => {
         setShowFallback(true);
-        console.error(e);
+        if (isDevMode) console.error(e);
       };
     }, [src]);
 

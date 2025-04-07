@@ -151,6 +151,7 @@ apiV1Route.post('/stripe/webhook', async (c) => {
       const driverId = snapshot.empty ? null : snapshot.docs[0].id;
       const userCollection = firestore.collection('users') as CollectionReference<UserEntity, UserEntity>;
       const user = await userCollection.doc(verifiedNewOrder.ownerId).get();
+      const driverUserInfo = driverId ? await userCollection.doc(driverId).get() : null;
 
       // Save the payment.
       const paymentCollection = firestore.collection(CollectionName.PAYMENTS) as CollectionReference<
@@ -193,6 +194,9 @@ apiV1Route.post('/stripe/webhook', async (c) => {
         driverStatus: DriverOrderStatus.WAITING,
         status: driverId ? OrderStatus.ASSIGNED_TO_DRIVER : OrderStatus.PAYMENT_RECEIVED,
         driverId,
+        driverName: driverUserInfo?.data()?.displayName || '',
+        driverEmail: driverUserInfo?.data()?.email || '',
+        driverPhone: driverUserInfo?.data()?.phoneNumber || '',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         paymentRef: paymentDocRef.path,
