@@ -49,7 +49,7 @@ export const driverEntity = type({
   driverInsuranceVerificationIssues: "string[]",
   driverLicenseFrontStoragePath: "string | null",
   driverLicenseBackStoragePath: "string | null",
-  driverLicenseVerificationStatus: verificationStatus,
+  driverLicenseVerificationStatus: verificationStatus.or("null"),
   driverLicenseVerificationIssues: "string[] | null",
   location: locationType.optional(),
   vehicles: type({

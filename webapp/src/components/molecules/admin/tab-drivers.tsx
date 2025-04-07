@@ -516,7 +516,8 @@ const DriverManagement: React.FC = () => {
                                 Status:{" "}
                                 {renderStatusBadge(
                                   currentDriver.data
-                                    .driverLicenseVerificationStatus,
+                                    .driverLicenseVerificationStatus ||
+                                    "failed",
                                 )}
                               </p>
                             </div>
