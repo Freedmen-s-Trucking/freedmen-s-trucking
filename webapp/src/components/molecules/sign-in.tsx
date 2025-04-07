@@ -5,7 +5,7 @@ import { UserCredential } from "firebase/auth";
 import { Label, Popover, Spinner, TextInput } from "flowbite-react";
 import { GoogleSignIn } from "./google-sign-in";
 import { IoCheckmark, IoClose } from "react-icons/io5";
-import { PrimaryButton } from "../atoms";
+import { PrimaryButton } from "../atoms/base";
 const PASSWORD_SECURITY_LEVELS = [
   {
     label: "weak",
@@ -107,11 +107,33 @@ const SignIn: React.FC<{
       onComplete(res);
     } catch (error: unknown) {
       const err = error as Record<string, unknown> | null | undefined;
-      console.debug({ err });
-      if (err && err.code === "auth/email-already-in-use") {
-        setError("Email already in use.");
-      } else {
+      console.error({ AuthError: err });
+      if (!err || !err.code) {
         setError("Unknown Error Occurred.");
+        return;
+      }
+      switch (err.code) {
+        case "auth/wrong-password":
+          setError("Wrong password.");
+          break;
+        case "auth/user-disabled":
+          setError("User disabled.");
+          break;
+        case "auth/user-not-found":
+          setError("User not found.");
+          break;
+        case "auth/invalid-email":
+          setError("Invalid email.");
+          break;
+        case "auth/operation-not-allowed":
+          setError("Operation not allowed. Please contact support.");
+          break;
+        case "auth/too-many-requests":
+          setError("Too many requests. Please try again later.");
+          break;
+        default:
+          setError("Unknown Error Occurred.");
+          break;
       }
     } finally {
       setIsLoading(false);

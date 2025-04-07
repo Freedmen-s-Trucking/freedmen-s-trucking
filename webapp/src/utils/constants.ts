@@ -1,5 +1,15 @@
 import { FlowbiteTabsTheme } from "flowbite-react";
 import { isDevMode } from "./envs";
+import {
+  BsCarFrontFill,
+  BsShieldFillCheck,
+  BsShieldFillExclamation,
+  BsShieldFillX,
+  BsTrainFreightFront,
+} from "react-icons/bs";
+import { TbCarSuv } from "react-icons/tb";
+import { PiTruck, PiVan } from "react-icons/pi";
+import { VehicleType } from "../../../common/types/src";
 
 export const SERVER_API = isDevMode
   ? "http://127.0.0.1:5001/freedman-trucking-dev/us-central1/httpServer/api"
@@ -107,7 +117,7 @@ export const tabTheme: DeepPartial<FlowbiteTabsTheme> = {
   tablist: {
     // className="focus:[&>button]: focus:[&>button]:ring-secondary-800"
     tabitem: {
-      styles: {
+      variant: {
         underline: {
           base: "rounded-t-lg focus:outline-transparent focus:ring-transparent",
           active: {
@@ -118,4 +128,33 @@ export const tabTheme: DeepPartial<FlowbiteTabsTheme> = {
       },
     },
   },
+};
+
+export const driverVerificationBadges = {
+  verified: {
+    color: "success",
+    icon: BsShieldFillCheck,
+    label: "Verified",
+  },
+  failed: {
+    color: "failure",
+    icon: BsShieldFillX,
+    label: "Verification Failed",
+  },
+  pending: {
+    color: "warning",
+    icon: BsShieldFillExclamation,
+    label: "Verification Pending",
+  },
+};
+
+export const vehicleTypes: Record<
+  VehicleType,
+  { title: string; Icon: React.ComponentType }
+> = {
+  SEDAN: { title: "Sedan", Icon: BsCarFrontFill },
+  SUV: { title: "SUV", Icon: TbCarSuv },
+  VAN: { title: "Van", Icon: PiVan },
+  TRUCK: { title: "Truck", Icon: PiTruck },
+  FREIGHT: { title: "Freight", Icon: BsTrainFreightFront },
 };

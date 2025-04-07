@@ -10,11 +10,11 @@ import {
 import { motion } from "framer-motion";
 
 // Import components
-import AdminHeader from "~/components/atoms/admin/admin-header";
-import Overview from "~/components/atoms/admin/tab-overview";
-import Drivers from "~/components/atoms/admin/tab-drivers";
-import Orders from "~/components/atoms/admin/tab-orders";
-import Transactions from "~/components/atoms/admin/tab-transactions";
+import AdminHeader from "~/components/molecules/admin/admin-header";
+import Overview from "~/components/molecules/admin/tab-overview";
+import Drivers from "~/components/molecules/admin/tab-drivers";
+import Orders from "~/components/molecules/admin/tab-orders";
+import Transactions from "~/components/molecules/admin/tab-transactions";
 import { useDbOperations } from "~/hooks/use-firestore";
 import {
   EntityWithPath,
@@ -69,7 +69,7 @@ const AdminDashboard: React.FC = () => {
         <Tabs
           theme={tabTheme}
           aria-label="Admin Dashboard Tabs"
-          style="underline"
+          variant="underline"
           className="mb-4"
           onActiveTabChange={onActiveTabChange}
         >

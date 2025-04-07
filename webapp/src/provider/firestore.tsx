@@ -8,9 +8,9 @@ import { isDevMode } from "../utils/envs";
 
 const FireStoreCtx = createContext<Firestore | null>(null);
 
-export const FireStoreProvider: React.FC<{
+const FireStoreProvider: React.FC<{
   children: React.ReactNode;
-}> & { Ctx: React.Context<Firestore | null> } = ({ children }) => {
+}> = ({ children }) => {
   const fireStore = useMemo(() => getFirestore(), []);
 
   useEffect(() => {
@@ -24,4 +24,4 @@ export const FireStoreProvider: React.FC<{
   );
 };
 
-FireStoreProvider.Ctx = FireStoreCtx;
+export { FireStoreProvider, FireStoreCtx };

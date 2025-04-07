@@ -41,18 +41,36 @@ import { tabTheme } from "~/utils/constants";
 
 const tabs = ["active-orders", "history"] as const;
 
-const getStatusBadge = (status: OrderStatus) => {
+const getStatusBadge = (
+  status: OrderStatus,
+  driverStatus: DriverOrderStatus,
+) => {
+  let badge = <Badge color="warning">Pending Payment</Badge>;
   switch (status) {
     case OrderStatus.PAYMENT_RECEIVED:
       return <Badge color="green">Payment Received</Badge>;
-    case OrderStatus.COMPLETED:
-      return <Badge color="success">Completed</Badge>;
-    case OrderStatus.ASSIGNED_TO_DRIVER:
-      return <Badge color="info">Assigned To Driver</Badge>;
     case OrderStatus.PENDING_PAYMENT:
-    default:
       return <Badge color="warning">Pending Payment</Badge>;
+    case OrderStatus.ASSIGNED_TO_DRIVER:
+      badge = <Badge color="info">Assigned To Driver</Badge>;
+      break;
+    case OrderStatus.COMPLETED:
+      badge = <Badge color="success">Completed</Badge>;
+      break;
   }
+  switch (driverStatus) {
+    case DriverOrderStatus.ACCEPTED:
+    case DriverOrderStatus.ON_THE_WAY_TO_PICKUP:
+      return <Badge color="green">Package Accepted By Driver</Badge>;
+    case DriverOrderStatus.ON_THE_WAY_TO_DELIVER:
+      return (
+        <Badge color="purple">Package Picked Up & In Route To Delivery</Badge>
+      );
+    case DriverOrderStatus.DELIVERED:
+      return <Badge color="success">Delivered</Badge>;
+  }
+
+  return badge;
 };
 
 const DisplayRequiredVehicles: React.FC<{
@@ -91,9 +109,6 @@ const CustomerDashboard = () => {
   const navigate = useNavigate();
   const logOut = async () => {
     await signOut();
-    setTimeout(() => {
-      location.href = "/";
-    }, 2000);
   };
 
   const { data: activeOrders, isLoading: activeOrdersLoading } = useQuery({
@@ -259,7 +274,7 @@ const CustomerDashboard = () => {
       {/* Tabs */}
       <Tabs
         theme={tabTheme}
-        style="underline"
+        variant="underline"
         onActiveTabChange={(tab) => setActiveTab(tabs[tab])}
       >
         <Tabs.Item
@@ -315,7 +330,10 @@ const CustomerDashboard = () => {
                   </div>
                   <div className="flex flex-col items-end">
                     <div className="mb-2">
-                      {getStatusBadge(order.data.status)}
+                      {getStatusBadge(
+                        order.data.status,
+                        order.data.driverStatus,
+                      )}
                     </div>
                     <p className="text-lg font-bold text-secondary-950">
                       ${order.data.priceInUSD.toFixed(2)}
@@ -416,7 +434,10 @@ const CustomerDashboard = () => {
                   </div>
                   <div className="flex flex-col items-end">
                     <div className="mb-2">
-                      {getStatusBadge(order.data.status)}
+                      {getStatusBadge(
+                        order.data.status,
+                        order.data.driverStatus,
+                      )}
                     </div>
                     <p className="text-lg font-bold text-secondary-950">
                       ${order.data.priceInUSD.toFixed(2)}

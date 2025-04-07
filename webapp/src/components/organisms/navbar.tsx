@@ -9,7 +9,7 @@ import { PAGE_ROUTES } from "../../utils/constants";
 import { useAuth } from "../../hooks/use-auth";
 import { HiLogout } from "react-icons/hi";
 import { useState } from "react";
-import SignUp from "../molecules/sign-up";
+import { SignUp } from "../molecules/sign-up";
 import SignIn from "../molecules/sign-in";
 import { TbLayoutDashboard } from "react-icons/tb";
 import { FaHouseUser } from "react-icons/fa6";

@@ -1,10 +1,10 @@
 import { useCallback, useContext } from "react";
-import { StorageProvider } from "../provider/storage";
+import { StorageCtx } from "../provider/storage";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { checkFalsyAndThrow } from "~/utils/functions";
 
 const useStorage = () => {
-  const context = useContext(StorageProvider.Ctx);
+  const context = useContext(StorageCtx);
   if (!context) {
     throw new Error("useStorage must be used within a StorageProvider");
   }

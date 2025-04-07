@@ -31,7 +31,7 @@ interface AppAuth {
   signInWithGoogle: () => Promise<UserCredential>;
 }
 
-const AuthCtx = createContext<AppAuth | null>(null);
+const AuthCtx = createContext<AppAuth>({} as AppAuth);
 
 const _signOut = async (): Promise<void> => {
   const auth = getAuth();
@@ -63,9 +63,9 @@ const _signInWithGoogle = async (): Promise<UserCredential> => {
   return result;
 };
 
-export const AuthProvider: React.FC<{
+const AuthProvider: React.FC<{
   children: React.ReactNode;
-}> & { Ctx: React.Context<AppAuth | null> } = ({ children }) => {
+}> = ({ children }) => {
   const auth = useMemo(() => {
     const _auth = getAuth();
     if (isDevMode) {
@@ -165,4 +165,4 @@ export const AuthProvider: React.FC<{
   );
 };
 
-AuthProvider.Ctx = AuthCtx;
+export { AuthProvider, AuthCtx };

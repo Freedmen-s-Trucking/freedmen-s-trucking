@@ -8,9 +8,9 @@ import {
 
 const StorageCtx = createContext<FirebaseStorage | null>(null);
 
-export const StorageProvider: React.FC<{
+const StorageProvider: React.FC<{
   children: React.ReactNode;
-}> & { Ctx: React.Context<FirebaseStorage | null> } = ({ children }) => {
+}> = ({ children }) => {
   const storage = useMemo(() => getStorage(), []);
 
   useEffect(() => {
@@ -22,4 +22,4 @@ export const StorageProvider: React.FC<{
   return <StorageCtx.Provider value={storage}>{children}</StorageCtx.Provider>;
 };
 
-StorageProvider.Ctx = StorageCtx;
+export { StorageProvider, StorageCtx };

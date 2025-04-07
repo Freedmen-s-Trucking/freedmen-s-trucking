@@ -29,8 +29,18 @@ export const userEntity = type({
   isAdmin: type("boolean").optional(),
   isDriver: type("boolean").optional(),
   authMethods: authMethodType.array(),
-  createdAt: "string | null",
-  updatedAt: "string | null",
+  createdAt: type("string | null").or(
+    type({
+      seconds: "number",
+      nanoseconds: "number",
+    })
+  ),
+  updatedAt: type("string | null").or(
+    type({
+      seconds: "number",
+      nanoseconds: "number",
+    })
+  ),
 });
 export type UserEntity = typeof userEntity.infer;
 
@@ -40,13 +50,14 @@ export const driverEntity = type({
   location: locationType.optional(),
   vehicles: type({
     type: vehicleType,
-    insurance: certificateType,
+    insurance: certificateType.optional(),
   })
     .array()
     .optional(),
   withdrawalHistory: withdrawalEntity.array(),
   paymentMethods: paymentMethodType.array(),
   verificationStatus: verificationStatus,
+  verificationMessage: "string | null",
   currentEarnings: "number | null",
   totalEarnings: "number | null",
   tasksCompleted: "number | null",
@@ -55,8 +66,18 @@ export const driverEntity = type({
 export type DriverEntity = typeof driverEntity.infer;
 
 export const platformOverviewEntity = type({
-  updatedAt: "string | null",
-  createdAt: "string | null",
+  updatedAt: type("string | null").or(
+    type({
+      seconds: "number",
+      nanoseconds: "number",
+    })
+  ),
+  createdAt: type("string | null").or(
+    type({
+      seconds: "number",
+      nanoseconds: "number",
+    })
+  ),
   totalEarnings: "number | null",
   totalCompletedOrders: "number | null",
   totalActiveOrders: "number | null",
@@ -87,8 +108,18 @@ export const notificationEntity = type({
   read: "boolean",
   targetType: "'customer' | 'driver'",
   targetId: "string",
-  createdAt: "string",
-  updatedAt: "string",
+  createdAt: type("string | null").or(
+    type({
+      seconds: "number",
+      nanoseconds: "number",
+    })
+  ),
+  updatedAt: type("string | null").or(
+    type({
+      seconds: "number",
+      nanoseconds: "number",
+    })
+  ),
 });
 export type NotificationEntity = typeof notificationEntity.infer;
 
@@ -101,8 +132,9 @@ export enum OrderStatus {
 
 export enum DriverOrderStatus {
   WAITING = "waiting",
-  ON_THE_WAY = "on-the-way",
-  PICKED_UP = "picked-up",
+  ACCEPTED = "accepted",
+  ON_THE_WAY_TO_PICKUP = "on-the-way-to-pickup",
+  ON_THE_WAY_TO_DELIVER = "on-the-way-to-deliver",
   DELIVERED = "delivered",
 }
 

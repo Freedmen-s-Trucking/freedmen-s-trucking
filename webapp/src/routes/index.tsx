@@ -1,4 +1,4 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, redirect, useRouter } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import { useEffect, useState, useRef } from "react";
 
@@ -9,10 +9,42 @@ import {
   PrimaryButton,
   SecondaryButton,
   Container,
-} from "~/components/atoms";
+} from "~/components/atoms/base";
 import { useAppDispatch } from "~/stores/hooks";
 import { setRequestedAuthAction } from "~/stores/controllers/app-ctrl";
 import { CreateOrder } from "~/components/molecules/create-order";
+
+// Staggered animation for container children
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.2,
+      delayChildren: 0.3,
+    },
+  },
+};
+
+// Animation for heading elements
+const headingVariants = {
+  hidden: { opacity: 0, y: -20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: "easeOut" },
+  },
+};
+
+// Animation for buttons and content cards
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: "easeOut" },
+  },
+};
 
 export const Route = createFileRoute("/")({
   beforeLoad({ context }) {
@@ -48,36 +80,10 @@ function Index() {
       }),
     );
 
-  // Staggered animation for container children
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-        delayChildren: 0.3,
-      },
-    },
-  };
-
-  // Animation for heading elements
-  const headingVariants = {
-    hidden: { opacity: 0, y: -20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.6, ease: "easeOut" },
-    },
-  };
-
-  // Animation for buttons and content cards
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.5, ease: "easeOut" },
-    },
+  const router = useRouter();
+  const onOrderCreated = () => {
+    setIsSchedulingDelivery(false);
+    router.navigate({ to: "/app/customer/dashboard" });
   };
 
   return (
@@ -147,7 +153,7 @@ function Index() {
         <CreateOrder
           showInModal
           brightness="light"
-          onComplete={() => setIsSchedulingDelivery(false)}
+          onComplete={onOrderCreated}
         />
       )}
     </div>

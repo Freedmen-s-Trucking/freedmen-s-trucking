@@ -43,9 +43,12 @@ export const driverUpdateTrigger = onDocumentWritten(`${CollectionName.DRIVERS}/
         break;
     }
 
-    const firestore = getFirestore();
-    (firestore.doc(LATEST_PLATFORM_OVERVIEW_PATH) as DocumentReference<PlatformOverviewEntity>).set(update, {
-      merge: true,
-    });
+    if (Object.keys(update).length > 0) {
+      update.updatedAt = FieldValue.serverTimestamp();
+      const firestore = getFirestore();
+      (firestore.doc(LATEST_PLATFORM_OVERVIEW_PATH) as DocumentReference<PlatformOverviewEntity>).set(update, {
+        merge: true,
+      });
+    }
   }
 });

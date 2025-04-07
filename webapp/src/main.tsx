@@ -27,8 +27,6 @@ export const CustomRouter: React.FC = () => {
     RemoteConfigKeys.can_show_preview_landing_page,
   );
 
-  console.log({ userUpdated: user });
-
   return (
     <RouterProvider
       router={router}

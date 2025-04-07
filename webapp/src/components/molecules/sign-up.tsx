@@ -3,7 +3,7 @@ import { useAuth } from "../../hooks/use-auth";
 import { FirebaseError } from "firebase/app";
 import { UserCredential } from "firebase/auth";
 import { motion } from "motion/react";
-import { Label, Popover, Spinner } from "flowbite-react";
+import { Dropdown, Label, Popover, Spinner } from "flowbite-react";
 import { GoogleSignIn } from "./google-sign-in";
 import {
   IoArrowForwardCircleOutline,
@@ -15,11 +15,16 @@ import { TbLayoutDashboard, TbTruckDelivery } from "react-icons/tb";
 import { MdOutlinePostAdd } from "react-icons/md";
 import { useDbOperations } from "../../hooks/use-firestore";
 import { useStorageOperations } from "../../hooks/use-storage";
-import { AccountType, DriverEntity } from "@freedmen-s-trucking/types";
+import {
+  AccountType,
+  DriverEntity,
+  VehicleType,
+} from "@freedmen-s-trucking/types";
 import { useAppDispatch } from "~/stores/hooks";
 import { setUser } from "~/stores/controllers/auth-ctrl";
-import { PrimaryButton, TextInput } from "../atoms";
+import { PrimaryButton, TextInput } from "../atoms/base";
 import { setRequestedAuthAction } from "~/stores/controllers/app-ctrl";
+import { vehicleTypes } from "~/utils/constants";
 const PASSWORD_SECURITY_LEVELS = [
   {
     label: "weak",
@@ -385,6 +390,7 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
     userInfo.phoneNumber || "",
   );
   const [driverLicense, setDriverLicense] = useState<File | null>(null);
+  const [driverVehicle, setDriverVehicle] = useState<VehicleType | null>(null);
   const [driverInsurance, setDriverInsurance] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const certificateInputRef = useRef<HTMLInputElement>(null);
@@ -475,10 +481,16 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
           expiry: "",
           issues: [],
         },
+        vehicles: [
+          {
+            type: driverVehicle!,
+          },
+        ],
         verificationStatus: "pending",
         currentEarnings: 0,
         totalEarnings: 0,
         tasksCompleted: 0,
+        verificationMessage: null,
         activeTasks: 0,
         paymentMethods: [],
         withdrawalHistory: [],
@@ -497,10 +509,29 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
     } catch (error: unknown) {
       const err = error as Record<string, unknown> | null | undefined;
       console.debug({ err });
-      if (err && err.code === "auth/email-already-in-use") {
-        setError("Email already in use.");
-      } else {
+      if (!err || !err.code) {
         setError("Unknown Error Occurred.");
+        return;
+      }
+      switch (err.code) {
+        case "auth/email-already-in-use":
+          setError("The email address is already in use.");
+          break;
+        case "auth/invalid-email":
+          setError("The email address is malformed.");
+          break;
+        case "auth/weak-password":
+          setError("The password is too weak. Please use a stronger password.");
+          break;
+        case "auth/operation-not-allowed":
+          setError("Operation not allowed. Please contact support.");
+          break;
+        case "auth/too-many-requests":
+          setError("Too many requests. Please try again later.");
+          break;
+        default:
+          setError("Unknown Error Occurred.");
+          break;
       }
     } finally {
       setIsLoading(false);
@@ -535,6 +566,38 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
             // className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
           />
         </label>
+        <span className="block text-sm font-medium text-secondary-800">
+          Vehicle Type
+          <span className="text-lg text-red-400">*</span>
+        </span>
+        <Dropdown
+          label=""
+          className="mt-[-12px!important] rounded-b-lg rounded-t-none bg-primary-50 shadow-md shadow-primary-700"
+          trigger="click"
+          renderTrigger={() => (
+            <TextInput
+              spellCheck
+              required
+              onChange={() => null}
+              onFocus={(e) => e.target.blur()}
+              value={driverVehicle || ""}
+              id="driver-vehicle-type"
+              className={`block w-full cursor-pointer border p-3 text-center text-lg text-black focus:border-red-400 focus:outline-none focus:ring-transparent`}
+              placeholder="Vehicle Type >"
+            />
+          )}
+        >
+          {Object.entries(vehicleTypes).map(([key, value]) => (
+            <Dropdown.Item
+              key={key}
+              onClick={() => setDriverVehicle(key as VehicleType)}
+              className="hover:bg-primary-100"
+            >
+              <value.Icon />
+              <span className="ml-2">{value.title}</span>
+            </Dropdown.Item>
+          ))}
+        </Dropdown>
         <span className="block text-sm font-medium text-secondary-800">
           Driver License
           <span className="text-lg text-red-400">*</span>
@@ -610,7 +673,7 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
         <PrimaryButton
           type="submit"
           isLoading={isLoading}
-          // className="disabled:bg-secondary-800 bg-secondary-950 flex flex-row items-center justify-center gap-2 rounded-md px-10 py-2 text-white disabled:cursor-not-allowed"
+          className="flex flex-row items-center justify-center gap-2 rounded-md bg-primary-900 px-10 py-2 text-white disabled:cursor-not-allowed disabled:bg-secondary-800"
         >
           {isLoading && <Spinner aria-label="Spinner" size="sm" />}
           <span>Save{isLoading ? "..." : ""}</span>
@@ -686,7 +749,7 @@ const Confirm: React.FC<{ accountType: AccountType }> = ({ accountType }) => {
   );
 };
 
-const SignUp: React.FC<{ account?: AccountType }> = ({ account }) => {
+export const SignUp: React.FC<{ account?: AccountType }> = ({ account }) => {
   const steps = ["Account Type", "User Info", "Additional Info", "Confirm"];
   const { user } = useAuth();
   const [activeStep, setActiveStep] = useState<number>();
@@ -694,7 +757,8 @@ const SignUp: React.FC<{ account?: AccountType }> = ({ account }) => {
     account,
   );
 
-  const moveToNextStep = () => {
+  const onAdditionalInfoFilled = () => {
+    console.log("onAdditionalInfoFilled");
     setActiveStep((prev) => (prev || 0) + 1);
   };
 
@@ -712,13 +776,14 @@ const SignUp: React.FC<{ account?: AccountType }> = ({ account }) => {
   };
 
   useEffect(() => {
-    console.log({ accountType, user, activeStep });
+    console.log({ accountType, user });
     if (accountType === "driver" && !user.isAnonymous) {
-      if (activeStep && activeStep < 2) {
-        setActiveStep(2);
-      } else {
-        setActiveStep(activeStep || 3);
-      }
+      setActiveStep((prev) => {
+        if (prev && prev < 2) {
+          return 2;
+        }
+        return prev;
+      });
     } else if (!user.isAnonymous) {
       setActiveStep(3);
     } else if (accountType) {
@@ -726,7 +791,7 @@ const SignUp: React.FC<{ account?: AccountType }> = ({ account }) => {
     } else {
       setActiveStep(0);
     }
-  }, [accountType, user, activeStep]);
+  }, [accountType, user]);
 
   if (activeStep === undefined) return null;
   return (
@@ -739,11 +804,9 @@ const SignUp: React.FC<{ account?: AccountType }> = ({ account }) => {
         <SignUpUser onComplete={onUserCreated} />
       )}
       {activeStep === 2 && accountType && (
-        <AdditionalInfo onAdditionalInfoAdded={moveToNextStep} />
+        <AdditionalInfo onAdditionalInfoAdded={onAdditionalInfoFilled} />
       )}
       {activeStep === 3 && accountType && <Confirm accountType={accountType} />}
     </div>
   );
 };
-
-export default SignUp;

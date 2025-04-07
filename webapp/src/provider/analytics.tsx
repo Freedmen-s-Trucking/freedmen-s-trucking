@@ -6,9 +6,9 @@ import { useRouterState } from "@tanstack/react-router";
 
 const AnalyticsCtx = createContext<Analytics | null>(null);
 
-export const AnalyticsProvider: React.FC<{
+const AnalyticsProvider: React.FC<{
   children: React.ReactNode;
-}> & { Ctx: React.Context<Analytics | null> } = ({ children }) => {
+}> = ({ children }) => {
   const analytics = useMemo(() => getAnalytics(), []);
   const { location } = useRouterState();
 
@@ -27,4 +27,4 @@ export const AnalyticsProvider: React.FC<{
   );
 };
 
-AnalyticsProvider.Ctx = AnalyticsCtx;
+export { AnalyticsProvider, AnalyticsCtx };

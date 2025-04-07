@@ -103,16 +103,15 @@ apiV1Route.post('/stripe/create-payment-intent', async (c) => {
 
 apiV1Route.post('/stripe/webhook', async (c) => {
   let event: _stripe.Event;
-  // try {
-  //   const sig = c.req.header('stripe-signature');
-  //   const arrayBuffer = await c.req.arrayBuffer(); // Get body as ArrayBuffer
-  //   const buffer = Buffer.from(arrayBuffer); // Convert to Buffer
+  try {
+    const sig = c.req.header('stripe-signature');
+    const arrayBuffer = await c.req.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
 
-  //   event = stripe.webhooks.constructEvent(buffer, sig || '', process.env.STRIPE_WEBHOOK_SECRET!);
-  // }
-  // catch (err) {
-  //   return c.json({error: `Webhook Error: ${(err as Error).message}`}, 400);
-  // }
+    event = stripe.webhooks.constructEvent(buffer, sig || '', process.env.STRIPE_WEBHOOK_SECRET!);
+  } catch (err) {
+    return c.json({ error: `Webhook Error: ${(err as Error).message}` }, 400);
+  }
 
   event ??= await c.req.json();
   console.log(event.type);
@@ -215,6 +214,7 @@ apiV1Route.post('/stripe/webhook', async (c) => {
         {
           totalActiveOrders: FieldValue.increment(1),
           totalEarnings: FieldValue.increment(paymentIntent.amount / 100),
+          updatedAt: FieldValue.serverTimestamp(),
           ...(driverId ? {} : { totalUnassignedOrders: FieldValue.increment(1) }),
         },
         { merge: true },
