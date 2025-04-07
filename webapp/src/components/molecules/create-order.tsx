@@ -9,7 +9,7 @@ import {
 import { useState } from "react";
 import { CustomOSMSearchResult } from "~/hooks/use-geocoding";
 import { setRequestedAuthAction } from "~/stores/controllers/app-ctrl";
-import { useAppDispatch } from "~/stores/hooks";
+import { useAppDispatch, useAppSelector } from "~/stores/hooks";
 import { FaTrash } from "react-icons/fa6";
 import { Dropdown } from "flowbite-react";
 import StripePayment from "~/components/molecules/stripe-payment";
@@ -17,9 +17,8 @@ import {
   AddressSearchInput,
   OnAddressChangedParams,
 } from "~/components/atoms/address-search-input";
-import { useAuth } from "~/hooks/use-auth";
 import { useComputeDeliveryEstimation } from "~/hooks/use-price-calculator";
-import { PrimaryButton, SecondaryButton, TextInput } from "../atoms";
+import { PrimaryButton, SecondaryButton, TextInput } from "../atoms/base";
 
 const OrderPriorities = [
   {
@@ -42,7 +41,6 @@ export const CreateOrder: React.FC<{
 }> = ({ showInModal, brightness, onComplete }) => {
   const [showModal, setShowModal] = useState(showInModal);
   const onCloseModal = () => {
-    onComplete();
     setShowModal(false);
   };
   if (showInModal) {
@@ -57,19 +55,26 @@ export const CreateOrder: React.FC<{
           <span className="text-lg font-medium">Schedule Delivery</span>
         </Modal.Header>
         <Modal.Body className="max-h-[80vh] overflow-y-auto p-4">
-          <CreateOrderForm brightness={brightness} className="border-none" />
+          <CreateOrderForm
+            brightness={brightness}
+            className="border-none"
+            onOrderCreated={onComplete}
+          />
         </Modal.Body>
       </Modal>
     );
   }
-  return <CreateOrderForm brightness={brightness} />;
+  return (
+    <CreateOrderForm brightness={brightness} onOrderCreated={onComplete} />
+  );
 };
 
 export const CreateOrderForm: React.FC<{
   brightness: "dark" | "light";
   className?: string;
-}> = ({ brightness, className }) => {
-  const { user } = useAuth();
+  onOrderCreated?: () => void;
+}> = ({ brightness, className, onOrderCreated }) => {
+  const { user } = useAppSelector((state) => state.authCtrl);
   const [deliveryPriority, setDeliveryPriorityInput] =
     useState<(typeof OrderPriorities)[number]>();
   const [error, setError] = useState<string | null>(null);
@@ -174,6 +179,7 @@ export const CreateOrderForm: React.FC<{
     if (
       !pickupLocation ||
       !deliveryLocation ||
+      !user ||
       user.isAnonymous ||
       !deliveryPriority ||
       !packages?.length ||
@@ -234,6 +240,9 @@ export const CreateOrderForm: React.FC<{
 
   const onPaymentComplete = () => {
     setProcessPayment(null);
+    if (onOrderCreated) {
+      onOrderCreated();
+    }
   };
 
   const handleComputeEstimation = async (e: React.FormEvent) => {
@@ -242,7 +251,7 @@ export const CreateOrderForm: React.FC<{
     if (validationResult) {
       return;
     }
-    if (user.isAnonymous) {
+    if (!user || user.isAnonymous) {
       requestSignIn();
       return;
     }
@@ -467,7 +476,7 @@ export const CreateOrderForm: React.FC<{
         >
           {error}
         </motion.div>
-        {user.isAnonymous ? (
+        {!user || user.isAnonymous ? (
           <PrimaryButton onClick={requestSignIn}>
             Sign In To Continue
           </PrimaryButton>

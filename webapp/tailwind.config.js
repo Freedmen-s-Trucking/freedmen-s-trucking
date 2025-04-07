@@ -2,7 +2,11 @@ import flowbite from "flowbite-react/tailwind";
 
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}", flowbite.content()],
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+    flowbite.content({ base: "../" }), // Note: base represent the base node module of the repository.
+  ],
   theme: {
     extend: {
       screens: {

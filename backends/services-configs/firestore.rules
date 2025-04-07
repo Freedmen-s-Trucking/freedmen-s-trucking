@@ -17,11 +17,11 @@ service cloud.firestore {
         return request.auth != null && resource != null && (resource.id == request.auth.uid || ("ownerId" in resource.data && resource.data.ownerId == request.auth.uid)); 
     }
     function isDriverOfOrder() {
-      return request.auth.uid != null &&  resource != null && "driver" in resource.data && resource.data.driver != null && resource.data.driver.id == request.auth.uid;
+      return request.auth.uid != null &&  resource != null && "driverId" in resource.data && resource.data.driverId == request.auth.uid;
     }
     function canUpdateOrder() {
       // Only driver are authorized to update order after assignment.
-      return isDriverOfOrder() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["driver"]);
+      return isDriverOfOrder() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["driverStatus", "status", "updatedAt"]);
     }
     match /admin/{content=**} {
       allow read, create: if isAdmin();

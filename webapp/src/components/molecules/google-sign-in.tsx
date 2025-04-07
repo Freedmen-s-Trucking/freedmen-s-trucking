@@ -2,7 +2,7 @@ import { useAuth } from "../../hooks/use-auth";
 import { FirebaseError } from "firebase/app";
 import { UserCredential } from "firebase/auth";
 import { useState } from "react";
-import { PrimaryButton } from "../atoms";
+import { PrimaryButton } from "../atoms/base";
 
 export const GoogleSignIn: React.FC<{
   onSignInError?: (error: unknown) => void;

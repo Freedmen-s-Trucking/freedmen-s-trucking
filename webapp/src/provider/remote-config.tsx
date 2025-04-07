@@ -16,17 +16,17 @@ const twelveHoursMillis = 43200000;
 const oneHourMillis = 3600000;
 const oneMinuteMillis = 60000;
 
-export const RemoteConfigProvider: React.FC<{
+const RemoteConfigProvider: React.FC<{
   children: React.ReactNode;
-}> & { Ctx: React.Context<RemoteConfig | null> } = ({ children }) => {
+}> = ({ children }) => {
   const remoteConfig = useMemo(() => getRemoteConfig(), []);
 
   useEffect(() => {
     remoteConfig.settings.minimumFetchIntervalMillis = isDevMode
       ? oneMinuteMillis
-      : APP_ENV === "dev"
-        ? oneHourMillis
-        : twelveHoursMillis;
+      : APP_ENV === "prod"
+        ? twelveHoursMillis
+        : oneHourMillis;
 
     remoteConfig.defaultConfig = DEFAULT_REMOTE_CONFIG_MAP;
   }, [remoteConfig]);
@@ -53,4 +53,4 @@ export const RemoteConfigProvider: React.FC<{
   );
 };
 
-RemoteConfigProvider.Ctx = RemoteConfigCtx;
+export { RemoteConfigProvider, RemoteConfigCtx };

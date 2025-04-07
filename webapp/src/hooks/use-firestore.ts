@@ -1,9 +1,10 @@
 import { useCallback, useContext } from "react";
-import { FireStoreProvider } from "../provider/firestore";
+import { FireStoreCtx } from "../provider/firestore";
 import {
   collection,
   doc,
   DocumentReference,
+  FieldValue,
   Firestore,
   getDoc,
   getDocs,
@@ -12,6 +13,7 @@ import {
   onSnapshot,
   Query,
   query,
+  serverTimestamp,
   setDoc,
   where,
 } from "firebase/firestore";
@@ -31,7 +33,7 @@ import {
 import { checkFalsyAndThrow } from "../utils/functions";
 
 const useFirestore = () => {
-  const context = useContext(FireStoreProvider.Ctx);
+  const context = useContext(FireStoreCtx);
   if (!context) {
     throw new Error("useFirestore must be used within a FireStoreProvider");
   }
@@ -115,14 +117,17 @@ const useOrderDbOperations = (db: Firestore) => {
         throw new Error("Unauthorized");
       }
       // TODO: Validate status
-      const dataToUpdate: Partial<OrderEntity> = {
+      const dataToUpdate = {
         driverStatus: driverStatus,
         status:
           driverStatus === DriverOrderStatus.DELIVERED
             ? OrderStatus.COMPLETED
             : prevOrder.status,
-        updatedAt: new Date().toISOString(),
-      };
+        updatedAt: serverTimestamp(),
+      } as Record<
+        keyof OrderEntity,
+        OrderEntity[keyof OrderEntity] | FieldValue
+      >;
       await setDoc(docRef, dataToUpdate, {
         merge: true,
       });

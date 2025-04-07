@@ -1,7 +1,7 @@
 import { Popover } from "flowbite-react";
 import { useGeocoding, CustomOSMSearchResult } from "../../hooks/use-geocoding";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { TextInput } from ".";
+import { TextInput } from "./base";
 
 export type OnAddressChangedParams = {
   possibleValues: CustomOSMSearchResult[];

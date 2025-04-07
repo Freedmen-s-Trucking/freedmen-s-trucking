@@ -10,7 +10,7 @@ import { useState } from "react";
 import { Modal } from "flowbite-react";
 import { SERVER_API } from "~/utils/constants";
 import { useQuery } from "@tanstack/react-query";
-import { PrimaryButton } from "../atoms";
+import { PrimaryButton } from "../atoms/base";
 import {
   apiResScheduleDeliveryIntent,
   NewOrder,

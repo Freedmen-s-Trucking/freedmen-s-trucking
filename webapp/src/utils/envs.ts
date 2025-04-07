@@ -3,4 +3,5 @@ export const STRIPE_CLIENT_SECRET = import.meta.env.VITE_STRIPE_CLIENT_SECRET;
 
 export const isDevMode = import.meta.env.DEV;
 export const isProdMode = import.meta.env.PROD;
-export const APP_ENV: "dev" | "prod" = import.meta.env.VITE_APP_ENV || "dev";
+export const APP_ENV: "dev" | "prod" | "local" =
+  import.meta.env.VITE_APP_ENV || "local";

@@ -6,7 +6,7 @@ const PerformanceMonitoringCtx = createContext<FirebasePerformance | null>(
   null,
 );
 
-export const PerformanceMonitoringProvider: React.FC<{
+const PerformanceMonitoringProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
   const performance = useMemo(() => getPerformance(), []);
@@ -25,6 +25,8 @@ export const PerformanceMonitoringProvider: React.FC<{
     </PerformanceMonitoringCtx.Provider>
   );
 };
+
+export { PerformanceMonitoringProvider, PerformanceMonitoringCtx };
 
 // export const usePerformanceMonitoring = () => {
 //   const context = useContext(PerformanceMonitoringCtx);

@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { RemoteConfigProvider } from "../provider/remote-config";
+import { RemoteConfigCtx } from "../provider/remote-config";
 import { getBoolean, getNumber, getString } from "firebase/remote-config";
 import { RemoteConfigKeys } from "../utils/constants";
 import { DEFAULT_REMOTE_CONFIG_MAP } from "../utils/constants";
@@ -13,7 +13,7 @@ import { DEFAULT_REMOTE_CONFIG_MAP } from "../utils/constants";
 export const useGetRemoteConfig = <T extends RemoteConfigKeys>(
   key: T,
 ): (typeof DEFAULT_REMOTE_CONFIG_MAP)[T] => {
-  const context = useContext(RemoteConfigProvider.Ctx);
+  const context = useContext(RemoteConfigCtx);
   if (!context) {
     throw new Error(
       "useGetRemoteConfig must be used within a RemoteConfigProvider",
