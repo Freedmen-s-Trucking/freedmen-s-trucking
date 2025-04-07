@@ -1,5 +1,9 @@
 {
-  "name": "freedman-trucking",
+  "name": "freedmen-s-trucking",
   "private": true,
-  "workspaces": ["backends/functions", "common/*", "webapp"]
+  "workspaces": [
+    "backends/functions",
+    "common/*",
+    "webapp"
+  ]
 }

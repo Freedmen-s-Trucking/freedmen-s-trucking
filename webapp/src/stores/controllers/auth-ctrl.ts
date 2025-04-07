@@ -2,7 +2,7 @@ import {
   AdminEntity,
   DriverEntity,
   UserEntity,
-} from "@freedman-trucking/types";
+} from "@freedmen-s-trucking/types";
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { UserInfo, UserMetadata } from "firebase/auth";

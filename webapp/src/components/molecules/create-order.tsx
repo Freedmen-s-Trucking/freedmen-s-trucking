@@ -5,20 +5,20 @@ import {
   NewOrder,
   OrderPriority,
   ProductWithQuantity,
-} from "@freedman-trucking/types";
+} from "@freedmen-s-trucking/types";
 import { useState } from "react";
-import { CustomOSMSearchResult } from "@/hooks/use-geocoding";
-import { setRequestedAuthAction } from "@/stores/controllers/app-ctrl";
-import { useAppDispatch } from "@/stores/hooks";
+import { CustomOSMSearchResult } from "~/hooks/use-geocoding";
+import { setRequestedAuthAction } from "~/stores/controllers/app-ctrl";
+import { useAppDispatch } from "~/stores/hooks";
 import { FaTrash } from "react-icons/fa6";
 import { Dropdown } from "flowbite-react";
-import StripePayment from "@/components/molecules/stripe-payment";
+import StripePayment from "~/components/molecules/stripe-payment";
 import {
   AddressSearchInput,
   OnAddressChangedParams,
-} from "@/components/atoms/address-search-input";
-import { useAuth } from "@/hooks/use-auth";
-import { useComputeDeliveryEstimation } from "@/hooks/use-price-calculator";
+} from "~/components/atoms/address-search-input";
+import { useAuth } from "~/hooks/use-auth";
+import { useComputeDeliveryEstimation } from "~/hooks/use-price-calculator";
 import { PrimaryButton, SecondaryButton, TextInput } from "../atoms";
 
 const OrderPriorities = [

@@ -2,7 +2,12 @@ import 'source-map-support/register.js';
 import 'dotenv/config';
 import './config.js';
 import { onDocumentWritten } from 'firebase-functions/v2/firestore';
-import { CollectionName, DriverEntity, LATEST_PLATFORM_OVERVIEW_PATH, PlatformOverviewEntity } from './types/index.js';
+import {
+  CollectionName,
+  DriverEntity,
+  LATEST_PLATFORM_OVERVIEW_PATH,
+  PlatformOverviewEntity,
+} from '@freedmen-s-trucking/types';
 import { DocumentReference, FieldValue, getFirestore } from 'firebase-admin/firestore';
 
 export { httpServer } from './http-server.js';

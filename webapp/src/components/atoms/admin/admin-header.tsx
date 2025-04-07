@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Avatar, Button, Dropdown } from "flowbite-react";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "~/hooks/use-auth";
 import { useNavigate } from "@tanstack/react-router";
 import { HiEye, HiEyeOff, HiLogout } from "react-icons/hi";
 import { CiMenuKebab } from "react-icons/ci";

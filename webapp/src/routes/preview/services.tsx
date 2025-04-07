@@ -11,17 +11,17 @@ import {
   AccordionTitle,
   Flowbite,
 } from "flowbite-react";
-import home2LogoBlured from "@/assets/images/home-2-blur.webp";
-import home2Logo from "@/assets/images/home-2.webp";
-import aboutUsTruck from "@/assets/images/about-us-truck-1.webp";
-import ourServicesHeroImg from "@/assets/images/our-services-hero.webp";
-import ourServicesHeroImgBlured from "@/assets/images/our-services-hero-blur.webp";
-import Hero from "@/components/molecules/hero";
-import FAQ from "@/components/molecules/faq";
-import AppFooter from "@/components/organisms/footer";
-import { AppImage } from "@/components/atoms/image";
-import { SPECIALTIES_DATA } from "@/utils/constants";
-import { AppImageBackground } from "@/components/atoms/image-background";
+import home2LogoBlured from "~/assets/images/home-2-blur.webp";
+import home2Logo from "~/assets/images/home-2.webp";
+import aboutUsTruck from "~/assets/images/about-us-truck-1.webp";
+import ourServicesHeroImg from "~/assets/images/our-services-hero.webp";
+import ourServicesHeroImgBlured from "~/assets/images/our-services-hero-blur.webp";
+import Hero from "~/components/molecules/hero";
+import FAQ from "~/components/molecules/faq";
+import AppFooter from "~/components/organisms/footer";
+import { AppImage } from "~/components/atoms/image";
+import { SPECIALTIES_DATA } from "~/utils/constants";
+import { AppImageBackground } from "~/components/atoms/image-background";
 
 const ACCORDION_THEME = {
   theme: {

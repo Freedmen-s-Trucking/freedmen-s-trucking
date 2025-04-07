@@ -6,14 +6,16 @@ import {
   UserCredential,
   GoogleAuthProvider,
   createUserWithEmailAndPassword,
+  connectAuthEmulator,
 } from "firebase/auth";
 import { createContext, useEffect, useMemo } from "react";
 // import { useFirebase } from "../hooks/firebase";
 import { useAppDispatch, useAppSelector } from "../../stores/hooks";
 import { AppUser, setUser } from "../../stores/controllers/auth-ctrl";
-import { DriverEntity, UserEntity } from "@freedman-trucking/types";
+import { DriverEntity, UserEntity } from "@freedmen-s-trucking/types";
 import { useDbOperations } from "../../hooks/use-firestore";
 import { AuthWrapper } from "./auth-wrapper";
+import { isDevMode } from "~/utils/envs";
 
 interface AppAuth {
   user: AppUser;
@@ -64,7 +66,13 @@ const _signInWithGoogle = async (): Promise<UserCredential> => {
 export const AuthProvider: React.FC<{
   children: React.ReactNode;
 }> & { Ctx: React.Context<AppAuth | null> } = ({ children }) => {
-  const auth = useMemo(() => getAuth(), []);
+  const auth = useMemo(() => {
+    const _auth = getAuth();
+    if (isDevMode) {
+      connectAuthEmulator(_auth, "http://127.0.0.1:9099");
+    }
+    return _auth;
+  }, []);
   const { user } = useAppSelector((state) => state.authCtrl);
   const { createUser, getDriver, getUser } = useDbOperations();
 

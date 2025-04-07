@@ -8,13 +8,13 @@ import { loadStripe } from "@stripe/stripe-js";
 import { STRIPE_CLIENT_SECRET } from "../../utils/envs";
 import { useState } from "react";
 import { Modal } from "flowbite-react";
-import { SERVER_API } from "@/utils/constants";
+import { SERVER_API } from "~/utils/constants";
 import { useQuery } from "@tanstack/react-query";
 import { PrimaryButton } from "../atoms";
 import {
   apiResScheduleDeliveryIntent,
   NewOrder,
-} from "@freedman-trucking/types";
+} from "@freedmen-s-trucking/types";
 import { up } from "up-fetch";
 
 const stripePromise = loadStripe(STRIPE_CLIENT_SECRET!);

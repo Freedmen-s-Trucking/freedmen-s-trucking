@@ -1,7 +1,7 @@
 import { useCallback, useContext } from "react";
 import { StorageProvider } from "../provider/storage";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import { checkFalsyAndThrow } from "@/utils/functions";
+import { checkFalsyAndThrow } from "~/utils/functions";
 
 const useStorage = () => {
   const context = useContext(StorageProvider.Ctx);

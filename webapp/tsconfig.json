@@ -21,7 +21,8 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "~/*": ["./src/*"],
+      "@freedmen-s-trucking/types": ["../common/types"]
     }
   },
   "include": ["src"],

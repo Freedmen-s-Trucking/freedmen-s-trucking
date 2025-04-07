@@ -1,8 +1,8 @@
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
-import { routeTree } from "@/route-tree.gen";
-import "@/index.css";
+import { routeTree } from "~/route-tree.gen";
+import "~/index.css";
 import { RootProviders } from "./provider/providers";
 import { useAppSelector } from "./stores/hooks";
 import { useGetRemoteConfig } from "./hooks/use-remote-config";

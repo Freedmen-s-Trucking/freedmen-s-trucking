@@ -23,18 +23,18 @@ import {
   HiPhone,
   HiMail,
 } from "react-icons/hi";
-import { useDbOperations } from "@/hooks/use-firestore";
+import { useDbOperations } from "~/hooks/use-firestore";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   EntityWithPath,
   DriverEntity,
   VerificationStatus,
   UserEntity,
-} from "@freedman-trucking/types";
+} from "@freedmen-s-trucking/types";
 import { AppImage } from "../image";
 import { MdHideImage } from "react-icons/md";
-import { useStorageOperations } from "@/hooks/use-storage";
-import { tabTheme } from "@/utils/constants";
+import { useStorageOperations } from "~/hooks/use-storage";
+import { tabTheme } from "~/utils/constants";
 
 const btTheme = {
   base: "group relative flex items-stretch justify-center p-0.5 text-center font-medium transition-[color,background-color,border-color,text-decoration-color,fill,stroke,box-shadow] focus:z-10 focus:outline-none",

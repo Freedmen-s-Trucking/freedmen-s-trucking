@@ -27,7 +27,7 @@ import {
   UserEntity,
   CollectionName,
   LATEST_PLATFORM_OVERVIEW_PATH,
-} from "@freedman-trucking/types";
+} from "@freedmen-s-trucking/types";
 import { checkFalsyAndThrow } from "../utils/functions";
 
 const useFirestore = () => {

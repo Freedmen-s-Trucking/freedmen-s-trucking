@@ -19,25 +19,25 @@ import {
   HiEyeOff,
   HiLogout,
 } from "react-icons/hi";
-import { useAuth } from "@/hooks/use-auth";
-import { useStorageOperations } from "@/hooks/use-storage";
+import { useAuth } from "~/hooks/use-auth";
+import { useStorageOperations } from "~/hooks/use-storage";
 import { useQuery } from "@tanstack/react-query";
-import { useDbOperations } from "@/hooks/use-firestore";
-import { setUser } from "@/stores/controllers/auth-ctrl";
+import { useDbOperations } from "~/hooks/use-firestore";
+import { setUser } from "~/stores/controllers/auth-ctrl";
 import {
   DriverOrderStatus,
   RequiredVehicleEntity,
   OrderStatus,
-} from "@freedman-trucking/types";
-import { useAppDispatch } from "@/stores/hooks";
+} from "@freedmen-s-trucking/types";
+import { useAppDispatch } from "~/stores/hooks";
 import { BsTrainFreightFront } from "react-icons/bs";
 import { GiTruck } from "react-icons/gi";
 import { TbCarSuv, TbLayoutDashboard } from "react-icons/tb";
 import { PiPlus, PiVanBold } from "react-icons/pi";
 import { IoCarOutline } from "react-icons/io5";
 import { MdOutlineEdit } from "react-icons/md";
-import { CreateOrder } from "@/components/molecules/create-order";
-import { tabTheme } from "@/utils/constants";
+import { CreateOrder } from "~/components/molecules/create-order";
+import { tabTheme } from "~/utils/constants";
 
 const tabs = ["active-orders", "history"] as const;
 

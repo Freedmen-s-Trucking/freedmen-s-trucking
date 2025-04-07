@@ -11,11 +11,11 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      "~": path.resolve(__dirname, "./src"),
+      "@freedmen-s-trucking/types": path.resolve(
+        __dirname,
+        "../common/types/src/index.ts",
+      ),
     },
-  },
-  optimizeDeps: {
-    include: ["@freedman-trucking/types"],
-    exclude: ["tailwindcss/version.js"],
   },
 });

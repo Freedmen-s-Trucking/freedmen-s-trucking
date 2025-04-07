@@ -1,12 +1,12 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import home2LogoBlured from "@/assets/images/home-2-blur.webp";
-import home2Logo from "@/assets/images/home-2.webp";
-import Hero from "@/components/molecules/hero";
-import FAQ from "@/components/molecules/faq";
-import AppFooter from "@/components/organisms/footer";
-import deliveryTrackingHeroImg from "@/assets/images/track-delivery-hero.webp";
-import deliveryTrackingHeroImgBlured from "@/assets/images/track-delivery-hero-blur.webp";
-import { AppImageBackground } from "@/components/atoms/image-background";
+import home2LogoBlured from "~/assets/images/home-2-blur.webp";
+import home2Logo from "~/assets/images/home-2.webp";
+import Hero from "~/components/molecules/hero";
+import FAQ from "~/components/molecules/faq";
+import AppFooter from "~/components/organisms/footer";
+import deliveryTrackingHeroImg from "~/assets/images/track-delivery-hero.webp";
+import deliveryTrackingHeroImgBlured from "~/assets/images/track-delivery-hero-blur.webp";
+import { AppImageBackground } from "~/components/atoms/image-background";
 
 export const Route = createFileRoute("/preview/tracking")({
   beforeLoad({ context }) {

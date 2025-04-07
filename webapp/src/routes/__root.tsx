@@ -1,8 +1,8 @@
 import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 
-import { AppUser } from "@/stores/controllers/auth-ctrl";
-import { RouteProviders } from "@/provider/providers";
+import { AppUser } from "~/stores/controllers/auth-ctrl";
+import { RouteProviders } from "~/provider/providers";
 
 const Component: React.FC = () => {
   return (

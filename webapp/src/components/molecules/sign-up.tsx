@@ -15,11 +15,11 @@ import { TbLayoutDashboard, TbTruckDelivery } from "react-icons/tb";
 import { MdOutlinePostAdd } from "react-icons/md";
 import { useDbOperations } from "../../hooks/use-firestore";
 import { useStorageOperations } from "../../hooks/use-storage";
-import { AccountType, DriverEntity } from "@freedman-trucking/types";
-import { useAppDispatch } from "@/stores/hooks";
-import { setUser } from "@/stores/controllers/auth-ctrl";
+import { AccountType, DriverEntity } from "@freedmen-s-trucking/types";
+import { useAppDispatch } from "~/stores/hooks";
+import { setUser } from "~/stores/controllers/auth-ctrl";
 import { PrimaryButton, TextInput } from "../atoms";
-import { setRequestedAuthAction } from "@/stores/controllers/app-ctrl";
+import { setRequestedAuthAction } from "~/stores/controllers/app-ctrl";
 const PASSWORD_SECURITY_LEVELS = [
   {
     label: "weak",

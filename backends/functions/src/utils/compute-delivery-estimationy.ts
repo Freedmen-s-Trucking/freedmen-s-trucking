@@ -1,4 +1,4 @@
-import { ProductWithQuantity, vehiclesInfoList, VehicleType } from '../types/index.js';
+import { ProductWithQuantity, vehiclesInfoList, VehicleType } from '@freedmen-s-trucking/types';
 
 const deliveryPriorityPricesAddons = {
   standard: 0,

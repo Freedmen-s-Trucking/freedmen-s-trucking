@@ -23,27 +23,27 @@ import {
   HiClock,
   HiLogout,
 } from "react-icons/hi";
-import { useAuth } from "@/hooks/use-auth";
-import { AppImage } from "@/components/atoms/image";
+import { useAuth } from "~/hooks/use-auth";
+import { AppImage } from "~/components/atoms/image";
 import { MdHideImage } from "react-icons/md";
-import { useStorageOperations } from "@/hooks/use-storage";
+import { useStorageOperations } from "~/hooks/use-storage";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useDbOperations } from "@/hooks/use-firestore";
-import { setUser, updateDriverInfo } from "@/stores/controllers/auth-ctrl";
+import { useDbOperations } from "~/hooks/use-firestore";
+import { setUser, updateDriverInfo } from "~/stores/controllers/auth-ctrl";
 import {
   DriverEntity,
   OrderEntity,
   DriverOrderStatus,
   RequiredVehicleEntity,
-} from "@freedman-trucking/types";
-import { useAppDispatch } from "@/stores/hooks";
+} from "@freedmen-s-trucking/types";
+import { useAppDispatch } from "~/stores/hooks";
 import { BsTrainFreightFront } from "react-icons/bs";
 import { GiTruck } from "react-icons/gi";
 import { TbCarSuv, TbLayoutDashboard } from "react-icons/tb";
 import { PiVanBold } from "react-icons/pi";
 import { IoCarOutline } from "react-icons/io5";
 import { CiMenuKebab } from "react-icons/ci";
-import { tabTheme } from "@/utils/constants";
+import { tabTheme } from "~/utils/constants";
 
 const tabs = ["overview", "active-orders", "history", "profile"] as const;
 
