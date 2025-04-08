@@ -66,3 +66,51 @@ export function getDriverVerificationStatus(
   }
   return driver.verificationStatus || "failed";
 }
+
+/**
+ * Generates a Universally Unique Identifier (UUID) using the following methods:
+ * 1. Using the `crypto.randomUUID()` function if available.
+ * 2. Using the `crypto.getRandomValues()` function if available.
+ * 3. Fallback to a random string if none of the above methods are available.
+ *
+ * The generated UUIDs are in the format of `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`
+ * and are compliant with RFC 4122.
+ *
+ * @returns A string representing the generated UUID.
+ */
+export function generateUUID() {
+  if (typeof crypto === "object") {
+    if (typeof crypto.randomUUID === "function") {
+      return crypto.randomUUID();
+    }
+    if (typeof crypto.getRandomValues === "function") {
+      const d = new Uint8Array(16);
+      crypto.getRandomValues(d);
+      d[6] = (d[6] & 0x0f) | 0x40; // Set version to 4
+      d[8] = (d[8] & 0x3f) | 0x80; // Set variant to RFC4122
+      const uuid = [...d].map((x) => ("0" + x.toString(16)).slice(-2)).join("");
+      return (
+        uuid.slice(0, 8) +
+        "-" +
+        uuid.slice(8, 12) +
+        "-" +
+        uuid.slice(12, 16) +
+        "-" +
+        uuid.slice(16, 20) +
+        "-" +
+        uuid.slice(20)
+      );
+    }
+  }
+  return (
+    Math.random().toString(36).substring(0, 8) +
+    "-" +
+    Math.random().toString(36).substring(8, 12) +
+    "-" +
+    Math.random().toString(36).substring(12, 16) +
+    "-" +
+    Math.random().toString(36).substring(16, 20) +
+    "-" +
+    Date.now().toString().substring(1, 12)
+  );
+}

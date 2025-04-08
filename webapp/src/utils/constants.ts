@@ -153,8 +153,9 @@ export const vehicleTypes: Record<
   FREIGHT: { title: "Freight", Icon: BsTrainFreightFront },
 };
 
+export const isAuthenticateMockApi = isDevMode;
 export const authenticateApiRequest = up(fetch, () => ({
-  baseUrl: `https://api-v3.authenticating.com${isDevMode ? "/mock" : ""}`,
+  baseUrl: `https://api-v3.authenticating.com${isAuthenticateMockApi ? "/mock" : ""}`,
   headers: {
     accept: "application/json",
     "content-type": "application/json",

@@ -204,6 +204,10 @@ const PlatformSettings = () => {
   const { data: settings, isLoading } = useQuery({
     queryKey: [LATEST_PLATFORM_SETTINGS_PATH],
     queryFn: fetchPlatformSettings,
+    throwOnError(err) {
+      console.error("Failed to fetch platform settings", err);
+      return false;
+    },
   });
 
   if (isLoading) {

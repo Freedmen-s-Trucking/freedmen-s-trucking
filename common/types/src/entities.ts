@@ -26,6 +26,11 @@ export const userEntity = type({
   uid: "string",
   displayName: "string",
   authenticateAccessCode: "string",
+  consents: type({
+    isBackgroundDisclosureAccepted: "boolean",
+    GLBPurposeAndDPPAPurpose: "boolean",
+    FCRAPurpose: "boolean",
+  }).optional(),
   firstName: "string",
   lastName: "string",
   email: "string | null",

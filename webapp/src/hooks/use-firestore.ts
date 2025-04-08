@@ -32,6 +32,9 @@ import {
   LATEST_PLATFORM_OVERVIEW_PATH,
   LATEST_PLATFORM_SETTINGS_PATH,
   PlatformSettingsEntity,
+  type,
+  userEntity,
+  driverEntity,
 } from "@freedmen-s-trucking/types";
 import { checkFalsyAndThrow } from "../utils/functions";
 
@@ -43,59 +46,7 @@ const useFirestore = () => {
   return context;
 };
 
-function generateUUID() {
-  if (typeof crypto === "object") {
-    if (typeof crypto.randomUUID === "function") {
-      return crypto.randomUUID();
-    }
-    if (typeof crypto.getRandomValues === "function") {
-      const d = new Uint8Array(16);
-      crypto.getRandomValues(d);
-      d[6] = (d[6] & 0x0f) | 0x40; // Set version to 4
-      d[8] = (d[8] & 0x3f) | 0x80; // Set variant to RFC4122
-      const uuid = [...d].map((x) => ("0" + x.toString(16)).slice(-2)).join("");
-      return (
-        uuid.slice(0, 8) +
-        "-" +
-        uuid.slice(8, 12) +
-        "-" +
-        uuid.slice(12, 16) +
-        "-" +
-        uuid.slice(16, 20) +
-        "-" +
-        uuid.slice(20)
-      );
-    }
-  }
-  return (
-    Math.random().toString(36).substring(0, 8) +
-    "-" +
-    Math.random().toString(36).substring(8, 12) +
-    "-" +
-    Math.random().toString(36).substring(12, 16) +
-    "-" +
-    Math.random().toString(36).substring(16, 20) +
-    "-" +
-    Date.now().toString()
-  );
-}
-
 const useOrderDbOperations = (db: Firestore) => {
-  /**
-   * Create order if it doesn't exist.
-   */
-  const createOrder = useCallback(
-    async (order: OrderEntity) => {
-      const uuid = generateUUID();
-      const docRef = doc(collection(db, CollectionName.ORDERS), uuid);
-      await setDoc(docRef, JSON.parse(JSON.stringify(order)), {
-        merge: true,
-      });
-      return uuid;
-    },
-    [db],
-  );
-
   /**
    * Update order.
    */
@@ -108,6 +59,11 @@ const useOrderDbOperations = (db: Firestore) => {
       checkFalsyAndThrow(
         { userId, orderPath, driverStatus },
         "FirestoreError::updateOrderStatus",
+        type({
+          userId: "string",
+          orderPath: "string",
+          driverStatus: type.enumerated(DriverOrderStatus),
+        }),
       );
       const orderId = orderPath.split("/").pop();
       const docRef = doc(collection(db, CollectionName.ORDERS), orderId);
@@ -156,7 +112,7 @@ const useOrderDbOperations = (db: Firestore) => {
     [db],
   );
 
-  return { createOrder, updateOrderStatus };
+  return { updateOrderStatus };
 };
 
 const useUserDbOperations = (db: Firestore) => {
@@ -165,10 +121,17 @@ const useUserDbOperations = (db: Firestore) => {
    */
   const createUser = useCallback(
     async (user: UserEntity) => {
+      checkFalsyAndThrow(
+        { user },
+        "FirestoreError::createUser",
+        type({
+          user: userEntity,
+        }),
+      );
       const docRef = doc(collection(db, CollectionName.USERS), user.uid);
       const userSnapshot = await getDoc(docRef);
       if (!userSnapshot.exists()) {
-        await setDoc(docRef, JSON.parse(JSON.stringify(user)), { merge: true });
+        await setDoc(docRef, user, { merge: true });
       }
     },
     [db],
@@ -179,9 +142,16 @@ const useUserDbOperations = (db: Firestore) => {
    */
   const insertUser = useCallback(
     async (uid: string, user: Partial<UserEntity>) => {
-      checkFalsyAndThrow({ uid, user }, "FirestoreError::insertUser");
+      checkFalsyAndThrow(
+        { uid, user },
+        "FirestoreError::insertUser",
+        type({
+          uid: "string",
+          user: userEntity.partial(),
+        }),
+      );
       const docRef = doc(collection(db, CollectionName.USERS), uid);
-      await setDoc(docRef, JSON.parse(JSON.stringify(user)), { merge: true });
+      await setDoc(docRef, user, { merge: true });
     },
     [db],
   );
@@ -191,7 +161,13 @@ const useUserDbOperations = (db: Firestore) => {
    */
   const getUser = useCallback(
     async (uid: string) => {
-      checkFalsyAndThrow({ uid }, "FirestoreError::getUser");
+      checkFalsyAndThrow(
+        { uid },
+        "FirestoreError::getUser",
+        type({
+          uid: "string",
+        }),
+      );
       const docRef = doc(collection(db, CollectionName.USERS), uid);
       const userSnapshot = await getDoc(docRef);
       if (userSnapshot.exists()) {
@@ -214,9 +190,13 @@ const useDriverDbOperations = (db: Firestore) => {
       checkFalsyAndThrow(
         { uid, driver },
         "FirestoreError::updateDriverCertificates",
+        type({
+          uid: "string",
+          driver: driverEntity.partial(),
+        }),
       );
       const docRef = doc(collection(db, CollectionName.DRIVERS), uid);
-      await setDoc(docRef, JSON.parse(JSON.stringify(driver)), { merge: true });
+      await setDoc(docRef, driver, { merge: true });
     },
     [db],
   );
@@ -474,7 +454,7 @@ const useAdminDbOperations = (db: Firestore) => {
 export const useDbOperations = () => {
   const db = useFirestore();
 
-  const { createOrder, updateOrderStatus } = useOrderDbOperations(db);
+  const { updateOrderStatus } = useOrderDbOperations(db);
 
   const { insertUser, createUser, getUser } = useUserDbOperations(db);
   const {
@@ -495,7 +475,6 @@ export const useDbOperations = () => {
 
   return {
     insertUser,
-    createOrder,
     createUser,
     fetchCompletedOrder,
     fetchCurrentActiveOrders,

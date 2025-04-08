@@ -47,8 +47,8 @@ export const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({
         <Modal.Header>
           {authAction === "login" ? "Login" : "Sign Up"}
         </Modal.Header>
-        <Modal.Body>
-          <div className="flex w-full flex-row justify-center">
+        <Modal.Body className="p-2 xs:p-3 sm:p-4 md:p-5 lg:p-6">
+          <div className="w-full">
             {authAction === "login" && (
               <div className="space-y-6">
                 <SignIn onComplete={onSignInComplete} />
