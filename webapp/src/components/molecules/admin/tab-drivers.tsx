@@ -35,6 +35,7 @@ import { MdHideImage } from "react-icons/md";
 import { useStorageOperations } from "~/hooks/use-storage";
 import { tabTheme } from "~/utils/constants";
 import { SecondaryButton, TextInput } from "../../atoms/base";
+import { formatPrice, getDriverVerificationStatus } from "~/utils/functions";
 
 const btTheme = {
   base: "group relative flex items-stretch justify-center p-0.5 text-center font-medium transition-[color,background-color,border-color,text-decoration-color,fill,stroke,box-shadow] focus:z-10 focus:outline-none",
@@ -170,13 +171,13 @@ const DriverManagement: React.FC = () => {
 
   const { data: driverLicenseUrl } = useQuery({
     initialData: "",
-    enabled: !!currentDriver?.data.driverLicense?.storagePath,
+    enabled: !!currentDriver?.data.driverLicenseFrontStoragePath,
     queryKey: [
       "driverLicenseUrl",
-      currentDriver?.data.driverLicense?.storagePath,
+      currentDriver?.data.driverLicenseFrontStoragePath,
     ],
     queryFn: () =>
-      fetchImage(currentDriver?.data.driverLicense?.storagePath || ""),
+      fetchImage(currentDriver?.data.driverLicenseFrontStoragePath || ""),
     select(data) {
       return data;
     },
@@ -188,13 +189,13 @@ const DriverManagement: React.FC = () => {
 
   const { data: driverInsuranceUrl } = useQuery({
     initialData: "",
-    enabled: !!currentDriver?.data.driverInsurance?.storagePath,
+    enabled: !!currentDriver?.data.driverInsuranceStoragePath,
     queryKey: [
       "driverInsuranceUrl",
-      currentDriver?.data.driverInsurance?.storagePath,
+      currentDriver?.data.driverInsuranceStoragePath,
     ],
     queryFn: () =>
-      fetchImage(currentDriver?.data.driverInsurance?.storagePath || ""),
+      fetchImage(currentDriver?.data.driverInsuranceStoragePath || ""),
     select(data) {
       return data;
     },
@@ -290,7 +291,8 @@ const DriverManagement: React.FC = () => {
         .includes(searchTerm.toLowerCase()) ||
       driver.data.user?.email?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus =
-      statusFilter === "all" || driver.data.verificationStatus === statusFilter;
+      statusFilter === "all" ||
+      getDriverVerificationStatus(driver.data) === statusFilter;
 
     return matchesSearch && matchesStatus;
   });
@@ -395,19 +397,16 @@ const DriverManagement: React.FC = () => {
                   </div>
                 </Table.Cell>
                 <Table.Cell>
-                  {renderStatusBadge(driver.data.verificationStatus)}
+                  {renderStatusBadge(getDriverVerificationStatus(driver.data))}
                 </Table.Cell>
                 <Table.Cell>
                   {driver.data.vehicles ? driver.data.vehicles.length : 0}{" "}
                   vehicles
                 </Table.Cell>
                 <Table.Cell>
-                  <div>
-                    ${driver.data.totalEarnings?.toLocaleString() || "0"}
-                  </div>
+                  <div>{formatPrice(driver.data.totalEarnings || 0)}</div>
                   <div className="text-xs text-gray-500">
-                    ${driver.data.currentEarnings?.toLocaleString() || "0"}{" "}
-                    current
+                    {formatPrice(driver.data.currentEarnings || 0)} current
                   </div>
                 </Table.Cell>
                 <Table.Cell>
@@ -450,7 +449,7 @@ const DriverManagement: React.FC = () => {
                       </h3>
                       <div className="mt-1 flex items-center">
                         {renderStatusBadge(
-                          currentDriver.data.verificationStatus,
+                          getDriverVerificationStatus(currentDriver.data),
                         )}
                       </div>
                     </div>
@@ -516,17 +515,11 @@ const DriverManagement: React.FC = () => {
                               <p className="text-sm text-gray-500">
                                 Status:{" "}
                                 {renderStatusBadge(
-                                  currentDriver.data.driverLicense?.status,
+                                  currentDriver.data
+                                    .driverLicenseVerificationStatus ||
+                                    "failed",
                                 )}
                               </p>
-                              {currentDriver.data.driverLicense?.expiry && (
-                                <p className="text-sm text-gray-500">
-                                  Expires:{" "}
-                                  {new Date(
-                                    currentDriver.data.driverLicense.expiry,
-                                  ).toLocaleDateString()}
-                                </p>
-                              )}
                             </div>
                           </div>
                         </Card>
@@ -548,17 +541,10 @@ const DriverManagement: React.FC = () => {
                               <p className="text-sm text-gray-500">
                                 Status:{" "}
                                 {renderStatusBadge(
-                                  currentDriver.data.driverInsurance?.status,
+                                  currentDriver.data
+                                    .driverInsuranceVerificationStatus,
                                 )}
                               </p>
-                              {currentDriver.data.driverInsurance?.expiry && (
-                                <p className="text-sm text-gray-500">
-                                  Expires:{" "}
-                                  {new Date(
-                                    currentDriver.data.driverInsurance.expiry,
-                                  ).toLocaleDateString()}
-                                </p>
-                              )}
                             </div>
                           </div>
                         </Card>
@@ -591,32 +577,22 @@ const DriverManagement: React.FC = () => {
                                   </div>
                                 </div>
 
-                                <div className="w-full md:w-2/3">
-                                  <h6 className="font-semibold">
-                                    Vehicle Insurance
-                                  </h6>
-                                  <div className="mt-2 flex items-center gap-2">
-                                    <HiDocumentText className="text-gray-500" />
-                                    <span>
-                                      Status:{" "}
-                                      {renderStatusBadge(
-                                        vehicle.insurance?.status,
-                                      )}
-                                    </span>
-                                  </div>
-
-                                  {vehicle.insurance?.expiry && (
-                                    <div className="mt-1 flex items-center gap-2">
-                                      <HiClock className="text-gray-500" />
+                                {vehicle.insuranceStoragePath && (
+                                  <div className="w-full md:w-2/3">
+                                    <h6 className="font-semibold">
+                                      Vehicle Insurance
+                                    </h6>
+                                    <div className="mt-2 flex items-center gap-2">
+                                      <HiDocumentText className="text-gray-500" />
                                       <span>
-                                        Expires:{" "}
-                                        {new Date(
-                                          vehicle.insurance.expiry,
-                                        ).toLocaleDateString()}
+                                        Status:{" "}
+                                        {renderStatusBadge(
+                                          vehicle.insuranceVerificationStatus,
+                                        )}
                                       </span>
                                     </div>
-                                  )}
-                                </div>
+                                  </div>
+                                )}
                               </div>
                             </Card>
                           ))}
@@ -641,7 +617,8 @@ const DriverManagement: React.FC = () => {
                     theme={btTheme}
                     color="success"
                     disabled={
-                      currentDriver.data.verificationStatus === "verified"
+                      getDriverVerificationStatus(currentDriver.data) ===
+                      "verified"
                     }
                     onClick={() =>
                       setNextStatusInfo({
@@ -659,7 +636,8 @@ const DriverManagement: React.FC = () => {
                   <Button
                     color="failure"
                     disabled={
-                      currentDriver.data.verificationStatus === "failed"
+                      getDriverVerificationStatus(currentDriver.data) ===
+                      "failed"
                     }
                     onClick={() =>
                       setNextStatusInfo({

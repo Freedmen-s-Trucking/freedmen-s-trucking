@@ -18,13 +18,18 @@ import { useStorageOperations } from "../../hooks/use-storage";
 import {
   AccountType,
   DriverEntity,
+  type,
   VehicleType,
 } from "@freedmen-s-trucking/types";
 import { useAppDispatch } from "~/stores/hooks";
 import { setUser } from "~/stores/controllers/auth-ctrl";
 import { PrimaryButton, TextInput } from "../atoms/base";
 import { setRequestedAuthAction } from "~/stores/controllers/app-ctrl";
-import { vehicleTypes } from "~/utils/constants";
+import { authenticateApiRequest, vehicleTypes } from "~/utils/constants";
+import { formatDate, subYears } from "date-fns";
+import { Timestamp } from "firebase/firestore";
+import { fileToBase64 } from "~/utils/functions";
+
 const PASSWORD_SECURITY_LEVELS = [
   {
     label: "weak",
@@ -43,6 +48,28 @@ const PASSWORD_SECURITY_LEVELS = [
     tailwind: "bg-green-500",
   },
 ];
+
+function getFirebaseErrorMessage(error: FirebaseError) {
+  switch (error.code) {
+    case "auth/email-already-in-use":
+      return "The email address is already in use.";
+    case "auth/invalid-email":
+      return "The email address is malformed.";
+    case "auth/weak-password":
+      return "The password is too weak. Please use a stronger password.";
+    case "auth/operation-not-allowed":
+      return "Operation not allowed. Please contact support.";
+    case "auth/too-many-requests":
+      return "Too many requests. Please try again later.";
+    case "auth/wrong-password":
+      return "Wrong password.";
+    case "auth/user-disabled":
+      return "User disabled.";
+    case "auth/user-not-found":
+      return "User not found.";
+  }
+  return null;
+}
 
 function getPasswordSecurityLevel(password: string) {
   const lowerCaseRegExp = /[a-z]/;
@@ -92,7 +119,7 @@ function getPasswordSecurityLevel(password: string) {
 const SignUpUser: React.FC<{
   onComplete: (userCredential: UserCredential) => void;
 }> = ({ onComplete }) => {
-  const { signUpWithEmailAndPassword } = useAuth();
+  const { signUpWithEmailAndPassword, signInWithEmailAndPassword } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -131,10 +158,21 @@ const SignUpUser: React.FC<{
     } catch (error: unknown) {
       const err = error as Record<string, unknown> | null | undefined;
       console.debug({ err });
-      if (err && err.code === "auth/email-already-in-use") {
-        setError("Email already in use.");
-      } else {
+      if (!(error instanceof FirebaseError)) {
         setError("Unknown Error Occurred.");
+        return;
+      }
+      if (error.code === "auth/email-already-in-use") {
+        return signInWithEmailAndPassword(email, password)
+          .then(onComplete)
+          .catch((e) =>
+            setError(getFirebaseErrorMessage(e) || "Unknown Error Occurred."),
+          );
+      }
+      const errMsg = getFirebaseErrorMessage(error);
+      if (errMsg) {
+        setError(errMsg);
+        return;
       }
     } finally {
       setIsLoading(false);
@@ -384,12 +422,20 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
   onAdditionalInfoAdded,
 }) => {
   const { user } = useAuth();
-  const userInfo = user.info;
-  const [fullName, setFullName] = useState<string>(userInfo.displayName || "");
+  const [birthDate, setBirthDate] = useState<Date | null>(null);
+  const [firstName, setFirstName] = useState<string>("");
+  const [lastName, setLastName] = useState<string>("");
   const [phoneNumber, setPhoneNumber] = useState<string>(
-    userInfo.phoneNumber || "",
+    user.info.phoneNumber || "",
   );
-  const [driverLicense, setDriverLicense] = useState<File | null>(null);
+  const [driverLicenseIdFront, setDriverLicenseIdFront] = useState<File | null>(
+    null,
+  );
+  const driverLicenseIdBackInputRef = useRef<HTMLInputElement>(null);
+  const [driverLicenseIdBack, setDriverLicenseIdBack] = useState<File | null>(
+    null,
+  );
+  const driverLicenseIdFrontInputRef = useRef<HTMLInputElement>(null);
   const [driverVehicle, setDriverVehicle] = useState<VehicleType | null>(null);
   const [driverInsurance, setDriverInsurance] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -399,17 +445,14 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    if (userInfo.displayName) {
-      setFullName(userInfo.displayName);
+    if (user.info.displayName) {
+      setFirstName(user.info.displayName.split(" ")[0] || "");
+      setLastName(user.info.displayName.split(" ")[1] || "");
     }
-    if (userInfo.phoneNumber) {
-      setPhoneNumber(userInfo.phoneNumber);
+    if (user.info.phoneNumber) {
+      setPhoneNumber(user.info.phoneNumber);
     }
-  }, [userInfo]);
-
-  const onFullNameChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFullName(e.target.value);
-  };
+  }, [user.info]);
 
   const onPhoneNumberChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^0-9\s-]/g, "");
@@ -418,16 +461,50 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
     setPhoneNumber(formattedValue);
   };
 
-  const onDriverLicenseChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onDriverLicenseIDFrontChanged = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const files = e.target.files;
-    if (files && files.length > 0) {
-      setDriverLicense(files[0]);
+    if (
+      files &&
+      files.length > 0 &&
+      ["image/png", "image/jpeg", "image/jpg"].includes(files[0].type)
+    ) {
+      setDriverLicenseIdFront(files[0]);
+    } else {
+      console.warn(
+        "invalid format detected, the platform may not work as expected.",
+      );
+    }
+  };
+  const onDriverLicenseIDBackChanged = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const files = e.target.files;
+    if (
+      files &&
+      files.length > 0 &&
+      ["image/png", "image/jpeg", "image/jpg"].includes(files[0].type)
+    ) {
+      setDriverLicenseIdBack(files[0]);
+    } else {
+      console.warn(
+        "invalid format detected, the platform may not work as expected.",
+      );
     }
   };
   const onDriverInsuranceChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (files && files.length > 0) {
+    if (
+      files &&
+      files.length > 0 &&
+      ["image/png", "image/jpeg", "image/jpg"].includes(files[0].type)
+    ) {
       setDriverInsurance(files[0]);
+    } else {
+      console.warn(
+        "invalid format detected, the platform may not work as expected.",
+      );
     }
   };
 
@@ -450,37 +527,83 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
   const [error, setError] = useState<null | string>(null);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!birthDate || !firstName || !lastName) {
+      setError("Missing required fields");
+      return;
+    }
+    if (!driverLicenseIdFront || !driverLicenseIdBack || !driverInsurance) {
+      setError("Missing required certificates");
+      return;
+    }
     try {
       setIsLoading(true);
-      await new Promise((r) => setTimeout(r, 1000));
-      const driverLicensePath = await uploadCertificate(
-        userInfo.uid,
-        driverLicense!,
-        "driver-license",
+      const driverLicenseFrontPath = await uploadCertificate(
+        user.info.uid,
+        driverLicenseIdFront!,
+        "driver-license-front",
+      );
+      const driverLicenseBackPath = await uploadCertificate(
+        user.info.uid,
+        driverLicenseIdBack!,
+        "driver-license-back",
       );
       const driverInsurancePath = await uploadCertificate(
-        userInfo.uid,
+        user.info.uid,
         driverInsurance!,
         "driver-insurance",
       );
-      await insertUser(userInfo.uid, {
-        displayName: fullName.trim(),
+
+      const { userAccessCode } = await authenticateApiRequest("/user/create", {
+        method: "POST",
+        body: {
+          email: user.info.email,
+          firstName: firstName,
+          lastName: lastName,
+          dob: formatDate(birthDate, "dd-MM-yyyy"),
+          phoneNumber: phoneNumber,
+        },
+        schema: type({
+          userAccessCode: "string",
+        }),
+      });
+
+      const { success } = await authenticateApiRequest(
+        "/identity/document/scan",
+        {
+          method: "POST",
+          body: {
+            userAccessCode,
+            idFront: await fileToBase64(driverLicenseIdFront!),
+            idBack: await fileToBase64(driverLicenseIdBack!),
+            country: 0, // Country code can be found here: https://docs.authenticate.com/docs/supported-countries-for-upload-id
+          },
+          schema: type({
+            success: "boolean",
+          }),
+        },
+      );
+
+      if (!success) {
+        throw new Error("Failed to scan driver license");
+      }
+
+      await insertUser(user.info.uid, {
+        displayName: `${firstName} ${lastName}`,
+        firstName: firstName,
+        authenticateAccessCode: userAccessCode,
+        lastName: lastName,
+        birthDate: (birthDate && Timestamp.fromDate(birthDate)) || null,
         phoneNumber: phoneNumber,
         isPhoneNumberVerified: false,
       });
       const driverInfo: DriverEntity = {
-        driverLicense: {
-          storagePath: driverLicensePath,
-          status: "pending",
-          expiry: "",
-          issues: [],
-        },
-        driverInsurance: {
-          storagePath: driverInsurancePath,
-          status: "pending",
-          expiry: "",
-          issues: [],
-        },
+        driverLicenseVerificationStatus: "pending",
+        driverLicenseVerificationIssues: [],
+        driverLicenseFrontStoragePath: driverLicenseFrontPath,
+        driverLicenseBackStoragePath: driverLicenseBackPath,
+        driverInsuranceVerificationStatus: "pending",
+        driverInsuranceVerificationIssues: [],
+        driverInsuranceStoragePath: driverInsurancePath,
         vehicles: [
           {
             type: driverVehicle!,
@@ -491,12 +614,13 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
         totalEarnings: 0,
         tasksCompleted: 0,
         verificationMessage: null,
+        authenticateAccessCode: userAccessCode,
         activeTasks: 0,
         paymentMethods: [],
         withdrawalHistory: [],
       };
 
-      await updateDriver(userInfo.uid, driverInfo);
+      await updateDriver(user.info.uid, driverInfo);
       dispatch(
         setUser({
           ...user,
@@ -509,30 +633,14 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
     } catch (error: unknown) {
       const err = error as Record<string, unknown> | null | undefined;
       console.debug({ err });
-      if (!err || !err.code) {
-        setError("Unknown Error Occurred.");
-        return;
+      if (err instanceof FirebaseError) {
+        const firebaseAuthErrorMessage = getFirebaseErrorMessage(err);
+        if (firebaseAuthErrorMessage) {
+          setError(firebaseAuthErrorMessage);
+          return;
+        }
       }
-      switch (err.code) {
-        case "auth/email-already-in-use":
-          setError("The email address is already in use.");
-          break;
-        case "auth/invalid-email":
-          setError("The email address is malformed.");
-          break;
-        case "auth/weak-password":
-          setError("The password is too weak. Please use a stronger password.");
-          break;
-        case "auth/operation-not-allowed":
-          setError("Operation not allowed. Please contact support.");
-          break;
-        case "auth/too-many-requests":
-          setError("Too many requests. Please try again later.");
-          break;
-        default:
-          setError("Unknown Error Occurred.");
-          break;
-      }
+      setError("Unknown Error Occurred.");
     } finally {
       setIsLoading(false);
     }
@@ -541,17 +649,45 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
     <div className="mx-auto max-w-md space-y-4 text-secondary-800">
       <h1 className="text-3xl font-bold">Additional Info</h1>
       <form className="flex flex-col space-y-2" onSubmit={handleSubmit}>
+        <div className="flex flex-row space-x-2">
+          <label className="inline-block">
+            <span className="block text-sm font-medium text-secondary-800">
+              Firs Name<span className="text-lg text-red-400">*</span>
+            </span>
+            <TextInput
+              type="text"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value.trimStart())}
+              required
+              min={2}
+              autoComplete="billing name"
+              // className="mt-1 block w-full rounded-md border-gray-300 py-4 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+            />
+          </label>
+          <label className="inline-block">
+            <span className="block text-sm font-medium text-secondary-800">
+              Last Name<span className="text-lg text-red-400">*</span>
+            </span>
+            <TextInput
+              type="text"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value.trimStart())}
+              required
+              autoComplete="billing name"
+              // className="mt-1 block w-full rounded-md border-gray-300 py-4 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+            />
+          </label>
+        </div>
         <label className="block">
           <span className="block text-sm font-medium text-secondary-800">
-            Full Name<span className="text-lg text-red-400">*</span>
+            Birth Date<span className="text-lg text-red-400">*</span>
           </span>
           <TextInput
-            type="text"
-            value={fullName}
-            onChange={onFullNameChanged}
+            type="date"
+            value={birthDate?.toISOString().split("T")[0] || ""}
+            onChange={(e) => setBirthDate(new Date(e.target.value))}
+            max={subYears(new Date(), 18).toISOString().split("T")[0]}
             required
-            autoComplete="billing name"
-            // className="mt-1 block w-full rounded-md border-gray-300 py-4 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
           />
         </label>
         <label className="block">
@@ -599,36 +735,72 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
           ))}
         </Dropdown>
         <span className="block text-sm font-medium text-secondary-800">
-          Driver License
+          Driver License ID Front
           <span className="text-lg text-red-400">*</span>
         </span>
         <div className="mt-1 flex flex-wrap items-center gap-8">
-          {driverLicense && (
+          {driverLicenseIdFront && (
             <div className="relative">
               <img
-                src={URL.createObjectURL(driverLicense)}
+                src={URL.createObjectURL(driverLicenseIdFront)}
                 alt="Driver License"
                 className="h-20 w-20 object-cover"
               />
               <button
                 type="button"
                 className="absolute right-0 top-0 overflow-hidden rounded-full bg-red-500 p-1 text-white"
-                onClick={() => setDriverLicense(null)}
+                onClick={() => setDriverLicenseIdFront(null)}
               >
                 <IoClose />
               </button>
             </div>
           )}
-          {driverLicense === null && (
+          {driverLicenseIdFront === null && (
             <label className="relative flex h-8 w-8 cursor-pointer items-center justify-center overflow-hidden rounded-lg border-2 border-dashed border-gray-500">
               <MdOutlinePostAdd className="text-2xl" />
               <input
                 type="file"
-                accept=".png,.jpg,.jpeg,.webp"
+                accept=".png,.jpg,.jpeg"
                 multiple={false}
                 required
-                ref={certificateInputRef}
-                onChange={onDriverLicenseChanged}
+                ref={driverLicenseIdFrontInputRef}
+                onChange={onDriverLicenseIDFrontChanged}
+                className="absolute left-0 top-0 z-[-1] h-8 w-8 opacity-0"
+              />
+            </label>
+          )}
+        </div>
+        <span className="block text-sm font-medium text-secondary-800">
+          Driver License ID Back
+          <span className="text-lg text-red-400">*</span>
+        </span>
+        <div className="mt-1 flex flex-wrap items-center gap-8">
+          {driverLicenseIdBack && (
+            <div className="relative">
+              <img
+                src={URL.createObjectURL(driverLicenseIdBack)}
+                alt="Driver License"
+                className="h-20 w-20 object-cover"
+              />
+              <button
+                type="button"
+                className="absolute right-0 top-0 overflow-hidden rounded-full bg-red-500 p-1 text-white"
+                onClick={() => setDriverLicenseIdBack(null)}
+              >
+                <IoClose />
+              </button>
+            </div>
+          )}
+          {driverLicenseIdBack === null && (
+            <label className="relative flex h-8 w-8 cursor-pointer items-center justify-center overflow-hidden rounded-lg border-2 border-dashed border-gray-500">
+              <MdOutlinePostAdd className="text-2xl" />
+              <input
+                type="file"
+                accept=".png,.jpg,.jpeg"
+                multiple={false}
+                required
+                ref={driverLicenseIdBackInputRef}
+                onChange={onDriverLicenseIDBackChanged}
                 className="absolute left-0 top-0 z-[-1] h-8 w-8 opacity-0"
               />
             </label>
@@ -782,7 +954,7 @@ export const SignUp: React.FC<{ account?: AccountType }> = ({ account }) => {
         if (prev && prev < 2) {
           return 2;
         }
-        return prev;
+        return prev || 2;
       });
     } else if (!user.isAnonymous) {
       setActiveStep(3);

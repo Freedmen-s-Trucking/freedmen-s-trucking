@@ -2,6 +2,7 @@ import { useCallback, useContext } from "react";
 import { StorageCtx } from "../provider/storage";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { checkFalsyAndThrow } from "~/utils/functions";
+import { type } from "arktype";
 
 const useStorage = () => {
   const context = useContext(StorageCtx);
@@ -47,17 +48,24 @@ export const useStorageOperations = () => {
     async (
       uid: string,
       license: File,
-      type: "driver-license" | "driver-insurance",
+      docType:
+        | "driver-license-front"
+        | "driver-license-back"
+        | "driver-insurance",
     ) => {
       checkFalsyAndThrow(
-        { uid, license, type },
+        { uid, license, type: docType },
         "FStorageError:: The uid or license must not be empty or null or undefined",
+        type({
+          uid: "string",
+          license: "File",
+          type: "string",
+        }),
       );
       const userStorageRef = ref(storage, `drivers-certifications/${uid}`);
 
       if (license.type.startsWith("image/")) {
-        const randomCertificateName = `${type}-${Date.now()}`;
-        const storageRef = ref(userStorageRef, randomCertificateName);
+        const storageRef = ref(userStorageRef, `${docType}`);
         const res = uploadBytes(storageRef, license).then((snapshot) => {
           console.log({ snapshot });
           console.log("Uploaded a blob or file!");

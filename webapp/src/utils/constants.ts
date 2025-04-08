@@ -1,5 +1,4 @@
-import { FlowbiteTabsTheme } from "flowbite-react";
-import { isDevMode } from "./envs";
+import { AUTHENTICATE_DOT_COM_TOKEN, isDevMode } from "./envs";
 import {
   BsCarFrontFill,
   BsShieldFillCheck,
@@ -10,6 +9,7 @@ import {
 import { TbCarSuv } from "react-icons/tb";
 import { PiTruck, PiVan } from "react-icons/pi";
 import { VehicleType } from "../../../common/types/src";
+import { up } from "up-fetch";
 
 export const SERVER_API = isDevMode
   ? "http://127.0.0.1:5001/freedman-trucking-dev/us-central1/httpServer/api"
@@ -107,13 +107,7 @@ export const DEFAULT_REMOTE_CONFIG_MAP = {
   [RemoteConfigKeys.test_string_key]: "test",
 };
 
-export type DeepPartial<T> = T extends object
-  ? {
-      [P in keyof T]?: DeepPartial<T[P]>;
-    }
-  : T;
-
-export const tabTheme: DeepPartial<FlowbiteTabsTheme> = {
+export const tabTheme = {
   tablist: {
     // className="focus:[&>button]: focus:[&>button]:ring-secondary-800"
     tabitem: {
@@ -158,3 +152,14 @@ export const vehicleTypes: Record<
   TRUCK: { title: "Truck", Icon: PiTruck },
   FREIGHT: { title: "Freight", Icon: BsTrainFreightFront },
 };
+
+export const authenticateApiRequest = up(fetch, () => ({
+  baseUrl: `https://api-v3.authenticating.com${isDevMode ? "/mock" : ""}`,
+  headers: {
+    accept: "application/json",
+    "content-type": "application/json",
+    ...(isDevMode
+      ? {}
+      : { authorization: `Bearer ${AUTHENTICATE_DOT_COM_TOKEN}` }),
+  },
+}));

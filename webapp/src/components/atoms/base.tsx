@@ -115,12 +115,15 @@ export const SecondaryButton: React.FC<
   onClick,
   className = "",
   isLoading = false,
+  type,
   loadingText = "Loading...",
   ...buttonProps
 }) => {
+  const isDisabled = isLoading || (!onClick && type !== "submit");
+
   const buttonVariants = {
     initial: {
-      opacity: 1,
+      opacity: isDisabled ? 0.5 : 1,
     },
     loading: {
       opacity: 0.5,
@@ -132,12 +135,12 @@ export const SecondaryButton: React.FC<
       {...buttonProps}
       onClick={onClick}
       variants={buttonVariants}
-      whileHover={{ scale: isLoading ? 1 : 1.05 }}
-      whileTap={{ scale: isLoading ? 1 : 0.975 }}
-      disabled={isLoading}
+      whileHover={isDisabled ? undefined : { scale: isLoading ? 1 : 1.05 }}
+      whileTap={isDisabled ? undefined : { scale: isLoading ? 1 : 0.975 }}
+      disabled={isDisabled}
       initial="initial"
       animate={isLoading ? "loading" : "initial"}
-      className={`flex flex-row items-center justify-center rounded-lg border-2 border-primary-700/80 bg-primary-100 p-4 font-medium text-primary-700 transition-colors duration-300 hover:bg-primary-50 ${className}`}
+      className={`flex flex-row items-center justify-center rounded-lg border-2 border-primary-700/80 bg-primary-100 p-4 font-medium text-primary-700 transition-colors duration-300 ${className}`}
     >
       {isLoading ? (
         <motion.div

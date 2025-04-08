@@ -106,6 +106,10 @@ const AuthProvider: React.FC<{
             provider: provider.providerId,
             providerRowData: { ...provider },
           })),
+          authenticateAccessCode: "",
+          firstName: "",
+          lastName: "",
+          birthDate: null,
           createdAt: user.metadata.creationTime || null,
           updatedAt: user.metadata.creationTime || null,
         };

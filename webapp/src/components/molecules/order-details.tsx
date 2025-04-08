@@ -10,7 +10,6 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   AdvancedMarker,
-  APIProvider,
   createStaticMapsUrl,
   InfoWindow,
   Map,
@@ -101,39 +100,66 @@ const statusMap: Record<
 const StatusBadge: React.FC<{
   status: OrderStatus;
   driverStatus: DriverOrderStatus;
-  order: EntityWithPath<OrderEntity>;
-}> = ({ status, driverStatus, order }) => {
-  const { user } = useAuth();
-  const isDriverOfOrder =
-    user.driverInfo && user.info.uid === order.data.driverId;
-
-  if (isDriverOfOrder) {
+  viewType: AccountType;
+  className?: string;
+}> = ({ status, driverStatus, viewType, className }) => {
+  if (viewType === "driver") {
     return statusMap[driverStatus].badge;
   }
 
-  let badge = <Badge color="warning">Pending Payment</Badge>;
+  let badge = (
+    <Badge color="warning" className={className}>
+      Pending Payment
+    </Badge>
+  );
   switch (status) {
     case OrderStatus.PAYMENT_RECEIVED:
-      return <Badge color="green">Payment Received</Badge>;
+      return (
+        <Badge color="green" className={className}>
+          Payment Received
+        </Badge>
+      );
     case OrderStatus.PENDING_PAYMENT:
-      return <Badge color="warning">Pending Payment</Badge>;
+      return (
+        <Badge color="warning" className={className}>
+          Pending Payment
+        </Badge>
+      );
     case OrderStatus.ASSIGNED_TO_DRIVER:
-      badge = <Badge color="info">Assigned To Driver</Badge>;
+      badge = (
+        <Badge color="info" className={className}>
+          Assigned To Driver
+        </Badge>
+      );
       break;
     case OrderStatus.COMPLETED:
-      badge = <Badge color="success">Completed</Badge>;
+      badge = (
+        <Badge color="success" className={className}>
+          Completed
+        </Badge>
+      );
       break;
   }
   switch (driverStatus) {
     case DriverOrderStatus.ACCEPTED:
     case DriverOrderStatus.ON_THE_WAY_TO_PICKUP:
-      return <Badge color="green">Package Accepted By Driver</Badge>;
+      return (
+        <Badge color="green" className={className}>
+          Package Accepted By Driver
+        </Badge>
+      );
     case DriverOrderStatus.ON_THE_WAY_TO_DELIVER:
       return (
-        <Badge color="purple">Package Picked Up & In Route To Delivery</Badge>
+        <Badge color="purple" className={className}>
+          Package Picked Up & In Route To Delivery
+        </Badge>
       );
     case DriverOrderStatus.DELIVERED:
-      return <Badge color="success">Delivered</Badge>;
+      return (
+        <Badge color="success" className={className}>
+          Delivered
+        </Badge>
+      );
   }
 
   return badge;
@@ -333,7 +359,8 @@ const OrderDetailsView: React.FC<{
                 <StatusBadge
                   status={order.data.status}
                   driverStatus={order.data.driverStatus}
-                  order={order}
+                  viewType={viewType}
+                  className="text-end"
                 />
               </div>
             </div>
@@ -496,42 +523,40 @@ const OrderDetailsView: React.FC<{
                   </div>
                 )}
                 {(center && viewType === "driver" && (
-                  <APIProvider apiKey={GOOGLE_MAPS_API_KEY}>
-                    <Map
-                      mapId={"DEMO_MAP_ID"}
-                      style={{ width: "100%", height: "50vh" }}
-                      defaultCenter={center}
-                      defaultZoom={10}
-                      minZoom={7}
-                      gestureHandling={"greedy"}
-                      disableDefaultUI={true}
+                  <Map
+                    mapId={"DEMO_MAP_ID"}
+                    style={{ width: "100%", height: "50vh" }}
+                    defaultCenter={center}
+                    defaultZoom={10}
+                    minZoom={7}
+                    gestureHandling={"greedy"}
+                    disableDefaultUI={true}
+                  >
+                    <AdvancedMarker
+                      position={pickupPosition}
+                      ref={pickupMarkerRef}
                     >
-                      <AdvancedMarker
-                        position={pickupPosition}
-                        ref={pickupMarkerRef}
-                      >
-                        <Pin
-                          background={"#0f9d58"}
-                          borderColor={"#006425"}
-                          glyphColor={"#60d98f"}
-                        />
-                      </AdvancedMarker>
-                      <InfoWindow
-                        anchor={pickupMarker}
-                        className="m-0 p-0"
-                        headerContent={<span>Pickup Location</span>}
+                      <Pin
+                        background={"#0f9d58"}
+                        borderColor={"#006425"}
+                        glyphColor={"#60d98f"}
                       />
-                      <AdvancedMarker
-                        position={deliveryPosition}
-                        ref={deliveryMarkerRef}
-                      />
-                      <InfoWindow
-                        anchor={deliveryMarker}
-                        className="m-0 p-0"
-                        headerContent={<span>Delivery Location</span>}
-                      />
-                    </Map>
-                  </APIProvider>
+                    </AdvancedMarker>
+                    <InfoWindow
+                      anchor={pickupMarker}
+                      className="m-0 p-0"
+                      headerContent={<span>Pickup Location</span>}
+                    />
+                    <AdvancedMarker
+                      position={deliveryPosition}
+                      ref={deliveryMarkerRef}
+                    />
+                    <InfoWindow
+                      anchor={deliveryMarker}
+                      className="m-0 p-0"
+                      headerContent={<span>Delivery Location</span>}
+                    />
+                  </Map>
                 )) ||
                   null}
                 {(center && viewType !== "driver" && (
@@ -609,8 +634,9 @@ export const Order: React.FC<{
           <div className="flex flex-col items-end gap-2">
             <StatusBadge
               status={order.data.status}
+              viewType={viewType}
+              className="text-end"
               driverStatus={order.data.driverStatus}
-              order={order}
             />
             <p className="text-lg font-bold text-secondary-950">
               {formatPrice(order.data.priceInUSD)}
