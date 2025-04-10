@@ -25,6 +25,6 @@
       "@freedmen-s-trucking/types": ["../common/types"]
     }
   },
-  "include": ["src"],
+  "include": ["src", "test"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

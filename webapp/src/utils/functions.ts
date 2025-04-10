@@ -22,6 +22,11 @@ export function checkFalsyAndThrow(
   }
 }
 
+/**
+ * Formats a price to USD string.
+ * @param {number} amount - The price to format.
+ * @returns {string} The formatted price string.
+ */
 export function formatPrice(amount: number) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -29,6 +34,12 @@ export function formatPrice(amount: number) {
   }).format(amount);
 }
 
+/**
+ * Formats a date to a string.
+ * @param {Date} date - The date to format.
+ * @param {string} space - The space between the date components.
+ * @returns {string} The formatted date string.
+ */
 export const formatDate = (date: Date, space: string = " ") => {
   return date
     .toLocaleTimeString([], {
@@ -42,6 +53,11 @@ export const formatDate = (date: Date, space: string = " ") => {
     .replace(/, /g, `,${space}`);
 };
 
+/**
+ * Converts a file to a base64 string.
+ * @param {File} file - The file to convert.
+ * @returns {Promise<string>} A promise that resolves to the base64 string.
+ */
 export function fileToBase64(file: File) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -58,6 +74,14 @@ export function fileToBase64(file: File) {
   });
 }
 
+/**
+ * Returns the verification status of a driver.
+ * If the driver's verification status is "pending", it returns the driver's license verification status or "failed".
+ * Otherwise, it returns the driver's verification status or "failed".
+ *
+ * @param {DriverEntity} driver - The driver entity to get the verification status from.
+ * @returns {VerificationStatus} The verification status of the driver.
+ */
 export function getDriverVerificationStatus(
   driver: DriverEntity,
 ): VerificationStatus {
