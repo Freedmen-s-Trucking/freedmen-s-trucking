@@ -6,7 +6,7 @@ import FAQ from "~/components/molecules/faq";
 import AppFooter from "~/components/organisms/footer";
 import deliveryTrackingHeroImg from "~/assets/images/track-delivery-hero.webp";
 import deliveryTrackingHeroImgBlured from "~/assets/images/track-delivery-hero-blur.webp";
-import { AppImageBackground } from "~/components/atoms/image-background";
+import { AppImageBackground } from "~/components/atoms";
 
 export const Route = createFileRoute("/preview/tracking")({
   beforeLoad({ context }) {

@@ -30,11 +30,11 @@ import {
   VerificationStatus,
   UserEntity,
 } from "@freedmen-s-trucking/types";
-import { AppImage } from "../../atoms/image";
+import { AppImage } from "~/components/atoms";
 import { MdHideImage } from "react-icons/md";
 import { useStorageOperations } from "~/hooks/use-storage";
 import { tabTheme } from "~/utils/constants";
-import { SecondaryButton, TextInput } from "../../atoms/base";
+import { SecondaryButton, TextInput } from "~/components/atoms";
 import { formatPrice, getDriverVerificationStatus } from "~/utils/functions";
 
 const btTheme = {

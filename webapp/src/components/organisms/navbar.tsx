@@ -1,16 +1,16 @@
 "use client";
 
 import { Dropdown, Modal, Navbar } from "flowbite-react";
-import { AppImage } from "../atoms/image";
-import logotiny from "../../assets/images/logo-blur.webp";
-import logo from "../../assets/images/logo.webp";
+import { AppImage } from "~/components/atoms";
+import logotiny from "~/assets/images/logo-blur.webp";
+import logo from "~/assets/images/logo.webp";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { PAGE_ROUTES } from "../../utils/constants";
-import { useAuth } from "../../hooks/use-auth";
+import { PAGE_ROUTES } from "~/utils/constants";
+import { useAuth } from "~/hooks/use-auth";
 import { HiLogout } from "react-icons/hi";
 import { useState } from "react";
-import { SignUp } from "../molecules/sign-up";
-import SignIn from "../molecules/sign-in";
+import { SignUp } from "~/components/molecules/sign-up";
+import SignIn from "~/components/molecules/sign-in";
 import { TbLayoutDashboard } from "react-icons/tb";
 import { FaHouseUser } from "react-icons/fa6";
 

@@ -6,7 +6,7 @@ import AppFooter from "~/components/organisms/footer";
 import Hero from "~/components/molecules/hero";
 import contactHeroImg from "~/assets/images/contact-us-hero.webp";
 import contactHeroImgBlured from "~/assets/images/contact-us-hero-blur.webp";
-import { AppImageBackground } from "~/components/atoms/image-background";
+import { AppImageBackground } from "~/components/atoms";
 
 export const Route = createFileRoute("/preview/contact")({
   beforeLoad({ context }) {

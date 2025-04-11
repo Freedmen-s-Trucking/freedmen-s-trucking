@@ -8,7 +8,7 @@ import {
 } from "react-icons/bs";
 import { TbCarSuv } from "react-icons/tb";
 import { PiTruck, PiVan } from "react-icons/pi";
-import { VehicleType } from "../../../common/types/src";
+import { VehicleType } from "@freedmen-s-trucking/types";
 import { up } from "up-fetch";
 
 export const SERVER_API = isDevMode

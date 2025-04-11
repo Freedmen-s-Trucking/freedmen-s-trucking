@@ -8,8 +8,8 @@ import Testimonials from "~/components/molecules/testimonials";
 import FAQ from "~/components/molecules/faq";
 import AppFooter from "~/components/organisms/footer";
 import aboutUsTruck from "~/assets/images/about-us-truck-1.webp";
-import { AppImage } from "~/components/atoms/image";
-import { AppImageBackground } from "~/components/atoms/image-background";
+import { AppImage } from "~/components/atoms";
+import { AppImageBackground } from "~/components/atoms";
 
 export const Route = createFileRoute("/preview/about")({
   beforeLoad({ context }) {

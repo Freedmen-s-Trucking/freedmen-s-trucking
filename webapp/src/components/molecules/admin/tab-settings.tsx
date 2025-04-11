@@ -7,8 +7,8 @@ import {
   PlaceLocation,
   LATEST_PLATFORM_SETTINGS_PATH,
 } from "@freedmen-s-trucking/types";
-import { SecondaryButton } from "~/components/atoms/base";
-import { AddressSearchInput } from "~/components/atoms/address-search-input";
+import { SecondaryButton } from "~/components/atoms";
+import { AddressSearchInput } from "~/components/atoms";
 import { PiPlus } from "react-icons/pi";
 
 const tableTheme = {

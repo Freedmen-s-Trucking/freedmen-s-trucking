@@ -39,15 +39,8 @@ const RemoteConfigProvider: React.FC<{
     },
   });
 
-  if (isLoading) {
-    return (
-      <div className="flex h-screen flex-col items-center justify-center text-center">
-        <span className="border-primary-700/33 inline-block h-16 w-16 animate-spin rounded-full border-4 border-t-primary-700" />
-      </div>
-    );
-  }
   return (
-    <RemoteConfigCtx.Provider value={remoteConfig}>
+    <RemoteConfigCtx.Provider value={isLoading ? null : remoteConfig}>
       {children}
     </RemoteConfigCtx.Provider>
   );

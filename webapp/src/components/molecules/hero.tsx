@@ -1,6 +1,6 @@
 import React from "react";
-import AppNavbar from "../organisms/navbar";
-import { AppImageBackground } from "../atoms/image-background";
+import AppNavbar from "~/components/organisms/navbar";
+import { AppImageBackground } from "~/components/atoms";
 
 const Hero: React.FC<{
   className?: string;

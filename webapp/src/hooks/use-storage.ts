@@ -1,5 +1,5 @@
 import { useCallback, useContext } from "react";
-import { StorageCtx } from "../provider/storage";
+import { StorageCtx } from "~/provider/storage";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { checkFalsyAndThrow } from "~/utils/functions";
 import { type } from "arktype";

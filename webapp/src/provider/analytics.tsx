@@ -1,7 +1,6 @@
 import { Analytics, getAnalytics, logEvent } from "firebase/analytics";
 import { createContext, useEffect, useMemo } from "react";
-// import { useFirebase } from "../hooks/firebase";
-import { PAGE_ROUTES } from "../utils/constants";
+import { PAGE_ROUTES } from "~/utils/constants";
 import { useRouterState } from "@tanstack/react-router";
 
 const AnalyticsCtx = createContext<Analytics | null>(null);

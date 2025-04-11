@@ -1,12 +1,12 @@
 import { useRouterState } from "@tanstack/react-router";
-import { AppImage } from "../atoms/image";
-import logotiny from "../../assets/images/logo-blur.webp";
-import logo from "../../assets/images/logo.webp";
-import home3Logo from "../../assets/images/home-3.webp";
-import home3LogoBlured from "../../assets/images/home-3-blur.webp";
-import { PAGE_ROUTES } from "../../utils/constants";
+import { AppImage } from "~/components/atoms";
+import logotiny from "~/assets/images/logo-blur.webp";
+import logo from "~/assets/images/logo.webp";
+import home3Logo from "~/assets/images/home-3.webp";
+import home3LogoBlured from "~/assets/images/home-3-blur.webp";
+import { PAGE_ROUTES } from "~/utils/constants";
 import { Link } from "@tanstack/react-router";
-import { AppImageBackground } from "../atoms/image-background";
+import { AppImageBackground } from "~/components/atoms";
 
 const ImportantLinksAndSubscription: React.FC = () => {
   const onEmailChanged = (e: React.ChangeEvent<HTMLInputElement>) => {

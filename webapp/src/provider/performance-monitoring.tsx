@@ -27,13 +27,3 @@ const PerformanceMonitoringProvider: React.FC<{
 };
 
 export { PerformanceMonitoringProvider, PerformanceMonitoringCtx };
-
-// export const usePerformanceMonitoring = () => {
-//   const context = useContext(PerformanceMonitoringCtx);
-//   if (!context) {
-//     throw new Error(
-//       "usePerformanceMonitoring must be used within a PerformanceMonitoringProvider",
-//     );
-//   }
-//   return context;
-// };

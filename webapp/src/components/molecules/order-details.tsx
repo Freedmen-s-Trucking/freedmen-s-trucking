@@ -38,7 +38,7 @@ import { TbCarSuv } from "react-icons/tb";
 import { useAuth } from "~/hooks/use-auth";
 import { useDbOperations } from "~/hooks/use-firestore";
 import { GOOGLE_MAPS_API_KEY } from "~/utils/envs";
-import { SecondaryButton } from "../atoms/base";
+import { SecondaryButton } from "~/components/atoms";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import { formatDate, formatPrice } from "~/utils/functions";
 

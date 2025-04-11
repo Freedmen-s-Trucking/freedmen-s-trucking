@@ -9,7 +9,7 @@ import {
 } from "flowbite-react";
 import { Card } from "flowbite-react/components/Card";
 import { MdRestartAlt } from "react-icons/md";
-import { AppImage } from "~/components/atoms/image";
+import { AppImage } from "~/components/atoms";
 import { useAuth } from "~/hooks/use-auth";
 import { useDbOperations } from "~/hooks/use-firestore";
 import { useStorageOperations } from "~/hooks/use-storage";
@@ -27,7 +27,7 @@ import {
   Heading3,
   SecondaryButton,
   TextInput,
-} from "~/components/atoms/base";
+} from "~/components/atoms";
 import { HiX } from "react-icons/hi";
 import { ResponseError } from "up-fetch";
 import { fileToBase64, getDriverVerificationStatus } from "~/utils/functions";

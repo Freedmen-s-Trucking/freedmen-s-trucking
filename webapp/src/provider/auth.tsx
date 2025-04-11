@@ -1,21 +1,19 @@
 import {
-  getAuth,
-  signInAnonymously,
-  signInWithPopup,
-  signInWithEmailAndPassword,
-  UserCredential,
-  GoogleAuthProvider,
-  createUserWithEmailAndPassword,
   connectAuthEmulator,
+  createUserWithEmailAndPassword,
+  getAuth,
+  GoogleAuthProvider,
+  signInAnonymously,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  UserCredential,
 } from "firebase/auth";
 import { createContext, useEffect, useMemo } from "react";
-// import { useFirebase } from "../hooks/firebase";
-import { useAppDispatch, useAppSelector } from "../../stores/hooks";
-import { AppUser, setUser } from "../../stores/controllers/auth-ctrl";
 import { DriverEntity, UserEntity } from "@freedmen-s-trucking/types";
-import { useDbOperations } from "../../hooks/use-firestore";
-import { AuthWrapper } from "./auth-wrapper";
 import { isDevMode } from "~/utils/envs";
+import { useDbOperations } from "~/hooks/use-firestore";
+import { AppUser, setUser } from "~/stores/controllers/auth-ctrl";
+import { useAppDispatch, useAppSelector } from "~/stores/hooks";
 
 interface AppAuth {
   user: AppUser;
@@ -155,18 +153,7 @@ const AuthProvider: React.FC<{
     });
   }, [auth, dispatch, getUser, getDriver, createUser]);
 
-  if (user == null) {
-    return (
-      <div className="flex h-screen flex-col items-center justify-center text-center">
-        <span className="border-primary-700/33 inline-block h-16 w-16 animate-spin rounded-full border-4 border-t-primary-700" />
-      </div>
-    );
-  }
-  return (
-    <AuthCtx.Provider value={authValue}>
-      <AuthWrapper>{children}</AuthWrapper>
-    </AuthCtx.Provider>
-  );
+  return <AuthCtx.Provider value={authValue}>{children}</AuthCtx.Provider>;
 };
 
-export { AuthProvider, AuthCtx };
+export { AuthCtx, AuthProvider };

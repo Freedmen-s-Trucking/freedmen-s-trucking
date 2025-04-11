@@ -1,16 +1,9 @@
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
-import { useAuth } from "../../hooks/use-auth";
+import { useAuth } from "~/hooks/use-auth";
 import { FirebaseError } from "firebase/app";
 import { UserCredential } from "firebase/auth";
 import { motion } from "motion/react";
-import {
-  Checkbox,
-  Dropdown,
-  Label,
-  Popover,
-  Spinner,
-  Tooltip,
-} from "flowbite-react";
+import { Checkbox, Dropdown, Label, Spinner, Tooltip } from "flowbite-react";
 import { GoogleSignIn } from "./google-sign-in";
 import {
   IoArrowForwardCircleOutline,
@@ -20,8 +13,8 @@ import {
 import { FaHouseUser } from "react-icons/fa";
 import { TbLayoutDashboard, TbTruckDelivery } from "react-icons/tb";
 import { MdOutlinePostAdd } from "react-icons/md";
-import { useDbOperations } from "../../hooks/use-firestore";
-import { useStorageOperations } from "../../hooks/use-storage";
+import { useDbOperations } from "~/hooks/use-firestore";
+import { useStorageOperations } from "~/hooks/use-storage";
 import {
   AccountType,
   DriverEntity,
@@ -30,7 +23,7 @@ import {
 } from "@freedmen-s-trucking/types";
 import { useAppDispatch } from "~/stores/hooks";
 import { setUser } from "~/stores/controllers/auth-ctrl";
-import { PrimaryButton, TextInput } from "../atoms/base";
+import { PrimaryButton, TextInput } from "~/components/atoms";
 import { setRequestedAuthAction } from "~/stores/controllers/app-ctrl";
 import {
   authenticateApiRequest,
@@ -40,6 +33,7 @@ import {
 import { formatDate, subYears } from "date-fns";
 import { Timestamp } from "firebase/firestore";
 import { fileToBase64 } from "~/utils/functions";
+import { CustomPopover } from "../atoms/popover";
 
 const PASSWORD_SECURITY_LEVELS = [
   {
@@ -246,9 +240,9 @@ const SignUpUser: React.FC<{
           <div className="mb-2 block">
             <Label htmlFor="password1" value="Your password" />
           </div>
-          <Popover
-            tabIndex={-1}
-            trigger="hover"
+          <CustomPopover
+            autoFocus={false}
+            trigger={["hover", "focus"]}
             className="absolute z-auto inline-block w-max max-w-[100vw] rounded-lg border border-gray-200 bg-primary-100 shadow-sm outline-none dark:border-gray-600 dark:bg-secondary-900 [&>div>div:first-child]:border-none [&>div>div:first-child]:bg-primary-100 [&>div>div:last-child]:-mt-[2px]"
             content={
               <div className="space-y-2 p-3">
@@ -305,7 +299,7 @@ const SignUpUser: React.FC<{
               type="password"
               required
             />
-          </Popover>
+          </CustomPopover>
         </div>
         <div>
           <div className="mb-2 block">
