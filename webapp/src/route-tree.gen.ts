@@ -18,6 +18,10 @@ import { Route as PreviewServicesImport } from './routes/preview/services'
 import { Route as PreviewScheduleDeliveryImport } from './routes/preview/schedule-delivery'
 import { Route as PreviewContactImport } from './routes/preview/contact'
 import { Route as PreviewAboutImport } from './routes/preview/about'
+import { Route as AppUserSplashScreenImport } from './routes/app/user/splash-screen'
+import { Route as AppUserSignupImport } from './routes/app/user/signup'
+import { Route as AppUserSigninImport } from './routes/app/user/signin'
+import { Route as AppUserOnboardingImport } from './routes/app/user/onboarding'
 import { Route as AppDriverDashboardImport } from './routes/app/driver/dashboard'
 import { Route as AppCustomerDashboardImport } from './routes/app/customer/dashboard'
 import { Route as AppAdminDashboardImport } from './routes/app/admin/dashboard'
@@ -63,6 +67,30 @@ const PreviewContactRoute = PreviewContactImport.update({
 const PreviewAboutRoute = PreviewAboutImport.update({
   id: '/preview/about',
   path: '/preview/about',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppUserSplashScreenRoute = AppUserSplashScreenImport.update({
+  id: '/app/user/splash-screen',
+  path: '/app/user/splash-screen',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppUserSignupRoute = AppUserSignupImport.update({
+  id: '/app/user/signup',
+  path: '/app/user/signup',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppUserSigninRoute = AppUserSigninImport.update({
+  id: '/app/user/signin',
+  path: '/app/user/signin',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppUserOnboardingRoute = AppUserOnboardingImport.update({
+  id: '/app/user/onboarding',
+  path: '/app/user/onboarding',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -158,6 +186,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDriverDashboardImport
       parentRoute: typeof rootRoute
     }
+    '/app/user/onboarding': {
+      id: '/app/user/onboarding'
+      path: '/app/user/onboarding'
+      fullPath: '/app/user/onboarding'
+      preLoaderRoute: typeof AppUserOnboardingImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/user/signin': {
+      id: '/app/user/signin'
+      path: '/app/user/signin'
+      fullPath: '/app/user/signin'
+      preLoaderRoute: typeof AppUserSigninImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/user/signup': {
+      id: '/app/user/signup'
+      path: '/app/user/signup'
+      fullPath: '/app/user/signup'
+      preLoaderRoute: typeof AppUserSignupImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/user/splash-screen': {
+      id: '/app/user/splash-screen'
+      path: '/app/user/splash-screen'
+      fullPath: '/app/user/splash-screen'
+      preLoaderRoute: typeof AppUserSplashScreenImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -174,6 +230,10 @@ export interface FileRoutesByFullPath {
   '/app/admin/dashboard': typeof AppAdminDashboardRoute
   '/app/customer/dashboard': typeof AppCustomerDashboardRoute
   '/app/driver/dashboard': typeof AppDriverDashboardRoute
+  '/app/user/onboarding': typeof AppUserOnboardingRoute
+  '/app/user/signin': typeof AppUserSigninRoute
+  '/app/user/signup': typeof AppUserSignupRoute
+  '/app/user/splash-screen': typeof AppUserSplashScreenRoute
 }
 
 export interface FileRoutesByTo {
@@ -187,6 +247,10 @@ export interface FileRoutesByTo {
   '/app/admin/dashboard': typeof AppAdminDashboardRoute
   '/app/customer/dashboard': typeof AppCustomerDashboardRoute
   '/app/driver/dashboard': typeof AppDriverDashboardRoute
+  '/app/user/onboarding': typeof AppUserOnboardingRoute
+  '/app/user/signin': typeof AppUserSigninRoute
+  '/app/user/signup': typeof AppUserSignupRoute
+  '/app/user/splash-screen': typeof AppUserSplashScreenRoute
 }
 
 export interface FileRoutesById {
@@ -201,6 +265,10 @@ export interface FileRoutesById {
   '/app/admin/dashboard': typeof AppAdminDashboardRoute
   '/app/customer/dashboard': typeof AppCustomerDashboardRoute
   '/app/driver/dashboard': typeof AppDriverDashboardRoute
+  '/app/user/onboarding': typeof AppUserOnboardingRoute
+  '/app/user/signin': typeof AppUserSigninRoute
+  '/app/user/signup': typeof AppUserSignupRoute
+  '/app/user/splash-screen': typeof AppUserSplashScreenRoute
 }
 
 export interface FileRouteTypes {
@@ -216,6 +284,10 @@ export interface FileRouteTypes {
     | '/app/admin/dashboard'
     | '/app/customer/dashboard'
     | '/app/driver/dashboard'
+    | '/app/user/onboarding'
+    | '/app/user/signin'
+    | '/app/user/signup'
+    | '/app/user/splash-screen'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -228,6 +300,10 @@ export interface FileRouteTypes {
     | '/app/admin/dashboard'
     | '/app/customer/dashboard'
     | '/app/driver/dashboard'
+    | '/app/user/onboarding'
+    | '/app/user/signin'
+    | '/app/user/signup'
+    | '/app/user/splash-screen'
   id:
     | '__root__'
     | '/'
@@ -240,6 +316,10 @@ export interface FileRouteTypes {
     | '/app/admin/dashboard'
     | '/app/customer/dashboard'
     | '/app/driver/dashboard'
+    | '/app/user/onboarding'
+    | '/app/user/signin'
+    | '/app/user/signup'
+    | '/app/user/splash-screen'
   fileRoutesById: FileRoutesById
 }
 
@@ -254,6 +334,10 @@ export interface RootRouteChildren {
   AppAdminDashboardRoute: typeof AppAdminDashboardRoute
   AppCustomerDashboardRoute: typeof AppCustomerDashboardRoute
   AppDriverDashboardRoute: typeof AppDriverDashboardRoute
+  AppUserOnboardingRoute: typeof AppUserOnboardingRoute
+  AppUserSigninRoute: typeof AppUserSigninRoute
+  AppUserSignupRoute: typeof AppUserSignupRoute
+  AppUserSplashScreenRoute: typeof AppUserSplashScreenRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -267,6 +351,10 @@ const rootRouteChildren: RootRouteChildren = {
   AppAdminDashboardRoute: AppAdminDashboardRoute,
   AppCustomerDashboardRoute: AppCustomerDashboardRoute,
   AppDriverDashboardRoute: AppDriverDashboardRoute,
+  AppUserOnboardingRoute: AppUserOnboardingRoute,
+  AppUserSigninRoute: AppUserSigninRoute,
+  AppUserSignupRoute: AppUserSignupRoute,
+  AppUserSplashScreenRoute: AppUserSplashScreenRoute,
 }
 
 export const routeTree = rootRoute
@@ -288,7 +376,11 @@ export const routeTree = rootRoute
         "/preview/",
         "/app/admin/dashboard",
         "/app/customer/dashboard",
-        "/app/driver/dashboard"
+        "/app/driver/dashboard",
+        "/app/user/onboarding",
+        "/app/user/signin",
+        "/app/user/signup",
+        "/app/user/splash-screen"
       ]
     },
     "/": {
@@ -320,6 +412,18 @@ export const routeTree = rootRoute
     },
     "/app/driver/dashboard": {
       "filePath": "app/driver/dashboard.tsx"
+    },
+    "/app/user/onboarding": {
+      "filePath": "app/user/onboarding.tsx"
+    },
+    "/app/user/signin": {
+      "filePath": "app/user/signin.tsx"
+    },
+    "/app/user/signup": {
+      "filePath": "app/user/signup.tsx"
+    },
+    "/app/user/splash-screen": {
+      "filePath": "app/user/splash-screen.tsx"
     }
   }
 }
