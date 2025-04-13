@@ -1,6 +1,12 @@
-import { combineReducers, configureStore } from "@reduxjs/toolkit";
-import { authCtrl, AuthState } from "./controllers/auth-ctrl";
+import {
+  combineReducers,
+  configureStore,
+  isPlain,
+  SerializableStateInvariantMiddlewareOptions,
+} from "@reduxjs/toolkit";
+import { authCtrl } from "./controllers/auth-ctrl";
 import { appCtrl } from "./controllers/app-ctrl";
+import { settingsCtrl, SettingsState } from "./controllers/settings-ctrl";
 import {
   persistStore,
   persistReducer,
@@ -15,6 +21,7 @@ import {
   REGISTER,
 } from "redux-persist";
 import storage from "redux-persist/lib/storage";
+import { Timestamp } from "firebase/firestore";
 
 const migrations: MigrationManifest = {
   1: () => {
@@ -28,24 +35,42 @@ const migrations: MigrationManifest = {
   },
 };
 
-const persistConfig: PersistConfig<AuthState> = {
-  key: "freedman-app",
+const persistConfig: PersistConfig<SettingsState> = {
+  key: "freedman-settings",
   version: 2,
   storage,
   migrate: createMigrate(migrations, { debug: false }),
 };
 
 const rootReducer = combineReducers({
-  authCtrl: persistReducer(persistConfig, authCtrl.reducer),
   appCtrl: appCtrl.reducer,
+  authCtrl: authCtrl.reducer,
+  settingsCtrl: persistReducer(persistConfig, settingsCtrl.reducer),
 });
 
 export const store = configureStore({
   devTools: process.env.NODE_ENV !== "production",
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
-      serializableCheck: {
-        ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+      serializableCheck: <SerializableStateInvariantMiddlewareOptions>{
+        isSerializable: (value: unknown) => {
+          if (value instanceof Timestamp) {
+            return true;
+          }
+          return isPlain(value);
+        },
+        ignoredActions: [
+          FLUSH,
+          REHYDRATE,
+          PAUSE,
+          PERSIST,
+          PURGE,
+          REGISTER,
+          // "auth-ctrl/setUser",
+        ],
+
+        ignoredActionPaths: ["payload.getIDToken"],
+        ignoredPaths: ["authCtrl.user.getIDToken"],
       },
     }),
   reducer: rootReducer,

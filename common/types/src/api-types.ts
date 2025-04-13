@@ -1,6 +1,11 @@
 import { type } from "arktype";
 
-import { newOrderEntity, OrderPriority } from "./entities.js";
+import {
+  driverEntity,
+  newOrderEntity,
+  OrderPriority,
+  userEntity,
+} from "./entities.js";
 import { coordinateType, productWithQuantityType } from "./types.js";
 
 export const computeDeliveryEstimation = type({
@@ -25,3 +30,14 @@ export type ApiResScheduleDeliveryIntent =
 
 export type ApiReqScheduleDeliveryIntent =
   typeof apiReqScheduleDeliveryIntent.infer;
+
+export const apiResSetupConnectedAccount = userEntity
+  .pick("uid", "email")
+  .and(driverEntity.pick("stripeConnectAccountId"))
+  .and({
+    returnUrl: "string.url",
+    refreshUrl: "string.url",
+  });
+
+export type ApiResSetupConnectedAccount =
+  typeof apiResSetupConnectedAccount.infer;

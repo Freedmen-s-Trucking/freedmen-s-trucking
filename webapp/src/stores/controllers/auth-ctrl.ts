@@ -7,7 +7,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { UserInfo, UserMetadata } from "firebase/auth";
 
-export interface AppUser {
+export class AppUser {
   readonly info: UserEntity;
   readonly driverInfo?: DriverEntity;
   readonly adminInfo?: AdminEntity;
@@ -15,6 +15,34 @@ export interface AppUser {
   readonly providerData: UserInfo[];
   readonly isAnonymous: boolean;
   readonly isEmailVerified: boolean;
+
+  getIDToken?: () => Promise<string>;
+
+  constructor({
+    info,
+    driverInfo,
+    adminInfo,
+    meta,
+    providerData,
+    isAnonymous,
+    isEmailVerified,
+  }: {
+    info: UserEntity;
+    driverInfo?: DriverEntity;
+    adminInfo?: AdminEntity;
+    meta: UserMetadata;
+    providerData: UserInfo[];
+    isAnonymous: boolean;
+    isEmailVerified: boolean;
+  }) {
+    this.info = info;
+    this.driverInfo = driverInfo;
+    this.adminInfo = adminInfo;
+    this.meta = meta;
+    this.providerData = providerData;
+    this.isAnonymous = isAnonymous;
+    this.isEmailVerified = isEmailVerified;
+  }
 }
 
 export interface AuthState {
@@ -40,14 +68,10 @@ export const authCtrl = createSlice({
     setUser: (state, action: PayloadAction<AppUser>) => {
       state.user = action.payload;
     },
-    getUser: (state) => {
-      return {
-        ...state,
-      };
-    },
   },
 });
 
-export const { setUser, getUser, updateDriverInfo } = authCtrl.actions;
+export const { setUser: setUser, updateDriverInfo: updateDriverInfo } =
+  authCtrl.actions;
 
 export default authCtrl.reducer;

@@ -90,7 +90,7 @@ const AuthProvider: React.FC<{
 
   const dispatch = useAppDispatch();
   useEffect(() => {
-    auth.onAuthStateChanged(async (user) => {
+    const unSubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
         let dbUser: UserEntity = {
           uid: user.uid,
@@ -144,6 +144,7 @@ const AuthProvider: React.FC<{
               creationTime: user.metadata.creationTime,
             },
             providerData: user.providerData,
+            getIDToken: user.getIdToken.bind(user),
           }),
         );
       } else {
@@ -151,6 +152,7 @@ const AuthProvider: React.FC<{
         signInAnonymously(auth);
       }
     });
+    return unSubscribe;
   }, [auth, dispatch, getUser, getDriver, createUser]);
 
   return <AuthCtx.Provider value={authValue}>{children}</AuthCtx.Provider>;

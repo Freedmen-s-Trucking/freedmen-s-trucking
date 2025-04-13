@@ -2,13 +2,13 @@ import { type } from "arktype";
 
 export { type };
 
-export const paymentMethodType = type({
+export const payoutMethodType = type({
   id: "string",
-  type: "'BANK'",
-  details: "string",
-  default: "boolean",
+  type: "'bank_account' | 'card'",
+  status: type("string | null").optional(), // `new`, `validated`, `verified`, `verification_failed`, or `errored`
+  name: "string | null",
 });
-export type PaymentMethod = typeof paymentMethodType.infer;
+export type PaymentMethod = typeof payoutMethodType.infer;
 
 export const authMethodType = type({
   provider: "string",
