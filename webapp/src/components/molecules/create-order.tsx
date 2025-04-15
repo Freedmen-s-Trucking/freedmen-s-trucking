@@ -23,6 +23,7 @@ import { useComputeDeliveryEstimation } from "~/hooks/use-price-calculator";
 import { PrimaryButton, SecondaryButton, TextInput } from "../atoms/base";
 import { useQuery } from "@tanstack/react-query";
 import { useDbOperations } from "~/hooks/use-firestore";
+import { formatPrice } from "~/utils/functions";
 
 const OrderPriorities = [
   {
@@ -82,11 +83,6 @@ export const CreateOrderForm: React.FC<{
   const [deliveryPriority, setDeliveryPriorityInput] =
     useState<(typeof OrderPriorities)[number]>();
   const [error, setError] = useState<string | null>(null);
-  const formattedEstimation = () =>
-    new Intl.NumberFormat("en-US", {
-      currency: "USD",
-      style: "currency",
-    }).format(estimations?.cost ?? 0);
 
   const [packages, setPackages] = useState<ProductWithQuantity[]>([]);
 
@@ -210,6 +206,7 @@ export const CreateOrderForm: React.FC<{
       setProcessPayment({
         ownerId: user.info.uid,
         distanceInMiles: estimations.distanceInMiles || 0,
+        distanceMeasurement: estimations.distanceMeasurement!,
         pickupLocation: {
           address: pickupLocation?.address || "",
           latitude: +pickupLocation.latitude || 0,
@@ -222,7 +219,7 @@ export const CreateOrderForm: React.FC<{
         },
         products: packages,
         priority: deliveryPriority?.value || "standard",
-        priceInUSD: +estimations.cost,
+        priceInUSD: +estimations.fees,
         requiredVehicles: estimations.vehicles,
       });
     } catch (error) {
@@ -465,7 +462,9 @@ export const CreateOrderForm: React.FC<{
           </span>
           <span className="block">
             Estimated Delivery Cost:{" "}
-            {estimations?.cost !== undefined ? formattedEstimation() : "N/A"}
+            {estimations?.fees !== undefined
+              ? formatPrice(estimations.fees)
+              : "N/A"}
           </span>
           <span className="block">
             Estimated Delivery Time:{" "}
@@ -509,7 +508,7 @@ export const CreateOrderForm: React.FC<{
             {estimations && processPayment && (
               <StripePayment
                 showInModal
-                price={estimations.cost}
+                price={estimations.fees}
                 order={processPayment}
                 onComplete={onPaymentComplete}
               />
@@ -520,7 +519,7 @@ export const CreateOrderForm: React.FC<{
             >
               {isScheduling
                 ? "Scheduling..."
-                : `Schedule Now For ${formattedEstimation()}`}
+                : `Schedule Now For ${estimations?.fees !== undefined ? formatPrice(estimations.fees) : "N/A"}`}
             </PrimaryButton>
           </>
         )}

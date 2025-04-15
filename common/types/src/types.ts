@@ -64,8 +64,9 @@ export type VehicleType = typeof vehicleType.infer;
 export const vehicleInfoType = type({
   type: vehicleType,
   pricePerMile: "number",
-  maxCapacityInCubicInches: "number",
-  maxWeightInLbs: "number",
+  avgCapacityInCubicInches: "number",
+  avgCapacityInCubicFeet: "number",
+  avgWeightInLbs: "number",
 });
 export type VehicleInfo = typeof vehicleInfoType.infer;
 

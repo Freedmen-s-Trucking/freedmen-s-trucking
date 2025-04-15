@@ -115,7 +115,9 @@ export type AdminEntity = typeof adminEntity.infer;
 export const requiredVehicleEntity = type({
   type: vehicleType,
   quantity: "number",
+  weightToBeUsedInLbs: "number[]",
 });
+
 export type RequiredVehicleEntity = typeof requiredVehicleEntity.infer;
 
 export const notificationEntity = type({
@@ -161,6 +163,10 @@ export enum OrderPriority {
   URGENT = "urgent",
 }
 
+export enum DistanceMeasurement {
+  OSRM_FASTEST_ROUTE = "osrm-fastest-route",
+}
+
 export enum OrderEntityFields {
   clientName = "clientName",
   clientEmail = "clientEmail",
@@ -175,6 +181,7 @@ export enum OrderEntityFields {
   status = "status",
   driverStatus = "driverStatus",
   distanceInMiles = "distanceInMiles",
+  distanceMeasurement = "distanceMeasurement",
   driverId = "driverId",
   createdAt = "createdAt",
   updatedAt = "updatedAt",
@@ -192,6 +199,7 @@ export const newOrderEntity = type({
   [OrderEntityFields.products]: productWithQuantityType.array(),
   [OrderEntityFields.priority]: type.valueOf(OrderPriority),
   [OrderEntityFields.distanceInMiles]: "number",
+  [OrderEntityFields.distanceMeasurement]: type.valueOf(DistanceMeasurement),
 });
 export type NewOrder = typeof newOrderEntity.infer;
 
