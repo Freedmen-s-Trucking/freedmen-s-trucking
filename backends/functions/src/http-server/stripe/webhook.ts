@@ -24,9 +24,14 @@ export async function handleStripeWebhookEvent({
   let event: Stripe.Event;
 
   try {
-    event = Stripe.webhooks.constructEvent(buffer, sig || '', process.env.STRIPE_WEBHOOK_SECRET!);
-  } catch (err) {
-    return new Error(`Webhook Error: ${(err as Error).message}`);
+    event = Stripe.webhooks.constructEvent(buffer, sig || '', process.env.STRIPE_WEBHOOK_SECRET_SELF_ACCOUNT!);
+  } catch (errSelfAccount) {
+    try {
+      event = Stripe.webhooks.constructEvent(buffer, sig || '', process.env.STRIPE_WEBHOOK_SECRET_CONNECTED_ACCOUNT!);
+    } catch (errConnectedAccount) {
+      console.error(errSelfAccount, errConnectedAccount);
+      return new Error(`Webhook Error: ${(errSelfAccount as Error).message} ${(errConnectedAccount as Error).message}`);
+    }
   }
 
   switch (event.type) {
