@@ -19,6 +19,7 @@ import { DriverEntity, type, VehicleType } from "@freedmen-s-trucking/types";
 import {
   authenticateApiRequest,
   driverVerificationBadges,
+  isAuthenticateMockApi,
   vehicleTypes,
 } from "~/utils/constants";
 import {
@@ -222,7 +223,9 @@ export const DriverProfile: React.FC = () => {
         {
           method: "POST",
           body: {
-            userAccessCode: "100385a1-4308-49db-889f-9a898fa88c21", // driverInfo?.authenticateAccessCode,
+            userAccessCode: isAuthenticateMockApi
+              ? "100385a1-4308-49db-889f-9a898fa88c21"
+              : driverInfo?.authenticateAccessCode,
           },
           schema: type({
             success: "boolean",

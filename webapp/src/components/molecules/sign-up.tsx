@@ -3,7 +3,14 @@ import { useAuth } from "../../hooks/use-auth";
 import { FirebaseError } from "firebase/app";
 import { UserCredential } from "firebase/auth";
 import { motion } from "motion/react";
-import { Dropdown, Label, Popover, Spinner } from "flowbite-react";
+import {
+  Checkbox,
+  Dropdown,
+  Label,
+  Popover,
+  Spinner,
+  Tooltip,
+} from "flowbite-react";
 import { GoogleSignIn } from "./google-sign-in";
 import {
   IoArrowForwardCircleOutline,
@@ -25,7 +32,11 @@ import { useAppDispatch } from "~/stores/hooks";
 import { setUser } from "~/stores/controllers/auth-ctrl";
 import { PrimaryButton, TextInput } from "../atoms/base";
 import { setRequestedAuthAction } from "~/stores/controllers/app-ctrl";
-import { authenticateApiRequest, vehicleTypes } from "~/utils/constants";
+import {
+  authenticateApiRequest,
+  isAuthenticateMockApi,
+  vehicleTypes,
+} from "~/utils/constants";
 import { formatDate, subYears } from "date-fns";
 import { Timestamp } from "firebase/firestore";
 import { fileToBase64 } from "~/utils/functions";
@@ -390,7 +401,7 @@ const Stepper: React.FC<{ activeStep: number; steps: string[] }> = ({
               >
                 {index + 1}
               </span>
-              <span className="line-clamp-2 h-[3em]">{step}</span>
+              <span className="line-clamp-2 h-[3em] text-xs">{step}</span>
             </span>
             {index + 1 < steps.length && (
               <span className={index === activeStep ? "text-gray-500" : ""}>
@@ -445,14 +456,24 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    if (user.info.displayName) {
-      setFirstName(user.info.displayName.split(" ")[0] || "");
-      setLastName(user.info.displayName.split(" ")[1] || "");
+    if (user.info.firstName) {
+      setFirstName(user.info.firstName);
+    }
+    if (user.info.lastName) {
+      setLastName(user.info.lastName);
+    }
+    if (user.info.birthDate instanceof Timestamp) {
+      setBirthDate(user.info.birthDate.toDate());
+    } else if (typeof user.info.birthDate === "string") {
+      setBirthDate(new Date(user.info.birthDate));
     }
     if (user.info.phoneNumber) {
       setPhoneNumber(user.info.phoneNumber);
     }
-  }, [user.info]);
+    if (user.driverInfo?.vehicles?.length) {
+      setDriverVehicle(user.driverInfo.vehicles[0].type);
+    }
+  }, [user.info, user.driverInfo]);
 
   const onPhoneNumberChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^0-9\s-]/g, "");
@@ -508,21 +529,18 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
     }
   };
 
-  // const removeCertificate = (indexToRemove: number) => {
-  //   const input = certificateInputRef.current;
-  //   const files = input?.files;
-  //   if (input && files) {
-  //     const dt = new DataTransfer();
-  //     for (let i = 0; i < files.length; i++) {
-  //       const file = files[i];
-  //       if (indexToRemove !== i) {
-  //         dt.items.add(file);
-  //       }
-  //     }
-  //     input.files = dt.files;
-  //     setCertificates(Array.from(dt.files));
-  //   }
-  // };
+  const [consents, setConsents] = useState({
+    isBackgroundDisclosureAccepted: false,
+    GLBPurposeAndDPPAPurpose: false,
+    FCRAPurpose: false,
+  });
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, checked } = e.target;
+    setConsents((prevConsents) => ({
+      ...prevConsents,
+      [name]: checked,
+    }));
+  };
 
   const [error, setError] = useState<null | string>(null);
   const handleSubmit = async (e: React.FormEvent) => {
@@ -567,12 +585,34 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
         }),
       });
 
-      const { success } = await authenticateApiRequest(
+      const { success } = await authenticateApiRequest("/user/consent", {
+        method: "POST",
+        body: {
+          userAccessCode: isAuthenticateMockApi
+            ? "100385a1-4308-49db-889f-9a898fa88c21"
+            : userAccessCode,
+          isBackgroundDisclosureAccepted:
+            consents.isBackgroundDisclosureAccepted,
+          GLBPurposeAndDPPAPurpose: consents.GLBPurposeAndDPPAPurpose,
+          FCRAPurpose: consents.FCRAPurpose,
+          fullName: `${firstName.trim()} ${lastName.trim()}`,
+        },
+        schema: type({
+          success: "boolean",
+        }),
+      });
+      if (!success) {
+        throw new Error("Failed to save consents");
+      }
+
+      const { success: documentScanResult } = await authenticateApiRequest(
         "/identity/document/scan",
         {
           method: "POST",
           body: {
-            userAccessCode,
+            userAccessCode: isAuthenticateMockApi
+              ? "2d91a19f-d07b-48f0-912f-886ed67009dd"
+              : userAccessCode,
             idFront: await fileToBase64(driverLicenseIdFront!),
             idBack: await fileToBase64(driverLicenseIdBack!),
             country: 0, // Country code can be found here: https://docs.authenticate.com/docs/supported-countries-for-upload-id
@@ -583,13 +623,14 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
         },
       );
 
-      if (!success) {
+      if (!documentScanResult) {
         throw new Error("Failed to scan driver license");
       }
 
       await insertUser(user.info.uid, {
         displayName: `${firstName} ${lastName}`,
         firstName: firstName,
+        consents: consents,
         authenticateAccessCode: userAccessCode,
         lastName: lastName,
         birthDate: (birthDate && Timestamp.fromDate(birthDate)) || null,
@@ -632,7 +673,6 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
       onAdditionalInfoAdded();
     } catch (error: unknown) {
       const err = error as Record<string, unknown> | null | undefined;
-      console.debug({ err });
       if (err instanceof FirebaseError) {
         const firebaseAuthErrorMessage = getFirebaseErrorMessage(err);
         if (firebaseAuthErrorMessage) {
@@ -640,7 +680,10 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
           return;
         }
       }
-      setError("Unknown Error Occurred.");
+      console.error({ err });
+      setError(
+        `Unknown Error Occurred! Please try again later. If the problem persist, contact the support.}`,
+      );
     } finally {
       setIsLoading(false);
     }
@@ -648,7 +691,7 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
   return (
     <div className="mx-auto max-w-md space-y-4 text-secondary-800">
       <h1 className="text-3xl font-bold">Additional Info</h1>
-      <form className="flex flex-col space-y-2" onSubmit={handleSubmit}>
+      <form className="flex flex-col gap-1" onSubmit={handleSubmit}>
         <div className="flex flex-row space-x-2">
           <label className="inline-block">
             <span className="block text-sm font-medium text-secondary-800">
@@ -660,7 +703,7 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
               onChange={(e) => setFirstName(e.target.value.trimStart())}
               required
               min={2}
-              autoComplete="billing name"
+              autoComplete="given-name"
               // className="mt-1 block w-full rounded-md border-gray-300 py-4 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
             />
           </label>
@@ -673,7 +716,7 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
               value={lastName}
               onChange={(e) => setLastName(e.target.value.trimStart())}
               required
-              autoComplete="billing name"
+              autoComplete="family-name"
               // className="mt-1 block w-full rounded-md border-gray-300 py-4 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
             />
           </label>
@@ -842,10 +885,56 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
             </label>
           )}
         </div>
+        <label className="mt-4 inline-flex items-center gap-2">
+          <Checkbox
+            name="isBackgroundDisclosureAccepted"
+            checked={consents.isBackgroundDisclosureAccepted}
+            className="border-primary-100 checked:bg-secondary-800"
+            onChange={handleChange}
+            required
+          />
+          I consent to the&nbsp;
+          <Tooltip content="By consenting to a background check, you authorize us to obtain information about your criminal history, employment history, education, and other records to assess your suitability for the position. This process ensures a safe and trustworthy environment for all stakeholders.">
+            <u>Background Check</u>.
+          </Tooltip>
+        </label>
+        <label className="inline-flex items-center gap-2">
+          <Checkbox
+            name="GLBPurposeAndDPPAPurpose"
+            checked={consents.GLBPurposeAndDPPAPurpose}
+            onChange={handleChange}
+            className="checked:bg-secondary-800"
+          />
+          I consent to the&nbsp;
+          <Tooltip content="The Gramm-Leach-Bliley Act requires financial institutions to explain their information-sharing practices to their customers and to safeguard sensitive data. Your consent allows us to collect, use, and share your personal information as permitted by law to provide you with our services.">
+            <u>GLBA</u>
+          </Tooltip>
+          &nbsp;and&nbsp;
+          <Tooltip content="The Driver's Privacy Protection Act regulates the disclosure of personal information gathered by state Departments of Motor Vehicles. By providing your consent, you allow us to access your motor vehicle records as necessary for verifying your driving history and qualifications.">
+            <u>DPPA</u>
+          </Tooltip>
+          .
+        </label>
+        <label className="inline-flex items-center gap-2">
+          <Checkbox
+            name="FCRAPurpose"
+            checked={consents.FCRAPurpose}
+            className="checked:bg-secondary-800"
+            onChange={handleChange}
+          />
+          I consent to the&nbsp;
+          <Tooltip
+            className="underline"
+            content="By consenting to the FCRA, you acknowledge that you have read and understand the Fair Credit Reporting Act. The Fair Credit Reporting Act promotes the accuracy, fairness, and privacy of information in the files of consumer reporting agencies. Your consent permits us to obtain consumer reports about you, which may include credit information, for employment purposes."
+          >
+            <u>FCRA</u>
+          </Tooltip>
+          .
+        </label>
         <PrimaryButton
           type="submit"
           isLoading={isLoading}
-          className="flex flex-row items-center justify-center gap-2 rounded-md bg-primary-900 px-10 py-2 text-white disabled:cursor-not-allowed disabled:bg-secondary-800"
+          className="mt-4 flex flex-row items-center justify-center gap-2 rounded-md bg-primary-900 px-10 py-2 text-white disabled:cursor-not-allowed disabled:bg-secondary-800"
         >
           {isLoading && <Spinner aria-label="Spinner" size="sm" />}
           <span>Save{isLoading ? "..." : ""}</span>
