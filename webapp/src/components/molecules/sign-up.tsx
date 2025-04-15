@@ -633,6 +633,7 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
         isPhoneNumberVerified: false,
       });
       const driverInfo: DriverEntity = {
+        ...user.info,
         driverLicenseVerificationStatus: "pending",
         driverLicenseVerificationIssues: [],
         driverLicenseFrontStoragePath: driverLicenseFrontPath,
@@ -900,6 +901,7 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
             checked={consents.GLBPurposeAndDPPAPurpose}
             onChange={handleChange}
             className="checked:bg-secondary-800"
+            required
           />
           I consent to the&nbsp;
           <Tooltip content="The Gramm-Leach-Bliley Act requires financial institutions to explain their information-sharing practices to their customers and to safeguard sensitive data. Your consent allows us to collect, use, and share your personal information as permitted by law to provide you with our services.">
@@ -917,12 +919,10 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
             checked={consents.FCRAPurpose}
             className="checked:bg-secondary-800"
             onChange={handleChange}
+            required
           />
           I consent to the&nbsp;
-          <Tooltip
-            className="underline"
-            content="By consenting to the FCRA, you acknowledge that you have read and understand the Fair Credit Reporting Act. The Fair Credit Reporting Act promotes the accuracy, fairness, and privacy of information in the files of consumer reporting agencies. Your consent permits us to obtain consumer reports about you, which may include credit information, for employment purposes."
-          >
+          <Tooltip content="By consenting to the FCRA, you acknowledge that you have read and understand the Fair Credit Reporting Act. The Fair Credit Reporting Act promotes the accuracy, fairness, and privacy of information in the files of consumer reporting agencies. Your consent permits us to obtain consumer reports about you, which may include credit information, for employment purposes.">
             <u>FCRA</u>
           </Tooltip>
           .

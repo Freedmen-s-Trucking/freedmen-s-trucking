@@ -24,6 +24,7 @@ import {
 } from "@freedmen-s-trucking/types";
 import { useDbOperations } from "~/hooks/use-firestore";
 import { useQuery } from "@tanstack/react-query";
+import { customDateFormat } from "~/utils/functions";
 
 const tableTheme = {
   root: {
@@ -199,12 +200,10 @@ const Transactions = () => {
                   </Button>
                 </Table.Cell>
                 <Table.Cell>
-                  <div>
-                    {new Date(transaction.data.date || "").toLocaleDateString()}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {new Date(transaction.data.date || "").toLocaleTimeString()}
-                  </div>
+                  <div>{customDateFormat(transaction.data.date || null)}</div>
+                  {/* <div className="text-xs text-gray-500">
+                    {customDateFormat(transaction.data.date || null, "HH:mm")}
+                  </div> */}
                 </Table.Cell>
                 <Table.Cell>
                   {renderTypeBadge(transaction.data.type)}
@@ -324,20 +323,18 @@ const Transactions = () => {
                     <div className="flex justify-between">
                       <span className="text-gray-500">Date</span>
                       <span className="font-medium">
-                        {new Date(
-                          currentTransaction.data.date || "",
-                        ).toLocaleDateString()}
+                        {customDateFormat(currentTransaction.data.date || null)}
                       </span>
                     </div>
-
+                    {/* 
                     <div className="flex justify-between">
                       <span className="text-gray-500">Time</span>
                       <span className="font-medium">
-                        {new Date(
-                          currentTransaction.data.date || "",
-                        ).toLocaleTimeString()}
+                        {customDateFormat(
+                          currentTransaction.data.date || null,
+                        )}
                       </span>
-                    </div>
+                    </div> */}
 
                     <div className="flex justify-between">
                       <span className="text-gray-500">Provider</span>

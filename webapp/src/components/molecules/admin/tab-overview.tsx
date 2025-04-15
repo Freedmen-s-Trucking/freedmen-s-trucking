@@ -11,7 +11,7 @@ import {
   EntityWithPath,
   PlatformOverviewEntity,
 } from "@freedmen-s-trucking/types";
-import { Timestamp } from "firebase/firestore";
+import { customDateFormat } from "~/utils/functions";
 
 const StatCard: React.FC<{
   title: string;
@@ -121,12 +121,6 @@ const Overview: React.FC<{
             icon={<HiCheck className="h-6 w-6" />}
             color="green"
           />
-          <StatCard
-            title="Unassigned"
-            value={overview.data.totalUnassignedOrders?.toLocaleString() || "0"}
-            icon={<HiClock className="h-6 w-6" />}
-            color="yellow"
-          />
         </motion.div>
       </div>
 
@@ -167,11 +161,9 @@ const Overview: React.FC<{
 
       <div className="text-right text-sm text-gray-900">
         Last updated:{" "}
-        {overview.data.updatedAt instanceof Timestamp
-          ? overview.data.updatedAt.toDate().toLocaleString()
-          : typeof overview.data.updatedAt === "string"
-            ? new Date(overview.data.updatedAt).toLocaleString()
-            : "Never"}
+        {overview.data.updatedAt
+          ? customDateFormat(overview.data.updatedAt)
+          : "Never"}
       </div>
     </div>
   );

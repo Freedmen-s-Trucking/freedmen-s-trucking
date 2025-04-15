@@ -29,7 +29,10 @@ import { Order } from "~/components/molecules/order-details";
 import { useAuth } from "~/hooks/use-auth";
 import { useDbOperations } from "~/hooks/use-firestore";
 import { driverVerificationBadges, tabTheme } from "~/utils/constants";
-import { getDriverVerificationStatus } from "~/utils/functions";
+import {
+  customDateFormat,
+  getDriverVerificationStatus,
+} from "~/utils/functions";
 
 const tabs = ["overview", "active-orders", "history", "profile"] as const;
 
@@ -152,17 +155,10 @@ const DriverDashboard = () => {
     },
   });
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return (
-      date.toLocaleDateString() +
-      " " +
-      date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-    );
-  };
-
   const hasUpdatedOrders = activeOrders.some(
-    (order) => order.data.driverStatus === DriverOrderStatus.WAITING,
+    (order) =>
+      order.data[`task-${user.info.uid}`]?.driverStatus ===
+      DriverOrderStatus.WAITING,
   );
 
   if (!driverInfo) {
@@ -280,7 +276,7 @@ const DriverDashboard = () => {
                 Tasks Completed
               </h5>
               <p className="text-3xl font-bold text-purple-600">
-                {driverInfo.tasksCompleted}
+                {driverInfo.tasksCompleted || 0}
               </p>
             </Card>
             <Card>
@@ -288,7 +284,7 @@ const DriverDashboard = () => {
                 Active Tasks
               </h5>
               <p className="text-3xl font-bold text-orange-600">
-                {driverInfo.activeTasks}
+                {driverInfo.activeTasks || 0}
               </p>
             </Card>
           </div>
@@ -349,13 +345,20 @@ const DriverDashboard = () => {
                           </p>
                           <p className="text-xs text-gray-500">
                             {order.data.createdAt &&
-                              formatDate(order.data.createdAt)}
+                              customDateFormat(order.data.createdAt)}
                           </p>
                         </div>
                         <div className="inline-flex items-center text-base font-semibold text-secondary-950">
                           ${order.data.priceInUSD.toFixed(2)}
                         </div>
-                        <div>{statusMap[order.data.driverStatus].badge}</div>
+                        <div>
+                          {
+                            statusMap[
+                              order.data[`task-${user.info.uid}`]
+                                ?.driverStatus || DriverOrderStatus.WAITING
+                            ].badge
+                          }
+                        </div>
                       </div>
                     </li>
                   ))}

@@ -49,7 +49,7 @@ export function computeTheMinimumRequiredVehiclesAndFees(
       fees: number;
     }
   | Error {
-  const vehicles = <Record<VehicleType, RequiredVehicleEntity>>{};
+  const vehicles = <Record<VehicleType, Omit<RequiredVehicleEntity, "fees">>>{};
 
   let currentVehicle: VehicleInfo | null = null;
   let remainingVolume = 0;
@@ -110,11 +110,19 @@ export function computeTheMinimumRequiredVehiclesAndFees(
     };
   }
 
-  let fees: number[] = [];
+  const totalFees: number[] = [];
+  const requiredVehicles: RequiredVehicleEntity[] = [];
   try {
-    fees = Object.values(vehicles).map((vehicle) =>
-      getFeesOfVehicle(vehicle, priority, distanceInMiles),
-    );
+    for (const vehicle of Object.values(vehicles)) {
+      const vehicleFees = getFeesOfVehicle(vehicle, priority, distanceInMiles);
+      totalFees.push(vehicleFees);
+      requiredVehicles.push({
+        type: vehicle.type,
+        quantity: vehicle.quantity,
+        weightToBeUsedInLbs: vehicle.weightToBeUsedInLbs,
+        fees: vehicleFees,
+      });
+    }
   } catch (error) {
     if (error instanceof Error) {
       return error;
@@ -123,8 +131,8 @@ export function computeTheMinimumRequiredVehiclesAndFees(
   }
 
   return {
-    vehicles: Object.values(vehicles),
-    fees: fees.reduce((acc, fee) => acc + fee, 0),
+    vehicles: requiredVehicles,
+    fees: totalFees.reduce((acc, fee) => acc + fee, 0),
   };
 }
 
@@ -136,7 +144,7 @@ export function computeTheMinimumRequiredVehiclesAndFees(
  * @returns The fees of the vehicle
  */
 function getFeesOfVehicle(
-  vehicle: RequiredVehicleEntity,
+  vehicle: Omit<RequiredVehicleEntity, "fees">,
   priority: OrderPriority,
   distanceInMiles: number,
 ): number {

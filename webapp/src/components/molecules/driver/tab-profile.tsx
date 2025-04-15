@@ -91,6 +91,10 @@ export const DriverProfile: React.FC = () => {
       dispatch(updateDriverInfo(variables));
       queryClient.invalidateQueries({ queryKey: ["driverInfo"] });
     },
+    onError(err) {
+      console.error(err);
+      return false;
+    },
   });
 
   const { data: driverLicenseFrontUrl } = useQuery({
@@ -782,7 +786,22 @@ export const DriverProfile: React.FC = () => {
       {/* Payment Methods */}
       <div className="space-y-6">
         <Card>
-          <h5 className="mb-4 text-xl font-bold">Payment Info</h5>
+          <div className="mb-4 flex items-center justify-between">
+            <h5 className="mb-4 text-xl font-bold">Payment Info</h5>
+            <span className="mb-4 inline text-sm">
+              status:
+              <Badge
+                color={
+                  driverInfo.payoutCapabilities?.transfers === "active"
+                    ? "success"
+                    : "warning"
+                }
+                className="mr-2 inline"
+              >
+                {driverInfo.payoutCapabilities?.transfers || "need_setup"}
+              </Badge>
+            </span>
+          </div>
           {driverInfo.payoutMethods.map((method) => (
             <div
               key={method.id}
@@ -807,13 +826,13 @@ export const DriverProfile: React.FC = () => {
                     Pending
                   </Badge>
                 )}
-                <Button size="xs" color="light">
+                {/* <Button size="xs" color="light">
                   Edit
-                </Button>
+                </Button> */}
               </div>
             </div>
           ))}
-          {!driverInfo.payoutCapabilities && (
+          {driverInfo.payoutCapabilities?.transfers !== "active" && (
             <SecondaryButton
               onClick={() => setupDriverPayment()}
               isLoading={setupDriverPaymentIsPending}

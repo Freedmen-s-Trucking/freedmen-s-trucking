@@ -7,6 +7,8 @@ import {
   type,
   vehicleType,
   verificationStatus,
+  coordinateType,
+  dateStringOrTimestampType,
 } from "./types.js";
 
 export const withdrawalEntity = type({
@@ -16,11 +18,6 @@ export const withdrawalEntity = type({
   status: "'pending' | 'completed' | 'failed'",
 });
 export type WithdrawalEntity = typeof withdrawalEntity.infer;
-export const timestampType = type({
-  seconds: "number",
-  nanoseconds: "number",
-});
-export type TimestampType = typeof timestampType.infer;
 
 export const userEntity = type({
   uid: "string",
@@ -36,20 +33,20 @@ export const userEntity = type({
   email: "string | null",
   phoneNumber: "string | null",
   photoURL: "string | null",
-  birthDate: type("string | null").or(timestampType),
+  birthDate: dateStringOrTimestampType.optional(),
   uploadedProfileStoragePath: type("string | null").optional(),
   isEmailVerified: "boolean",
   isPhoneNumberVerified: "boolean",
   isAdmin: type("boolean").optional(),
   isDriver: type("boolean").optional(),
   authMethods: authMethodType.array(),
-  createdAt: type("string | null").or(timestampType),
-  updatedAt: type("string | null").or(timestampType),
+  createdAt: dateStringOrTimestampType.optional(),
+  updatedAt: dateStringOrTimestampType.optional(),
 });
 export type UserEntity = typeof userEntity.infer;
 
 //userEntity /*.partial()*/
-export const driverEntity = type({
+export const driverEntity = userEntity.and({
   driverInsuranceVerificationStatus: verificationStatus,
   driverInsuranceStoragePath: "string | null",
   driverInsuranceVerificationIssues: "string[]",
@@ -88,22 +85,11 @@ export const platformSettingsEntity = type({
 export type PlatformSettingsEntity = typeof platformSettingsEntity.infer;
 
 export const platformOverviewEntity = type({
-  updatedAt: type("string | null").or(
-    type({
-      seconds: "number",
-      nanoseconds: "number",
-    })
-  ),
-  createdAt: type("string | null").or(
-    type({
-      seconds: "number",
-      nanoseconds: "number",
-    })
-  ),
+  updatedAt: dateStringOrTimestampType.optional(),
+  createdAt: dateStringOrTimestampType.optional(),
   totalEarnings: "number | null",
   totalCompletedOrders: "number | null",
   totalActiveOrders: "number | null",
-  totalUnassignedOrders: "number | null",
   totalVerifiedDrivers: "number | null",
   totalPendingVerificationDrivers: "number | null",
   totalFailedVerificationDrivers: "number | null",
@@ -120,6 +106,7 @@ export type AdminEntity = typeof adminEntity.infer;
 export const requiredVehicleEntity = type({
   type: vehicleType,
   quantity: "number",
+  fees: "number",
   weightToBeUsedInLbs: "number[]",
 });
 
@@ -132,25 +119,14 @@ export const notificationEntity = type({
   read: "boolean",
   targetType: "'customer' | 'driver'",
   targetId: "string",
-  createdAt: type("string | null").or(
-    type({
-      seconds: "number",
-      nanoseconds: "number",
-    })
-  ),
-  updatedAt: type("string | null").or(
-    type({
-      seconds: "number",
-      nanoseconds: "number",
-    })
-  ),
+  createdAt: dateStringOrTimestampType.optional(),
+  updatedAt: dateStringOrTimestampType.optional(),
 });
 export type NotificationEntity = typeof notificationEntity.infer;
 
 export enum OrderStatus {
-  PENDING_PAYMENT = "pending-payment",
   PAYMENT_RECEIVED = "payment-received",
-  ASSIGNED_TO_DRIVER = "assigned-to-driver",
+  TASKS_ASSIGNED = "tasks-assigned",
   COMPLETED = "completed",
 }
 
@@ -189,11 +165,18 @@ export enum OrderEntityFields {
   distanceMeasurement = "distanceMeasurement",
   driverId = "driverId",
   createdAt = "createdAt",
+  deliveryFee = "deliveryFee",
   updatedAt = "updatedAt",
   paymentRef = "paymentRef",
   driverName = "driverName",
   driverEmail = "driverEmail",
   driverPhone = "driverPhone",
+  unassignedVehiclesTypes = "unassignedVehiclesTypes",
+  unassignedVehicles = "unassignedVehicles",
+  assignedDriverIds = "assignedDriverIds",
+  deliveryScreenshotPath = "deliveryScreenshotPath",
+  driverPositions = "driverPositions",
+  payoutPaymentRef = "payoutPaymentRef",
 }
 export const newOrderEntity = type({
   [OrderEntityFields.ownerId]: "string",
@@ -208,21 +191,43 @@ export const newOrderEntity = type({
 });
 export type NewOrder = typeof newOrderEntity.infer;
 
+const taskEntity = type({
+  [OrderEntityFields.driverId]: "string",
+  [OrderEntityFields.driverName]: "string",
+  [OrderEntityFields.driverEmail]: "string",
+  [OrderEntityFields.driverPhone]: "string",
+  [OrderEntityFields.deliveryFee]: "number",
+  [OrderEntityFields.payoutPaymentRef]: type("string").optional(),
+  [OrderEntityFields.driverStatus]: type.valueOf(DriverOrderStatus),
+  [OrderEntityFields.createdAt]: dateStringOrTimestampType.optional(),
+  [OrderEntityFields.updatedAt]: dateStringOrTimestampType.optional(),
+  [OrderEntityFields.driverPositions]: type({
+    [DriverOrderStatus.ACCEPTED]: coordinateType,
+    [DriverOrderStatus.ON_THE_WAY_TO_PICKUP]: coordinateType,
+    [DriverOrderStatus.ON_THE_WAY_TO_DELIVER]: coordinateType,
+    [DriverOrderStatus.DELIVERED]: coordinateType,
+  }).optional(),
+  [OrderEntityFields.deliveryScreenshotPath]: "string | null",
+});
 export const orderEntity = newOrderEntity.merge({
   [OrderEntityFields.clientName]: "string",
   [OrderEntityFields.clientEmail]: "string",
   [OrderEntityFields.clientPhone]: "string",
   [OrderEntityFields.status]: type.valueOf(OrderStatus),
-  [OrderEntityFields.driverStatus]: type.valueOf(DriverOrderStatus),
-  [OrderEntityFields.driverId]: type("string | null").optional(),
-  [OrderEntityFields.driverName]: type("string | null").optional(),
-  [OrderEntityFields.driverEmail]: type("string | null").optional(),
-  [OrderEntityFields.driverPhone]: type("string | null").optional(),
-  [OrderEntityFields.createdAt]: type("string | null").optional(),
-  [OrderEntityFields.updatedAt]: type("string | null").optional(),
+  [OrderEntityFields.createdAt]: dateStringOrTimestampType.optional(),
+  [OrderEntityFields.updatedAt]: dateStringOrTimestampType.optional(),
   [OrderEntityFields.paymentRef]: "string",
+  [OrderEntityFields.unassignedVehiclesTypes]: vehicleType.array(),
+  [OrderEntityFields.unassignedVehicles]: type({
+    deliveryFees: "number",
+  }).array(),
+  [OrderEntityFields.assignedDriverIds]: "string[]",
+  "+": "ignore",
 });
-export type OrderEntity = typeof orderEntity.infer;
+type TaskMap = {
+  [key: `task-${string}`]: typeof taskEntity.infer;
+};
+export type OrderEntity = TaskMap & typeof orderEntity.infer;
 
 export enum PaymentEntityFields {
   paymentIntentId = "paymentIntentId",
@@ -275,7 +280,7 @@ export const paymentEntity = type({
   [PaymentEntityFields.to]: paymentActor,
   [PaymentEntityFields.fee]: "number | null",
   [PaymentEntityFields.receivedAmount]: "number | null",
-  [PaymentEntityFields.date]: "string | null",
+  [PaymentEntityFields.date]: dateStringOrTimestampType.optional(),
 });
 export type PaymentEntity = typeof paymentEntity.infer;
 
@@ -291,7 +296,7 @@ export const waitlistEntity = type({
   location: locationType,
   type: type.valueOf(WaitlistType),
   vehicles: requiredVehicleEntity.array().optional(),
-  createdAt: "string | null",
+  createdAt: dateStringOrTimestampType.optional(),
   notes: "string | null",
 });
 export type WaitlistEntity = typeof waitlistEntity.infer;

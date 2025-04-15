@@ -108,6 +108,7 @@ export const SecondaryButton: React.FC<
       className?: string;
       isLoading?: boolean;
       loadingText?: string;
+      disabled?: boolean;
     } & HTMLMotionProps<"button">
   >
 > = ({
@@ -117,9 +118,10 @@ export const SecondaryButton: React.FC<
   isLoading = false,
   type,
   loadingText = "Loading...",
+  disabled,
   ...buttonProps
 }) => {
-  const isDisabled = isLoading || (!onClick && type !== "submit");
+  const isDisabled = disabled || isLoading || (!onClick && type !== "submit");
 
   const buttonVariants = {
     initial: {

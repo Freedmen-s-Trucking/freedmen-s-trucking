@@ -6,24 +6,19 @@ import {
   TextInput,
   Select,
   Spinner,
-  Avatar,
 } from "flowbite-react";
-import {
-  HiSearch,
-  HiCurrencyDollar,
-  HiClock,
-  HiCheck,
-  HiTruck,
-} from "react-icons/hi";
+import { HiSearch, HiCurrencyDollar, HiCheck, HiTruck } from "react-icons/hi";
 import {
   EntityWithPath,
   OrderEntity,
+  OrderEntityFields,
   OrderPriority,
   OrderStatus,
 } from "@freedmen-s-trucking/types";
 import { useDbOperations } from "~/hooks/use-firestore";
 import { useQuery } from "@tanstack/react-query";
 import { Order } from "~/components/molecules/order-details";
+import { customDateFormat } from "~/utils/functions";
 
 const Orders: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -71,12 +66,11 @@ const Orders: React.FC = () => {
     const matchesStatus =
       statusFilter === "all" ||
       (statusFilter === "active" &&
-        order.data.status === OrderStatus.ASSIGNED_TO_DRIVER) ||
+        order.data.status === OrderStatus.TASKS_ASSIGNED) ||
       (statusFilter === "completed" &&
         order.data.status === OrderStatus.COMPLETED) ||
       (statusFilter === "unassigned" &&
-        (order.data.status === OrderStatus.PENDING_PAYMENT ||
-          order.data.status === OrderStatus.PAYMENT_RECEIVED));
+        order.data.status === OrderStatus.PAYMENT_RECEIVED);
 
     return matchesSearch && matchesStatus;
   });
@@ -89,7 +83,7 @@ const Orders: React.FC = () => {
             Completed
           </Badge>
         );
-      case OrderStatus.ASSIGNED_TO_DRIVER:
+      case OrderStatus.TASKS_ASSIGNED:
         return (
           <Badge color="info" icon={HiTruck}>
             Assigned
@@ -99,12 +93,6 @@ const Orders: React.FC = () => {
         return (
           <Badge color="warning" icon={HiCurrencyDollar}>
             Paid
-          </Badge>
-        );
-      case OrderStatus.PENDING_PAYMENT:
-        return (
-          <Badge color="gray" icon={HiClock}>
-            Pending Payment
           </Badge>
         );
       default:
@@ -186,7 +174,7 @@ const Orders: React.FC = () => {
                     {order.path.substring(0, 8)}
                   </div>
                   <div className="text-xs text-gray-500">
-                    {new Date(order.data.createdAt || "").toLocaleDateString()}
+                    {customDateFormat(order.data.createdAt || "")}
                   </div>
                   <div className="mt-1">
                     {renderPriorityBadge(order.data.priority)}
@@ -200,10 +188,16 @@ const Orders: React.FC = () => {
                 </Table.Cell>
                 <Table.Cell>{renderStatusBadge(order.data.status)}</Table.Cell>
                 <Table.Cell>
-                  {order.data.driverId ? (
+                  {order.data?.[OrderEntityFields.assignedDriverIds]?.length ? (
                     <div className="flex items-center space-x-2">
-                      <Avatar size="xs" rounded />
-                      <span>{order.data.driverName || "Unknown Driver"}</span>
+                      {(
+                        order.data?.[OrderEntityFields.assignedDriverIds] || []
+                      ).map((driverId) => (
+                        <span key={driverId}>
+                          {order.data?.[`task-${driverId}`]?.driverName ||
+                            "Unknown Driver"}
+                        </span>
+                      ))}
                     </div>
                   ) : (
                     <Badge color="gray">Not Assigned</Badge>

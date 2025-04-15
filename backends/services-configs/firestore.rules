@@ -10,18 +10,32 @@ service cloud.firestore {
         return request.auth != null && "isAdmin" in authUser && authUser.isAdmin; 
     }
     
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
     function isNotAnonymous() {
-        return request.auth != null; // && exits(/databases/$(database)/documents/users/$(request.auth.uid)); 
+        return request.auth != null && exists(/databases/$(database)/documents/users/$(request.auth.uid)); 
     }
     function isResourceOwner() {
-        return request.auth != null && resource != null && (resource.id == request.auth.uid || ("ownerId" in resource.data && resource.data.ownerId == request.auth.uid)); 
+        return request.auth != null 
+        && resource != null 
+        && (resource.id == request.auth.uid 
+        || ("ownerId" in resource.data && resource.data.ownerId == request.auth.uid)
+        ); 
     }
     function isDriverOfOrder() {
-      return request.auth.uid != null &&  resource != null && "driverId" in resource.data && resource.data.driverId == request.auth.uid;
+      let uid = request.auth.uid;
+      return uid != null &&  resource != null && "assignedDriverIds" in resource.data && uid in resource.data.assignedDriverIds;
     }
     function canUpdateOrder() {
       // Only driver are authorized to update order after assignment.
-      return isDriverOfOrder() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["driverStatus", "status", "updatedAt"]);
+      // return isDriverOfOrder() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["driverStatus", "updatedAt"]);
+      let uid = request.auth.uid;
+      let allowedPath = 'task-' + uid;
+
+      // Ensure only the driver's assignedTasks field is being updated
+      return isDriverOfOrder() && request.resource.data.diff(resource.data).affectedKeys().hasOnly([allowedPath]);
     }
     match /admin/{content=**} {
       allow read, create: if isAdmin();
@@ -52,7 +66,7 @@ service cloud.firestore {
     }
 
     match /users/{uid} {
-      allow read, create: if isNotAnonymous();
+      allow read, create: if isAuthenticated();
       allow update, delete: if isResourceOwner() || isAdmin();
     }
 

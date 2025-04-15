@@ -6,10 +6,13 @@ import {
   ApiResSetupConnectedAccount,
   DriverEntity,
   CollectionName,
+  OrderEntity,
+  PaymentEntity,
+  EntityWithID,
 } from '@freedmen-s-trucking/types';
 import stripe from './config';
 import { serializeToStripeMeta } from '~src/utils/serialize';
-import { CollectionReference, getFirestore } from 'firebase-admin/firestore';
+import { CollectionReference, DocumentReference, getFirestore } from 'firebase-admin/firestore';
 
 type CreatePaymentIntentResponse = Stripe.Response<Stripe.PaymentIntent> | Error;
 
@@ -87,4 +90,39 @@ export async function generateConnectedAccountSetupLink(
   });
 
   return accountLink;
+}
+
+export async function transferFundsToDriver(
+  driver: DriverEntity,
+  amountInUSD: number,
+  order: EntityWithID<OrderEntity>,
+  taskId: keyof OrderEntity,
+): Promise<Stripe.Response<Stripe.Transfer> | Error> {
+  if (!driver.stripeConnectAccountId) {
+    return new Error('Driver has no Stripe Connect account');
+  }
+
+  const payment = await (getFirestore().doc(order.data.paymentRef) as DocumentReference<PaymentEntity>).get();
+  const paymentIntentId = payment.data()?.provider?.ref;
+  if (!paymentIntentId) {
+    return new Error('Payment intent not found');
+  }
+  const orderPaymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+  const transfer = await stripe.transfers.create({
+    amount: Math.ceil(amountInUSD * 100),
+    currency: 'usd',
+    destination: driver.stripeConnectAccountId || '',
+    transfer_group: order.id,
+    source_transaction: !orderPaymentIntent.latest_charge
+      ? 'N/A'
+      : typeof orderPaymentIntent.latest_charge === 'string'
+        ? orderPaymentIntent.latest_charge
+        : orderPaymentIntent.latest_charge.id,
+    metadata: serializeToStripeMeta({
+      driverId: driver.uid,
+      orderId: order.id,
+      taskId,
+    }),
+  });
+  return transfer;
 }
