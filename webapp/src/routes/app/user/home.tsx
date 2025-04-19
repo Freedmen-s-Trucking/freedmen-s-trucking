@@ -1,25 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useAppSelector } from "../../../stores/hooks";
-import { IoFlash } from "react-icons/io5";
-import { IoTimeOutline } from "react-icons/io5";
-import { IoNotificationsOutline } from "react-icons/io5";
 import { IoHomeOutline } from "react-icons/io5";
 import { IoTimeSharp } from "react-icons/io5";
 import { IoPersonOutline } from "react-icons/io5";
 import { Link } from "@tanstack/react-router";
+import { MobileTopBar } from "../../../components/mobile/mobile-top-bar";
+import { Zap } from 'lucide-react';
+import { Clock } from 'lucide-react';
+import { orderCardT } from "../../../types/mobile/order-card-type";
+import { OrderCard } from "../../../components/mobile/order-card";
 
-interface DeliveryHistoryItem {
-  orderId: string;
-  recipient: string;
-  location: string;
-  timestamp: string;
-  status: 'Completed' | 'Pending' | 'In Progress';
-}
+
 
 function HomeScreen() {
-  const user = useAppSelector((state) => state.authCtrl.user);
+
   
-  const deliveryHistory: DeliveryHistoryItem[] = [
+  const deliveryHistory: orderCardT[] = [
     {
       orderId: 'ORDB1234',
       recipient: 'Paul Pogba',
@@ -37,48 +32,34 @@ function HomeScreen() {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-mobile-background text-mobile-text font-mobile">
       {/* Header */}
-      <header className="px-6 pt-8 pb-4">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-lg text-gray-600">Welcome Back</h1>
-            <h2 className="text-2xl font-semibold">{user?.info.displayName}</h2>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <IoNotificationsOutline className="w-6 h-6" />
-              <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-            </div>
-            <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-800">
-              {user?.info.displayName?.slice(0, 2).toUpperCase()}
-            </div>
-          </div>
-        </div>
-        <p className="text-gray-600 mb-4">What would you like to do?</p>
-      </header>
+      <MobileTopBar />
+      <p className="text-gray-600 mb-4 px-6  pb-4">What would you like to do?</p>
+
+    
 
       {/* Delivery Options */}
       <div className="px-6 space-y-4">
-        <Link to="/app/user/instant-delivery" 
-          className="block p-6 bg-teal-100 rounded-xl">
-          <div className="flex items-center gap-4">
-            <IoFlash className="w-8 h-8 text-teal-700" />
-            <div>
-              <h3 className="text-xl font-semibold mb-1">Instant Delivery</h3>
-              <p className="text-gray-600">Courier takes only your package and delivers instantly</p>
-            </div>
+      <Link to="/app/user/schedule-delivery"
+          className="block p-5 bg-mobile-button rounded-xl border border-mobile-text text-white">
+          <div className="flex flex-col justify-start items-start ">
+            <Zap className="w-[24px] h-[24px]  stroke-white mb-2" />
+            
+              <h3 className="text-[16px] font-semibold mb-1">Schedule Delivery</h3>
+              <p className="text-white text-[12px]">Courier comes to pick up on your specified date and time</p>
+            
           </div>
         </Link>
 
         <Link to="/app/user/schedule-delivery"
-          className="block p-6 bg-white rounded-xl border border-gray-200">
-          <div className="flex items-center gap-4">
-            <IoTimeOutline className="w-8 h-8 text-teal-700" />
-            <div>
-              <h3 className="text-xl font-semibold mb-1">Schedule Delivery</h3>
-              <p className="text-gray-600">Courier comes to pick up on your specified date and time</p>
-            </div>
+          className="block p-5 bg-mobile-background rounded-xl border border-mobile-text">
+          <div className="flex flex-col justify-start items-start ">
+            <Clock className="w-[24px] h-[24px]  stroke-mobile-text mb-2" />
+            
+              <h3 className="text-[16px] font-semibold mb-1">Schedule Delivery</h3>
+              <p className="text-mobile-text text-[12px]">Courier comes to pick up on your specified date and time</p>
+            
           </div>
         </Link>
       </div>
@@ -86,29 +67,13 @@ function HomeScreen() {
       {/* History Section */}
       <div className="px-6 mt-8">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-semibold">History</h3>
-          <Link to="/" className="text-teal-700">View all</Link>
+          <h3 className="text-[14px] font-semibold">History</h3>
+          <Link to="/" className="text-mobile-text text-[12px]">View all</Link>
         </div>
         
         <div className="space-y-4">
-          {deliveryHistory.map((item, index) => (
-            <div key={index} className="p-4 bg-white rounded-lg border border-gray-200">
-              <div className="flex justify-between items-start mb-2">
-                <h4 className="font-medium">{item.orderId}</h4>
-                <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
-                  {item.status}
-                </span>
-              </div>
-              <p className="text-gray-600 mb-1">Receipient: {item.recipient}</p>
-              <div className="flex items-start gap-2">
-                <span className="mt-1">📍</span>
-                <div>
-                  <p className="font-medium">Drop off</p>
-                  <p className="text-gray-600">{item.location}</p>
-                  <p className="text-gray-500 text-sm">{item.timestamp}</p>
-                </div>
-              </div>
-            </div>
+          {deliveryHistory.map((item) => (
+           <OrderCard key={item.orderId} {...item} />
           ))}
         </div>
       </div>

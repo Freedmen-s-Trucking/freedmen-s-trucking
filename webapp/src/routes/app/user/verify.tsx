@@ -1,4 +1,4 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { VerificationCode } from "../../../components/organisms/VerificationCode";
 import { useAppSelector } from "../../../stores/hooks";
 

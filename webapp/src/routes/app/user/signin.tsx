@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import logo from "@/assets/images/logo.webp"; // Update with your Snap logo path
+import snapLogo from "@/assets/images/splash-screen-logo.png";
 
 const SignInScreen = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -13,21 +13,20 @@ const SignInScreen = () => {
   };
 
   return (
-    <div className="mx-auto flex h-screen max-w-[375px] flex-col bg-white px-6">
+    <div className="mx-auto flex h-screen max-w-[375px] flex-col bg-mobile-background text-mobile-text font-mobile px-6">
       {/* Logo section */}
-      <div className="mt-16 flex items-center">
+      <div className="mt-16 flex items-center justify-center">
         <img 
-          src={logo} 
+          src={snapLogo} 
           alt="Snap Logo" 
-          className="h-10 w-10"
+          className="h-[41px] w-[108px]"
         />
-        <span className="ml-2 text-2xl font-bold text-[#1a2b3c]">Snap</span>
       </div>
 
       {/* Welcome text */}
-      <div className="mt-12">
-        <h1 className="text-2xl font-semibold text-black">Welcome</h1>
-        <p className="mt-2 text-gray-600">Please input your details</p>
+      <div className="mt-[41px]">
+        <h1 className="text-[20px] font-semibold text-black">Welcome</h1>
+        <p className="mt-[3px] text-[12px] text-gray-600">Please input your details</p>
       </div>
 
       {/* Sign in form */}
@@ -39,7 +38,7 @@ const SignInScreen = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="youremailaddress@address.com"
-            className="w-full rounded-lg bg-gray-50 px-4 py-3.5 text-gray-900 placeholder:text-gray-500"
+            className="w-full rounded-lg bg-mobile-background px-4 py-3.5 text-gray-900 placeholder:text-gray-500"
           />
         </div>
 
@@ -49,7 +48,7 @@ const SignInScreen = () => {
             type={showPassword ? "text" : "password"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-lg bg-gray-50 px-4 py-3.5 text-gray-900 placeholder:text-gray-500"
+            className="w-full rounded-lg bg-mobile-background px-4 py-3.5 text-gray-900 placeholder:text-gray-500"
           />
           <button
             type="button"
@@ -74,20 +73,23 @@ const SignInScreen = () => {
         </div>
 
         {/* Sign in button */}
+        <Link to="/app/user/home" className="w-full">
         <button
           type="submit"
-          className="mb-6 rounded-lg bg-[#2A6877] py-4 text-center text-lg font-semibold text-white"
+          className="mb-6 w-full rounded-lg bg-mobile-button py-4 text-center text-[16px] font-semibold text-white"
         >
           Get Started
         </button>
+        </Link>
+       
 
         {/* Sign up link */}
-        <div className="text-center">
+        <div className="text-center text-[14px]">
           <span className="text-gray-600">Need an account? </span>
           <Link
-            to="/app/user/onboarding"
+            to="/app/user/signup"
 
-            className="font-semibold text-[#2A6877]"
+            className="font-semibold text-mobile-text"
           >
             Sign up
           </Link>

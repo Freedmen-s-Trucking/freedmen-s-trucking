@@ -27,12 +27,7 @@ const SplashScreen = () => {
           alt="Freedman Trucking Logo" 
           className="h-auto w-32" 
         />
-        <button 
-          className="mt-4 rounded-mobile bg-mobile-button px-4 py-2 text-mobile-button-text"
-          onClick={() => navigate({ to: "/app/user/onboarding" })}
-        >
-          Skip
-        </button>
+      
       </motion.div>
     </div>
   );
