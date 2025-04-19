@@ -1,7 +1,8 @@
-export type orderCardT  = {
-    orderId: string;
-    recipient: string;
-    location: string;
-    timestamp: string;
-    status: 'Completed' | 'Pending' | 'In Progress';
-  }
+export type orderCardT = {
+  orderId: string;
+  recipient: string;
+  location: string;
+  status: "Completed" | "Pending";
+  timestamp?: string;
+  expectedTime?: string;
+};

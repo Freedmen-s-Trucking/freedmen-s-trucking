@@ -1,14 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { IoHomeOutline } from "react-icons/io5";
-import { IoTimeSharp } from "react-icons/io5";
-import { IoPersonOutline } from "react-icons/io5";
+
 import { Link } from "@tanstack/react-router";
 import { MobileTopBar } from "../../../components/mobile/mobile-top-bar";
 import { Zap } from 'lucide-react';
 import { Clock } from 'lucide-react';
 import { orderCardT } from "../../../types/mobile/order-card-type";
 import { OrderCard } from "../../../components/mobile/order-card";
-
+import { MobileBottomBar } from "../../../components/mobile/mobile-bottom-bar";
 
 
 function HomeScreen() {
@@ -27,7 +25,8 @@ function HomeScreen() {
       recipient: 'Paul Pogba',
       location: 'Maryland bustop, Anthony Ikeja',
       timestamp: '12 January 2020, 2:43pm',
-      status: 'Completed'
+      status: 'Pending',
+      expectedTime: '20 mins'
     }
   ];
 
@@ -79,22 +78,8 @@ function HomeScreen() {
       </div>
 
       {/* Bottom Navigation */}
-      <div className="mt-auto sticky bottom-0 bg-white border-t border-gray-200 p-4">
-        <div className="flex justify-around items-center">
-          <Link to="/" className="flex flex-col items-center text-teal-700">
-            <IoHomeOutline className="w-6 h-6" />
-            <span className="text-sm">Home</span>
-          </Link>
-          <Link to="/" className="flex flex-col items-center text-gray-400">
-            <IoTimeSharp className="w-6 h-6" />
-            <span className="text-sm">History</span>
-          </Link>
-          <Link to="/" className="flex flex-col items-center text-gray-400">
-            <IoPersonOutline className="w-6 h-6" />
-            <span className="text-sm">Profile</span>
-          </Link>
-        </div>
-      </div>
+      <MobileBottomBar isAgent={false} />
+      
     </div>
   );
 }

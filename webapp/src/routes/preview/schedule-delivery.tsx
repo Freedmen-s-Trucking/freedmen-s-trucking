@@ -1,124 +1,137 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { UserEntity } from "@freedman-trucking/types";
-import home2LogoBlured from "@/assets/images/home-2-blur.webp";
-import home2Logo from "@/assets/images/home-2.webp";
-import Hero from "@/components/molecules/hero";
-import FAQ from "@/components/molecules/faq";
-import AppFooter from "@/components/organisms/footer";
-import scheduleDeliveryHeroImg from "@/assets/images/schedule-delivery-hero.webp";
-import scheduleDeliveryHeroImgBlured from "@/assets/images/schedule-delivery-hero-blur.webp";
-import { AppImageBackground } from "@/components/atoms/image-background";
-import { useAuth } from "@/hooks/use-auth";
-import { CreateOrderForm } from "@/components/molecules/create-order";
+import { createFileRoute } from "@tanstack/react-router";
+import { IoArrowBack } from "react-icons/io5";
+import { Link } from "@tanstack/react-router";
+import { DeliveryMap } from "../../components/molecules/delivery-map";
+import { useState } from "react";
+import { MobileButton } from "../../components/mobile/mobileButton";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "../../components/ui/drawer"
+import { Circle, MapPin } from "lucide-react";
+import { Car, Bike, Truck } from 'lucide-react';
 
-export const Route = createFileRoute("/preview/schedule-delivery")({
-  beforeLoad({ context }) {
-    if (!context.remoteConfigs.canShowPreviewLandingPage) {
-      throw redirect({
-        to: "/",
-      });
+
+// interface DeliveryLocation {
+//   address: string;
+//   label?: string;
+// }
+
+interface Position {
+  lat: number;
+  lng: number;
+}
+
+function InstantDeliveryScreen() {
+  const [pickupLocation] = useState<Position>({ lat: 6.4550, lng: 3.3841 }); // Lagos coordinates
+  const [deliveryLocation, setDeliveryLocation] = useState<Position | null>(null);
+  const [isOpen, setIsOpen] = useState(true);
+
+  const handleMapClick = (position: Position) => {
+    if (!deliveryLocation) {
+      setDeliveryLocation(position);
     }
-  },
-  component: RouteComponent,
-});
-
-const contacts = [
-  {
-    label: "Phone",
-    Value: ({
-      user,
-      ...other
-    }: { user: UserEntity } & Record<string, unknown>) => (
-      <>
-        <input {...other} readOnly type="text" value={user.phoneNumber || ""} />
-      </>
-    ),
-  },
-  {
-    label: "Email",
-    Value: ({
-      user,
-      ...other
-    }: { user: UserEntity } & Record<string, unknown>) => (
-      <>
-        <input {...other} readOnly type="email" value={user.email || ""} />
-      </>
-    ),
-  },
-  {
-    label: "Adress",
-    Value: ({
-      user,
-      ...other
-    }: { user: UserEntity } & Record<string, unknown>) => (
-      <>
-        <input {...other} readOnly type="text" value={user && "???"} />
-      </>
-    ),
-  },
-];
-
-function RouteComponent() {
-  const { user, signInWithGoogle } = useAuth();
+  };
 
   return (
-    <>
-      <Hero
-        image={scheduleDeliveryHeroImg}
-        bluredImage={scheduleDeliveryHeroImgBlured}
-        className="min-h-screen"
-      >
-        <div className="flex flex-col items-center justify-center px-4 pt-16 sm:px-12 lg:flex-row">
-          <div className="mx-auto mb-8 w-[min(100%,350px)]  max-w-md bg-black/80 px-8 py-8 md:mx-0 md:mb-0 md:w-full">
-            <h2 className="text-center text-4xl font-bold text-white md:text-start">
-              Schedule Your Delivery
-            </h2>
-            <p className="py-4 text-center text-sm text-white md:text-start">
-              Enter your details to get started.
-            </p>
-            {user.isAnonymous && (
-              <div className="flex flex-col items-center justify-center gap-4">
-                <button
-                  onClick={signInWithGoogle}
-                  className="flex w-full items-center justify-center gap-2 rounded-full bg-white px-4 py-2 font-bold text-black"
-                >
-                  <img
-                    src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-                    alt="Google"
-                    className="h-5 w-5"
-                  />
-                  Sign in with Google
+    <div className="flex flex-col min-h-screen font-mobile bg-mobile-background ">
+      <div>
+      
+      </div>
+      {/* Map Section */}
+      <div className="relative h-screen bg-gray-100">
+        {/* Back Button */}
+        <Link to="/app/user/home" 
+          className="absolute top-12 left-4 z-10 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg">
+          <IoArrowBack className="w-6 h-6" />
+        </Link>
+        
+        <DeliveryMap
+          center={pickupLocation}
+          markers={[pickupLocation, ...(deliveryLocation ? [deliveryLocation] : [])]}
+          onMapClick={handleMapClick}
+        />
+      </div>
+
+      {/* Drawer */}
+      <Drawer open={isOpen} onOpenChange={setIsOpen} >
+        <DrawerTrigger asChild>
+          <div className="fixed bottom-8 w-[90%] left-1/2 transform -translate-x-1/2 ">
+            <MobileButton isPrimary={true} text="Enter Details" onClick={() => setIsOpen(true)} />
+          </div>
+        </DrawerTrigger>
+        <DrawerContent className="bg-mobile-background text-mobile-text border-mobile-text border-2 font-mobile">
+          <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-2 mb-4" />
+          <DrawerHeader className="font-mobile">
+            <DrawerTitle className="text-[20px] font-mobile">Instant Delivery</DrawerTitle>
+            <DrawerDescription className="m-0 font-mobile"> pickup location</DrawerDescription>
+          </DrawerHeader>
+          
+          <div className="px-6 space-y-6 font-mobile">
+            {/* Pickup Location */}
+            <div>
+              <div className="p-4 bg-[#F2E7D8] rounded-2xl flex items-center gap-3 font-mobile">
+                <MapPin className="w-5 h-5  stroke-red-600" />
+                <input 
+                  type="text" 
+                  defaultValue="32 Samwell Sq, Chevron" 
+                  className="w-full bg-transparent outline-none border-none ring-0 font-mobile focus:outline-none text-mobile-text text-[14px]"
+                />
+              </div>
+            </div>
+
+            {/* Delivery Location */}
+            <div>
+              <label className="block text-mobile-text mb-2 font-mobile text-[13px]">Delivery Location</label>
+              <div className="p-4 bg-[#F2E7D8] rounded-2xl flex items-center gap-3 font-mobile">
+                <Circle className="w-5 h-5 stroke-green-600" />
+                <input 
+                  type="text" 
+                  defaultValue="21b, Karimu Kotun Street, Victoria Island" 
+                  className="w-full bg-transparent font-mobile focus:outline-none outline-none border-none ring-0 text-mobile-text text-[14px]"
+                />
+              </div>
+            </div>
+
+            {/* Vehicle Type */}
+            <div>
+              <label className="block text-mobile-text mb-3 font-mobile text-[13px]">Vehicle Type</label>
+              <div className="grid grid-cols-3 gap-4">
+                <button className="p-4 bg-stone-500  rounded-xl flex flex-col items-center gap-2 font-mobile">
+                  <span className="text-2xl">
+                    <Bike className="w-5 h-5 stroke-mobile-text" />
+                  </span>
+                  <span className="text-sm font-mobile">Bike</span>
+                </button>
+                <button className="p-4 bg-stone-500 rounded-xl flex flex-col items-center gap-2 font-mobile">
+                  <span className="text-2xl">
+                    <Car className="w-5 h-5 stroke-mobile-text" />
+                  </span>
+                  <span className="text-sm font-mobile">Car</span>
+                </button>
+                <button className="p-4 bg-stone-500 rounded-xl flex flex-col items-center gap-2 font-mobile">
+                  <span className="text-2xl">
+                    <Truck className="w-6 h-6 stroke-mobile-text" />
+                  </span>
+                  <span className="text-sm font-mobile">Van</span>
                 </button>
               </div>
-            )}
-            {!user.isAnonymous &&
-              contacts.map((contact, index) => (
-                <div
-                  key={index}
-                  className="flex w-full flex-row items-center justify-between text-white"
-                >
-                  <span>{contact.label}:</span>
-                  <contact.Value
-                    user={user.info}
-                    className="inline rounded-sm border-none bg-transparent p-0 text-end text-white focus:border-none focus:outline-none focus:ring-0"
-                  />
-                </div>
-              ))}
+            </div>
           </div>
-          <div className="w-full min-w-96 max-w-md overflow-hidden rounded-2xl bg-gradient-to-r from-[rgba(102,102,102,0.6)] to-[rgba(0,0,0,0.6)]">
-            <CreateOrderForm brightness="dark" />
+
+          <div className="px-6 mt-6">
+            <MobileButton isPrimary={true} text="Next" link="/app/user/instant-delivery" />
           </div>
-        </div>
-      </Hero>
-      <AppImageBackground
-        className="bg-scroll"
-        src={home2Logo}
-        placeholder={home2LogoBlured}
-        customGradient="linear-gradient(rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.8))"
-      >
-        <FAQ />
-      </AppImageBackground>
-      <AppFooter />
-    </>
+        </DrawerContent>
+      </Drawer>
+    </div>
   );
 }
+
+export const Route = createFileRoute("/app/user/instant-delivery")({
+  component: InstantDeliveryScreen,
+}); 
