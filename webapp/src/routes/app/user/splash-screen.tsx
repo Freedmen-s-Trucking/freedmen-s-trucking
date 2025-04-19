@@ -1,9 +1,21 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { motion } from "motion/react";
+import { useEffect } from "react";
 import splashScreen from "@/assets/images/splash-screen-logo.png";
+
 const SplashScreen = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      navigate({ to: "/app/user/onboarding" });
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [navigate]);
+
   return (
-    <div className="flex h-screen w-full items-center justify-center bg-white">
+    <div className="flex h-screen w-full items-center justify-center bg-mobile-background font-mobile">
       <motion.div
         initial={{ opacity: 0, scale: 0.5 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -15,7 +27,12 @@ const SplashScreen = () => {
           alt="Freedman Trucking Logo" 
           className="h-auto w-32" 
         />
-        
+        <button 
+          className="mt-4 rounded-mobile bg-mobile-button px-4 py-2 text-mobile-button-text"
+          onClick={() => navigate({ to: "/app/user/onboarding" })}
+        >
+          Skip
+        </button>
       </motion.div>
     </div>
   );

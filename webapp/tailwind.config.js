@@ -8,6 +8,12 @@ export default {
       screens: {
         xs: "380px",
       },
+      fontFamily: {
+        mobile: ['Georgia', 'serif'],
+      },
+      borderRadius: {
+        mobile: '7px', // middle value between 6-8px
+      },
       colors: {
         primary: {
           50: "#FFFCFA",
@@ -47,6 +53,14 @@ export default {
           800: "#901400",
           900: "#870000",
         },
+        mobile: {
+          background: "#F7E9D0",
+          text: "#3B2E20",
+          button: {
+            DEFAULT: "#3B2E20",
+            text: "#FFFFFF"
+          }
+        }
       },
     },
   },
