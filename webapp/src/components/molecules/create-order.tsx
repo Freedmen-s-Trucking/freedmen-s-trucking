@@ -11,7 +11,7 @@ import {
 } from "@freedmen-s-trucking/types";
 import { useState } from "react";
 import { setRequestedAuthAction } from "~/stores/controllers/app-ctrl";
-import { useAppDispatch, useAppSelector } from "~/stores/hooks";
+import { useAppDispatch } from "~/stores/hooks";
 import { FaTrash } from "react-icons/fa6";
 import { Dropdown } from "flowbite-react";
 import StripePayment from "~/components/molecules/stripe-payment";
@@ -21,6 +21,7 @@ import { PrimaryButton, SecondaryButton, TextInput } from "~/components/atoms";
 import { useQuery } from "@tanstack/react-query";
 import { useDbOperations } from "~/hooks/use-firestore";
 import { formatPrice } from "~/utils/functions";
+import { useAuth } from "~/hooks/use-auth";
 
 const OrderPriorities = [
   {
@@ -76,7 +77,7 @@ export const CreateOrderForm: React.FC<{
   className?: string;
   onOrderCreated?: () => void;
 }> = ({ brightness, className, onOrderCreated }) => {
-  const { user } = useAppSelector((state) => state.authCtrl);
+  const { user } = useAuth();
   const [deliveryPriority, setDeliveryPriorityInput] =
     useState<(typeof OrderPriorities)[number]>();
   const [error, setError] = useState<string | null>(null);

@@ -243,6 +243,7 @@ const SignUpUser: React.FC<{
           <CustomPopover
             autoFocus={false}
             trigger={["hover", "focus"]}
+            hardClose
             className="absolute z-auto inline-block w-max max-w-[100vw] rounded-lg border border-gray-200 bg-primary-100 shadow-sm outline-none dark:border-gray-600 dark:bg-secondary-900 [&>div>div:first-child]:border-none [&>div>div:first-child]:bg-primary-100 [&>div>div:last-child]:-mt-[2px]"
             content={
               <div className="space-y-2 p-3">
@@ -569,8 +570,8 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
         method: "POST",
         body: {
           email: user.info.email,
-          firstName: firstName,
-          lastName: lastName,
+          firstName: isAuthenticateMockApi ? "Jonathan" : firstName,
+          lastName: isAuthenticateMockApi ? "Doe" : lastName,
           dob: formatDate(birthDate, "dd-MM-yyyy"),
           phoneNumber: phoneNumber,
         },
@@ -649,9 +650,10 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
         totalEarnings: 0,
         tasksCompleted: 0,
         verificationMessage: null,
+        stripeConnectAccountId: null,
         authenticateAccessCode: userAccessCode,
         activeTasks: 0,
-        paymentMethods: [],
+        payoutMethods: [],
         withdrawalHistory: [],
       };
 
@@ -676,7 +678,7 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
       }
       console.error({ err });
       setError(
-        `Unknown Error Occurred! Please try again later. If the problem persist, contact the support.}`,
+        `Unknown Error Occurred! Please try again later. If the problem persist, contact the support.`,
       );
     } finally {
       setIsLoading(false);

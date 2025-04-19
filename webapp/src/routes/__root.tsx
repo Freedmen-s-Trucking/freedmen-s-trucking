@@ -8,11 +8,11 @@ import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 
 import { AppUser } from "~/stores/controllers/auth-ctrl";
 import { RouteProviders } from "~/provider/providers";
-import { useAppSelector } from "~/stores/hooks";
 import { useEffect } from "react";
+import { useAuth } from "~/hooks/use-auth";
 
 const Component: React.FC = () => {
-  const { user } = useAppSelector((state) => state.authCtrl);
+  const { user } = useAuth();
   const router = useRouter();
   const routeState = useRouterState();
 

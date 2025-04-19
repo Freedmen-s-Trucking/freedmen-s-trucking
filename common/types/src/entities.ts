@@ -2,7 +2,7 @@ import {
   authMethodType,
   placeLocationType,
   locationType,
-  paymentMethodType,
+  payoutMethodType,
   productWithQuantityType,
   type,
   vehicleType,
@@ -48,6 +48,7 @@ export const userEntity = type({
 });
 export type UserEntity = typeof userEntity.infer;
 
+//userEntity /*.partial()*/
 export const driverEntity = type({
   driverInsuranceVerificationStatus: verificationStatus,
   driverInsuranceStoragePath: "string | null",
@@ -56,7 +57,7 @@ export const driverEntity = type({
   driverLicenseBackStoragePath: "string | null",
   driverLicenseVerificationStatus: verificationStatus.or("null"),
   driverLicenseVerificationIssues: "string[] | null",
-  location: locationType.optional(),
+  location: locationType.or("null").optional(),
   vehicles: type({
     type: vehicleType,
     insuranceStoragePath: type("string | null").optional(),
@@ -66,9 +67,13 @@ export const driverEntity = type({
     .array()
     .optional(),
   withdrawalHistory: withdrawalEntity.array(),
-  paymentMethods: paymentMethodType.array(),
+  payoutMethods: payoutMethodType.array(),
+  payoutCapabilities: type({
+    transfers: "'active' | 'inactive' | 'pending'",
+  }).optional(),
   verificationStatus: verificationStatus,
   verificationMessage: "string | null",
+  stripeConnectAccountId: "string | null",
   authenticateAccessCode: "string",
   currentEarnings: "number | null",
   totalEarnings: "number | null",

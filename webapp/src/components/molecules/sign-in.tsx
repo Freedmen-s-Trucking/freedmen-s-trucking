@@ -207,6 +207,7 @@ const SignIn: React.FC<{
           <CustomPopover
             trigger={["hover", "focus"]}
             autoFocus={false}
+            hardClose
             content={
               <div className="space-y-2 p-3">
                 {password.length < 8 && (

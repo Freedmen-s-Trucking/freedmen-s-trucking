@@ -4,9 +4,9 @@ import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { routeTree } from "~/route-tree.gen";
 import "~/index.css";
 import { RootProviders } from "./provider/providers";
-import { useAppSelector } from "./stores/hooks";
 import { useGetRemoteConfig } from "./hooks/use-remote-config";
 import { RemoteConfigKeys } from "./utils/constants";
+import { useAuth } from "./hooks/use-auth";
 
 // Create a new router instance
 const router = createRouter({
@@ -22,7 +22,7 @@ declare module "@tanstack/react-router" {
 }
 
 export const CustomRouter: React.FC = () => {
-  const { user } = useAppSelector((state) => state.authCtrl);
+  const { user } = useAuth();
   const canShowPreviewLandingPage = useGetRemoteConfig(
     RemoteConfigKeys.can_show_preview_landing_page,
   );

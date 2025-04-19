@@ -37,6 +37,7 @@ import {
   driverEntity,
 } from "@freedmen-s-trucking/types";
 import { checkFalsyAndThrow } from "~/utils/functions";
+import { driverEntityConverter } from "~/utils/firestore";
 
 const useFirestore = () => {
   const context = useContext(FireStoreCtx);
@@ -195,7 +196,11 @@ const useDriverDbOperations = (db: Firestore) => {
           driver: driverEntity.partial(),
         }),
       );
-      const docRef = doc(collection(db, CollectionName.DRIVERS), uid);
+      const docRef = doc(
+        collection(db, CollectionName.DRIVERS),
+        uid,
+      ).withConverter(driverEntityConverter);
+
       await setDoc(docRef, driver, { merge: true });
     },
     [db],
@@ -207,10 +212,13 @@ const useDriverDbOperations = (db: Firestore) => {
         { uid },
         "FirestoreError::getDriver uid must not be falsy",
       );
-      const docRef = doc(collection(db, CollectionName.DRIVERS), uid);
+      const docRef = doc(
+        collection(db, CollectionName.DRIVERS),
+        uid,
+      ).withConverter(driverEntityConverter);
       const docSnapshot = await getDoc(docRef);
       if (docSnapshot.exists()) {
-        return docSnapshot.data() as DriverEntity;
+        return docSnapshot.data();
       }
       return null;
     },

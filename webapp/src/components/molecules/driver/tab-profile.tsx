@@ -15,11 +15,17 @@ import { useDbOperations } from "~/hooks/use-firestore";
 import { useStorageOperations } from "~/hooks/use-storage";
 import { useAppDispatch } from "~/stores/hooks";
 import { setUser, updateDriverInfo } from "~/stores/controllers/auth-ctrl";
-import { DriverEntity, type, VehicleType } from "@freedmen-s-trucking/types";
+import {
+  ApiResSetupConnectedAccount,
+  DriverEntity,
+  type,
+  VehicleType,
+} from "@freedmen-s-trucking/types";
 import {
   authenticateApiRequest,
   driverVerificationBadges,
   isAuthenticateMockApi,
+  SERVER_API,
   vehicleTypes,
 } from "~/utils/constants";
 import {
@@ -29,11 +35,13 @@ import {
   TextInput,
 } from "~/components/atoms";
 import { HiX } from "react-icons/hi";
-import { ResponseError } from "up-fetch";
+import { ResponseError, up } from "up-fetch";
 import { fileToBase64, getDriverVerificationStatus } from "~/utils/functions";
 import { CiImageOff } from "react-icons/ci";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
+import { PUBLIC_WEBAPP_URL } from "~/utils/envs";
+import { useRouterState } from "@tanstack/react-router";
 
 const getVerificationBadge = (
   status: keyof typeof driverVerificationBadges,
@@ -421,6 +429,60 @@ export const DriverProfile: React.FC = () => {
     },
   });
 
+  const { mutate: setupDriverPayment, isPending: setupDriverPaymentIsPending } =
+    useMutation({
+      mutationFn: async () => {
+        console.log("Setting up driver payment");
+        const idToken = await user.getIDToken?.();
+        if (!idToken) {
+          throw new Error("Failed to get ID token");
+        }
+        const request = up(fetch, async () => ({
+          baseUrl: SERVER_API,
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${idToken}`,
+          },
+        }));
+
+        const response = await request("/v1/stripe/setup-connected-account", {
+          method: "POST",
+          schema: type({
+            response: {
+              object: "string",
+              created: "number.epoch",
+              expires_at: "number.epoch",
+              url: "string.url",
+            },
+          }),
+          body: {
+            stripeConnectAccountId: driverInfo?.stripeConnectAccountId || null,
+            email: user.info.email,
+            uid: user.info.uid,
+            returnUrl: `${PUBLIC_WEBAPP_URL}/app/driver/dashboard`,
+            refreshUrl: `${PUBLIC_WEBAPP_URL}/app/driver/dashboard#refreshPayment`,
+          } satisfies ApiResSetupConnectedAccount,
+        });
+
+        return response;
+      },
+      onError(error) {
+        console.log((error as Error).stack);
+        console.error(error);
+      },
+      onSuccess(data) {
+        window.location.href = data.response.url;
+      },
+    });
+
+  const routerState = useRouterState();
+  useEffect(() => {
+    console.log(routerState.location);
+    if (routerState.location.hash === "#refreshPayment") {
+      setupDriverPayment();
+    }
+  }, [routerState, setupDriverPayment]);
+
   if (!driverInfo) {
     return null;
   }
@@ -672,7 +734,6 @@ export const DriverProfile: React.FC = () => {
               {driverInfo.driverInsuranceVerificationStatus !== "verified" && (
                 <SecondaryButton
                   type="submit"
-                  color="light"
                   className="mt-5 bg-white py-2"
                   isLoading={handleUploadInsuranceIsPending}
                 >
@@ -721,20 +782,29 @@ export const DriverProfile: React.FC = () => {
       {/* Payment Methods */}
       <div className="space-y-6">
         <Card>
-          <h5 className="mb-4 text-xl font-bold">Payment Methods</h5>
-          {driverInfo.paymentMethods.map((method) => (
+          <h5 className="mb-4 text-xl font-bold">Payment Info</h5>
+          {driverInfo.payoutMethods.map((method) => (
             <div
               key={method.id}
               className="mb-3 flex items-center justify-between rounded-lg border p-3"
             >
               <div>
                 <p className="font-medium">{method.type}</p>
-                <p className="text-sm text-gray-600">{method.details}</p>
+                <p className="text-sm text-gray-600">{method.name}</p>
               </div>
               <div className="flex items-center">
-                {method.default && (
+                {method.status === "verified" ? (
                   <Badge color="success" className="mr-2">
-                    Default
+                    Verified
+                  </Badge>
+                ) : method.status === "validation_failed" ||
+                  method.status === "errored" ? (
+                  <Badge color="failure" className="mr-2">
+                    Failed
+                  </Badge>
+                ) : (
+                  <Badge color="warning" className="mr-2">
+                    Pending
                   </Badge>
                 )}
                 <Button size="xs" color="light">
@@ -743,9 +813,15 @@ export const DriverProfile: React.FC = () => {
               </div>
             </div>
           ))}
-          <Button disabled color="dark">
-            Add Payment Method
-          </Button>
+          {!driverInfo.payoutCapabilities && (
+            <SecondaryButton
+              onClick={() => setupDriverPayment()}
+              isLoading={setupDriverPaymentIsPending}
+              className="mt-5 self-center bg-white py-2"
+            >
+              Setup Payment
+            </SecondaryButton>
+          )}
         </Card>
 
         {/* Withdrawals */}
