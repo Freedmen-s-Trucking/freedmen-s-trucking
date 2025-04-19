@@ -64,6 +64,7 @@ export const vehiclesInfoList: VehicleInfo[] = [
 export enum CollectionName {
   DRIVERS = "drivers",
   ORDERS = "orders",
+  TASKS = "tasks",
   PAYMENTS = "payments",
   PLATFORM_OVERVIEW = "platformOverviews",
   PLATFORM_SETTINGS = "platformSettings",
@@ -72,3 +73,5 @@ export enum CollectionName {
 
 export const LATEST_PLATFORM_OVERVIEW_PATH = `${CollectionName.PLATFORM_OVERVIEW}/latest`;
 export const LATEST_PLATFORM_SETTINGS_PATH = `${CollectionName.PLATFORM_SETTINGS}/latest`;
+
+export const FIXED_DRIVER_SERVICE_FEE_PERCENT = 90;

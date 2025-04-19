@@ -4,7 +4,6 @@ import {
   collection,
   doc,
   DocumentReference,
-  FieldValue,
   Firestore,
   getDoc,
   getDocs,
@@ -15,6 +14,7 @@ import {
   query,
   serverTimestamp,
   setDoc,
+  updateDoc,
   where,
   WithFieldValue,
 } from "firebase/firestore";
@@ -35,6 +35,7 @@ import {
   type,
   userEntity,
   driverEntity,
+  Coordinate,
 } from "@freedmen-s-trucking/types";
 import { checkFalsyAndThrow } from "~/utils/functions";
 import { driverEntityConverter } from "~/utils/firestore";
@@ -56,6 +57,7 @@ const useOrderDbOperations = (db: Firestore) => {
       userId: string,
       orderPath: string,
       driverStatus: DriverOrderStatus,
+      coords: Coordinate | undefined,
     ) => {
       checkFalsyAndThrow(
         { userId, orderPath, driverStatus },
@@ -63,7 +65,7 @@ const useOrderDbOperations = (db: Firestore) => {
         type({
           userId: "string",
           orderPath: "string",
-          driverStatus: type.enumerated(DriverOrderStatus),
+          driverStatus: type.valueOf(DriverOrderStatus),
         }),
       );
       const orderId = orderPath.split("/").pop();
@@ -73,23 +75,15 @@ const useOrderDbOperations = (db: Firestore) => {
         throw new Error("Order not found");
       }
       const prevOrder = docSnapshot.data() as OrderEntity;
-      if (userId !== prevOrder.driverId) {
+      if (userId !== prevOrder[`task-${userId}`]?.driverId) {
         throw new Error("Unauthorized");
       }
       // TODO: Validate status
-      const dataToUpdate = {
-        driverStatus: driverStatus,
-        status:
-          driverStatus === DriverOrderStatus.DELIVERED
-            ? OrderStatus.COMPLETED
-            : prevOrder.status,
-        updatedAt: serverTimestamp(),
-      } as Record<
-        keyof OrderEntity,
-        OrderEntity[keyof OrderEntity] | FieldValue
-      >;
-      await setDoc(docRef, dataToUpdate, {
-        merge: true,
+      await updateDoc(docRef, {
+        [`task-${userId}.${OrderEntityFields.driverStatus}`]: driverStatus,
+        [`task-${userId}.${OrderEntityFields.updatedAt}`]: serverTimestamp(),
+        [`task-${userId}.${OrderEntityFields.driverPositions}.${driverStatus}`]:
+          coords,
       });
 
       if (driverStatus === DriverOrderStatus.DELIVERED) {
@@ -113,7 +107,7 @@ const useOrderDbOperations = (db: Firestore) => {
     [db],
   );
 
-  return { updateOrderStatus };
+  return { updateOrderStatus: updateOrderStatus };
 };
 
 const useUserDbOperations = (db: Firestore) => {
@@ -201,6 +195,8 @@ const useDriverDbOperations = (db: Firestore) => {
         uid,
       ).withConverter(driverEntityConverter);
 
+      console.log({ uid, update: driver }, new Error().stack);
+
       await setDoc(docRef, driver, { merge: true });
     },
     [db],
@@ -235,23 +231,30 @@ const useDriverDbOperations = (db: Firestore) => {
         userType === "driver"
           ? query(
               collection(db, CollectionName.ORDERS),
-              where(OrderEntityFields.driverId, "==", uid),
               where(
-                OrderEntityFields.status,
-                "==",
-                OrderStatus.ASSIGNED_TO_DRIVER,
+                OrderEntityFields.assignedDriverIds satisfies keyof OrderEntity,
+                "array-contains",
+                uid,
               ),
               where(
-                OrderEntityFields.driverStatus,
+                OrderEntityFields.status satisfies keyof OrderEntity,
                 "!=",
-                DriverOrderStatus.DELIVERED,
+                OrderStatus.COMPLETED,
               ),
               limit(10),
             )
           : query(
               collection(db, CollectionName.ORDERS),
-              where(OrderEntityFields.ownerId, "==", uid),
-              where(OrderEntityFields.status, "!=", OrderStatus.COMPLETED),
+              where(
+                OrderEntityFields.ownerId satisfies keyof OrderEntity,
+                "==",
+                uid,
+              ),
+              where(
+                OrderEntityFields.status satisfies keyof OrderEntity,
+                "!=",
+                OrderStatus.COMPLETED,
+              ),
               // TODO: handle pending payment directly with stripe.
               // where(
               //   OrderEntityFields.status,
@@ -285,18 +288,30 @@ const useDriverDbOperations = (db: Firestore) => {
         userType === "driver"
           ? query(
               collection(db, CollectionName.ORDERS),
-              where(OrderEntityFields.driverId, "==", uid),
               where(
-                OrderEntityFields.driverStatus,
+                OrderEntityFields.assignedDriverIds satisfies keyof OrderEntity,
+                "array-contains",
+                uid,
+              ),
+              where(
+                OrderEntityFields.status satisfies keyof OrderEntity,
                 "==",
-                DriverOrderStatus.DELIVERED,
+                OrderStatus.COMPLETED,
               ),
               limit(20),
             )
           : query(
               collection(db, CollectionName.ORDERS),
-              where(OrderEntityFields.ownerId, "==", uid),
-              where(OrderEntityFields.status, "==", OrderStatus.COMPLETED),
+              where(
+                OrderEntityFields.ownerId satisfies keyof OrderEntity,
+                "==",
+                uid,
+              ),
+              where(
+                OrderEntityFields.status satisfies keyof OrderEntity,
+                "==",
+                OrderStatus.COMPLETED,
+              ),
               limit(20),
             );
       const res = await getDocs<OrderEntity, OrderEntity>(
@@ -489,7 +504,7 @@ export const useDbOperations = () => {
     getUser,
     updateDriver,
     getDriver,
-    updateOrderStatus,
+    updateOrderStatus: updateOrderStatus,
     updatePlatformSettings,
     fetchOrders,
     fetchDrivers,

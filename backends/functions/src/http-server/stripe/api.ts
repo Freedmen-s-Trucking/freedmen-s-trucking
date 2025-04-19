@@ -6,6 +6,7 @@ import {
   LATEST_PLATFORM_OVERVIEW_PATH,
   newOrderEntity,
   OrderEntity,
+  OrderEntityFields,
   OrderStatus,
   PaymentActorType,
   PaymentEntity,
@@ -17,10 +18,18 @@ import {
   UserEntity,
   VerificationStatus,
 } from '@freedmen-s-trucking/types';
-import { CollectionReference, DocumentReference, FieldValue, getFirestore } from 'firebase-admin/firestore';
-import { handleStripeWebhookEvent } from './webhook.js';
+import {
+  CollectionReference,
+  DocumentReference,
+  FieldValue,
+  Filter,
+  getFirestore,
+  WithFieldValue,
+} from 'firebase-admin/firestore';
 import { Hono } from 'hono';
+import { onetimeFindRightDriversForOrder } from '~src/utils/order.js';
 import { createPaymentIntent, generateConnectedAccountSetupLink } from './payment';
+import { handleStripeWebhookEvent } from './webhook.js';
 
 const router = new Hono();
 
@@ -95,13 +104,32 @@ router.post('/webhook', async (c) => {
         DriverEntity
       >;
       const query = driverCollection
-        .where('verificationStatus' satisfies keyof DriverEntity, '==', 'verified' as VerificationStatus)
+        .where(
+          Filter.or(
+            Filter.where(
+              'verificationStatus' satisfies keyof DriverEntity,
+              '==',
+              'verified' satisfies VerificationStatus,
+            ),
+            Filter.and(
+              Filter.where(
+                'verificationStatus' satisfies keyof DriverEntity,
+                '==',
+                'pending' satisfies VerificationStatus,
+              ),
+              Filter.where(
+                'driverLicenseVerificationStatus' satisfies keyof DriverEntity,
+                '==',
+                'verified' satisfies VerificationStatus,
+              ),
+            ),
+          ),
+        )
         .orderBy('activeTasks', 'asc');
-      const snapshot = await query.limit(1).get();
-      const driverId = snapshot.empty ? null : snapshot.docs[0].id;
+      const snapshot = await query.get();
+      const [drivers, unassignedVehicles] = onetimeFindRightDriversForOrder(snapshot, verifiedNewOrder);
       const userCollection = firestore.collection('users') as CollectionReference<UserEntity, UserEntity>;
       const user = await userCollection.doc(verifiedNewOrder.ownerId).get();
-      const driverUserInfo = driverId ? await userCollection.doc(driverId).get() : null;
 
       // Save the payment.
       const paymentCollection = firestore.collection(CollectionName.PAYMENTS) as CollectionReference<
@@ -136,26 +164,44 @@ router.post('/webhook', async (c) => {
         OrderEntity,
         OrderEntity
       >;
-      const order: OrderEntity = {
+      const order: WithFieldValue<OrderEntity> = {
         ...verifiedNewOrder,
-        clientName: user.data()?.displayName || '',
-        clientEmail: user.data()?.email || '',
-        clientPhone: user.data()?.phoneNumber || '',
-        driverStatus: DriverOrderStatus.WAITING,
-        status: driverId ? OrderStatus.ASSIGNED_TO_DRIVER : OrderStatus.PAYMENT_RECEIVED,
-        driverId,
-        driverName: driverUserInfo?.data()?.displayName || '',
-        driverEmail: driverUserInfo?.data()?.email || '',
-        driverPhone: driverUserInfo?.data()?.phoneNumber || '',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        paymentRef: paymentDocRef.path,
+        [OrderEntityFields.clientName]: user.data()?.displayName || '',
+        [OrderEntityFields.clientEmail]: user.data()?.email || '',
+        [OrderEntityFields.clientPhone]: user.data()?.phoneNumber || '',
+        [OrderEntityFields.status]:
+          unassignedVehicles.length === 0 ? OrderStatus.TASKS_ASSIGNED : OrderStatus.PAYMENT_RECEIVED,
+        [OrderEntityFields.unassignedVehiclesTypes]: unassignedVehicles.map(([type, _]) => type),
+        [OrderEntityFields.unassignedVehicles]: unassignedVehicles.map(([_, details]) => ({
+          deliveryFees: details.deliveryFees,
+        })),
+        [OrderEntityFields.assignedDriverIds]: drivers.map((d) => d.uid),
+        ...drivers.reduce(
+          (acc, driver) => {
+            acc[`task-${driver.uid}` satisfies keyof OrderEntity] = {
+              [OrderEntityFields.driverId]: driver.uid,
+              [OrderEntityFields.driverName]: driver.displayName || '',
+              [OrderEntityFields.driverEmail]: driver.email || '',
+              [OrderEntityFields.driverPhone]: driver.phoneNumber || '',
+              [OrderEntityFields.deliveryFee]: driver.deliveryFees,
+              [OrderEntityFields.driverStatus]: DriverOrderStatus.WAITING,
+              [OrderEntityFields.createdAt]: FieldValue.serverTimestamp(),
+              [OrderEntityFields.updatedAt]: FieldValue.serverTimestamp(),
+              [OrderEntityFields.deliveryScreenshotPath]: null,
+            };
+            return acc;
+          },
+          {} as Record<`task-${string}`, WithFieldValue<OrderEntity[`task-${string}`]>>,
+        ),
+        [OrderEntityFields.createdAt]: FieldValue.serverTimestamp(),
+        [OrderEntityFields.updatedAt]: FieldValue.serverTimestamp(),
+        [OrderEntityFields.paymentRef]: paymentDocRef.path,
       };
       await orderCollection.add(order);
 
       // Update driver's active tasks.
-      if (driverId) {
-        await driverCollection.doc(driverId).set(
+      for (const driver of drivers) {
+        await driverCollection.doc(driver.uid).set(
           {
             activeTasks: FieldValue.increment(1),
           },
@@ -169,7 +215,6 @@ router.post('/webhook', async (c) => {
           totalActiveOrders: FieldValue.increment(1),
           totalEarnings: FieldValue.increment(amount / 100),
           updatedAt: FieldValue.serverTimestamp(),
-          ...(driverId ? {} : { totalUnassignedOrders: FieldValue.increment(1) }),
         },
         { merge: true },
       );

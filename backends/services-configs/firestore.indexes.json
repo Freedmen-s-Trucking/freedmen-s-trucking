@@ -5,11 +5,15 @@
       "queryScope": "COLLECTION",
       "fields": [
         {
-          "fieldPath": "activeTasks",
+          "fieldPath": "driverLicenseVerificationStatus",
           "order": "ASCENDING"
         },
         {
           "fieldPath": "verificationStatus",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "activeTasks",
           "order": "ASCENDING"
         }
       ]
@@ -33,15 +37,11 @@
       "queryScope": "COLLECTION",
       "fields": [
         {
-          "fieldPath": "driverId",
-          "order": "ASCENDING"
+          "fieldPath": "assignedDriverIds",
+          "arrayConfig": "CONTAINS"
         },
         {
           "fieldPath": "status",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "driverStatus",
           "order": "ASCENDING"
         }
       ]

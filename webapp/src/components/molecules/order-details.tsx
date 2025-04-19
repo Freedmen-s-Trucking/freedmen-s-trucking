@@ -3,13 +3,16 @@ import {
   DriverOrderStatus,
   EntityWithPath,
   OrderEntity,
+  OrderEntityFields,
   OrderPriority,
   OrderStatus,
   RequiredVehicleEntity,
 } from "@freedmen-s-trucking/types";
+import { useGeolocated } from "react-geolocated";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   AdvancedMarker,
+  AdvancedMarkerAnchorPoint,
   createStaticMapsUrl,
   InfoWindow,
   Map,
@@ -34,15 +37,15 @@ import { GiTruck } from "react-icons/gi";
 import { HiArrowRight, HiMail, HiPhone, HiUser } from "react-icons/hi";
 import { IoCarOutline } from "react-icons/io5";
 import { PiVanBold } from "react-icons/pi";
-import { TbCarSuv } from "react-icons/tb";
+import { TbCarSuv, TbTruckDelivery } from "react-icons/tb";
 import { useAuth } from "~/hooks/use-auth";
 import { useDbOperations } from "~/hooks/use-firestore";
 import { GOOGLE_MAPS_API_KEY } from "~/utils/envs";
 import { SecondaryButton } from "~/components/atoms";
 import { FaMapMarkerAlt } from "react-icons/fa";
-import { formatDate, formatPrice } from "~/utils/functions";
+import { customDateFormat, formatPrice } from "~/utils/functions";
 
-const statusMap: Record<
+const driverStatusMap: Record<
   DriverOrderStatus,
   {
     action: string;
@@ -99,13 +102,13 @@ const statusMap: Record<
 
 const StatusBadge: React.FC<{
   status: OrderStatus;
-  driverStatus: DriverOrderStatus;
-  viewType: AccountType;
+  // driverStatus: DriverOrderStatus | null;
+  // viewType: AccountType;
   className?: string;
-}> = ({ status, driverStatus, viewType, className }) => {
-  if (viewType === "driver") {
-    return statusMap[driverStatus].badge;
-  }
+}> = ({ status, className }) => {
+  // if (viewType === "driver") {
+  // return driverStatusMap[driverStatus || DriverOrderStatus.WAITING].badge;
+  // }
 
   let badge = (
     <Badge color="warning" className={className}>
@@ -119,16 +122,10 @@ const StatusBadge: React.FC<{
           Payment Received
         </Badge>
       );
-    case OrderStatus.PENDING_PAYMENT:
-      return (
-        <Badge color="warning" className={className}>
-          Pending Payment
-        </Badge>
-      );
-    case OrderStatus.ASSIGNED_TO_DRIVER:
+    case OrderStatus.TASKS_ASSIGNED:
       badge = (
         <Badge color="info" className={className}>
-          Assigned To Driver
+          Tasks Assigned
         </Badge>
       );
       break;
@@ -140,27 +137,27 @@ const StatusBadge: React.FC<{
       );
       break;
   }
-  switch (driverStatus) {
-    case DriverOrderStatus.ACCEPTED:
-    case DriverOrderStatus.ON_THE_WAY_TO_PICKUP:
-      return (
-        <Badge color="green" className={className}>
-          Package Accepted By Driver
-        </Badge>
-      );
-    case DriverOrderStatus.ON_THE_WAY_TO_DELIVER:
-      return (
-        <Badge color="purple" className={className}>
-          Package Picked Up & In Route To Delivery
-        </Badge>
-      );
-    case DriverOrderStatus.DELIVERED:
-      return (
-        <Badge color="success" className={className}>
-          Delivered
-        </Badge>
-      );
-  }
+  // switch (driverStatus) {
+  //   case DriverOrderStatus.ACCEPTED:
+  //   case DriverOrderStatus.ON_THE_WAY_TO_PICKUP:
+  //     return (
+  //       <Badge color="green" className={className}>
+  //         Package Accepted By Driver
+  //       </Badge>
+  //     );
+  //   case DriverOrderStatus.ON_THE_WAY_TO_DELIVER:
+  //     return (
+  //       <Badge color="purple" className={className}>
+  //         Package Picked Up & In Route To Delivery
+  //       </Badge>
+  //     );
+  //   case DriverOrderStatus.DELIVERED:
+  //     return (
+  //       <Badge color="success" className={className}>
+  //         Delivered
+  //       </Badge>
+  //     );
+  // }
 
   return badge;
 };
@@ -189,38 +186,126 @@ const DisplayRequiredVehicles: React.FC<{
 
 const GetNextActionButton: React.FC<{
   orderPath: string;
-  order: OrderEntity;
-}> = ({ orderPath, order }) => {
+  driverStatus: DriverOrderStatus;
+}> = ({ orderPath, driverStatus }) => {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const { updateOrderStatus } = useDbOperations();
-  const action = statusMap[order.driverStatus];
+  const action = driverStatusMap[driverStatus];
   const [showStatusChangeModal, setShowStatusChangeModal] = useState(false);
+  const [error, setError] = useState<string>();
+  const nextActionRequiresGeolocation = [
+    DriverOrderStatus.DELIVERED,
+    DriverOrderStatus.ON_THE_WAY_TO_PICKUP,
+    DriverOrderStatus.ON_THE_WAY_TO_DELIVER,
+  ].includes(action.nextStatus || DriverOrderStatus.WAITING);
   // Access the client
   const queryClient = useQueryClient();
-
-  const { mutate: moveToNextStatus } = useMutation({
-    mutationFn: async () => {
-      if (!action.nextStatus) return;
-      return updateOrderStatus(user.info.uid, orderPath, action.nextStatus);
-    },
-    onMutate: () => {
-      console.log("Moving to next status for order", orderPath);
-      setIsLoading(true);
-    },
-    onSuccess: () => {
-      setIsLoading(false);
-      setShowStatusChangeModal(false);
-      queryClient.invalidateQueries({ queryKey: ["activeOrders"] });
-      queryClient.invalidateQueries({ queryKey: ["historyOrders"] });
-      queryClient.invalidateQueries({ queryKey: ["driverInfo"] });
-    },
-    onError: (error) => {
-      console.error("Failed to update order status:", error);
-      setIsLoading(false);
-      setShowStatusChangeModal(false);
-    },
-  });
+  const ConfirmModal = () => {
+    const { coords, isGeolocationAvailable, isGeolocationEnabled } =
+      useGeolocated({
+        positionOptions: {
+          enableHighAccuracy: true,
+          maximumAge: 30000,
+          timeout: 5000,
+        },
+        isOptimisticGeolocationEnabled: false,
+        userDecisionTimeout: 5000,
+        watchLocationPermissionChange: true,
+        watchPosition: true,
+        onError(positionError) {
+          if (positionError) {
+            console.error("Geolocation error:", positionError);
+            setError(`Geolocation error: ${positionError.message}`);
+          }
+        },
+      });
+    const { mutate: moveToNextStatus } = useMutation({
+      mutationFn: async () => {
+        if (!action.nextStatus) return true;
+        let error: string | null = null;
+        if (!isGeolocationAvailable) {
+          error = "Your browser does not support Geolocation";
+        } else if (!isGeolocationEnabled) {
+          error =
+            "Geolocation is not enabled, please enable it in your browser settings.";
+        }
+        if (error) {
+          setError(error);
+          return false;
+        }
+        if (!coords) {
+          setError("Unable To get the location, please try again.");
+          return false;
+        }
+        await updateOrderStatus(user.info.uid, orderPath, action.nextStatus, {
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+        });
+        return true;
+      },
+      onMutate: () => {
+        console.log("Moving to next status for order", orderPath);
+        setIsLoading(true);
+      },
+      onSuccess: (data) => {
+        setIsLoading(false);
+        if (!data) return;
+        setShowStatusChangeModal(false);
+        queryClient.invalidateQueries({ queryKey: ["activeOrders"] });
+        queryClient.invalidateQueries({ queryKey: ["historyOrders"] });
+        queryClient.invalidateQueries({ queryKey: ["driverInfo"] });
+      },
+      onError: (error) => {
+        console.error("Failed to update order status:", error);
+        setIsLoading(false);
+        setShowStatusChangeModal(false);
+      },
+    });
+    return (
+      <Modal
+        size="sm"
+        className=" bg-black bg-opacity-70 [&>div>div]:bg-primary-50 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-end md:[&>div]:h-auto"
+        show={showStatusChangeModal}
+        onClose={() => setShowStatusChangeModal(false)}
+      >
+        <Modal.Header className="[&>button]:rounded-full [&>button]:bg-accent-400 [&>button]:p-[1px] [&>button]:text-primary-100 [&>button]:transition-all  [&>button]:duration-300  hover:[&>button]:scale-110 hover:[&>button]:text-primary-950 ">
+          <span className="text-lg font-medium">Confirm Action</span>
+        </Modal.Header>
+        <Modal.Body className="text-secondary-950">
+          <p className="mb-4">{action.nextStatusConfirmation}</p>
+          {nextActionRequiresGeolocation && !coords && (
+            <p className="text-sm text-orange-500">
+              {isGeolocationAvailable && !isGeolocationEnabled
+                ? "Enable Geolocation Access To continue"
+                : isGeolocationAvailable
+                  ? "Wait for location to be retrieved."
+                  : "Geolocation is not available in this browser."}
+            </p>
+          )}
+          <form
+            onSubmit={(ev) => {
+              ev.preventDefault();
+              moveToNextStatus();
+            }}
+            className="flex flex-col gap-8"
+          >
+            {error && (
+              <p className="pt-2 italic text-red-500 underline">{error}</p>
+            )}
+            <SecondaryButton
+              type="submit"
+              isLoading={isLoading}
+              disabled={nextActionRequiresGeolocation && !coords}
+              className="self-end border-teal-500 bg-teal-200 py-2 text-secondary-950"
+            >
+              Confirm
+            </SecondaryButton>
+          </form>
+        </Modal.Body>
+      </Modal>
+    );
+  };
 
   if (!action) return null;
 
@@ -238,34 +323,7 @@ const GetNextActionButton: React.FC<{
           {action.action}
         </Button>
       </Tooltip>
-      <Modal
-        size="sm"
-        className=" bg-black bg-opacity-70 [&>div>div]:bg-primary-50 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-end md:[&>div]:h-auto"
-        show={showStatusChangeModal}
-        onClose={() => setShowStatusChangeModal(false)}
-      >
-        <Modal.Header className="[&>button]:rounded-full [&>button]:bg-accent-400 [&>button]:p-[1px] [&>button]:text-primary-100 [&>button]:transition-all  [&>button]:duration-300  hover:[&>button]:scale-110 hover:[&>button]:text-primary-950 ">
-          <span className="text-lg font-medium">Confirm Action</span>
-        </Modal.Header>
-        <Modal.Body className="text-secondary-950">
-          <p className="mb-4">{action.nextStatusConfirmation}</p>
-          <form
-            onSubmit={(ev) => {
-              ev.preventDefault();
-              moveToNextStatus();
-            }}
-            className="flex flex-col gap-8"
-          >
-            <SecondaryButton
-              type="submit"
-              isLoading={isLoading}
-              className="self-end border-teal-500 bg-teal-200 py-2 text-secondary-950"
-            >
-              Confirm
-            </SecondaryButton>
-          </form>
-        </Modal.Body>
-      </Modal>
+      {showStatusChangeModal && <ConfirmModal />}
     </>
   );
 };
@@ -346,233 +404,293 @@ const OrderDetailsView: React.FC<{
     ],
   });
 
+  const { user } = useAuth();
+  const driverTask = order.data[`task-${user.info.uid}`] || null;
+
+  if (!driverTask && viewType === "driver") {
+    console.log(order);
+    return <p>The driver is not defined</p>;
+  }
+
+  const isAuthorizedToViewTasks =
+    user.info.isAdmin ||
+    user.info.uid === order.data[OrderEntityFields.ownerId];
+
   return (
     <Card className="[&>div]:p-2 [&>div]:sm:p-4 [&>div]:lg:p-8">
-      {order && (
-        <div>
-          <div className="mb-6 w-full columns-2 items-center justify-between overflow-hidden text-xs sm:text-sm md:text-xl">
-            <div className="columns-1">
-              <h3 className="font-bold">
-                ORD:{order.path.split("/").pop()?.slice(0, 8)}-****-****
-              </h3>
-              <div className="mt-1 inline-block space-x-0 space-y-2">
-                <StatusBadge
-                  status={order.data.status}
-                  driverStatus={order.data.driverStatus}
-                  viewType={viewType}
-                  className="text-end"
-                />
-              </div>
-            </div>
-            <div className="columns-1 text-right sm:columns-auto">
-              <div className="text-sm font-bold sm:text-base md:text-xl">
-                {formatPrice(order.data.priceInUSD)}
-              </div>
-              <div className="text-xs text-gray-500 sm:text-base">
-                {order.data.createdAt &&
-                  formatDate(new Date(order.data.createdAt), "")}
-              </div>
+      <div>
+        <div className="mb-6 w-full columns-2 items-center justify-between overflow-hidden text-xs sm:text-sm md:text-xl">
+          <div className="columns-1">
+            <h3 className="font-bold">
+              ORD:{order.path.split("/").pop()?.slice(0, 8)}-****-****
+            </h3>
+            <div className="mt-1 inline-block space-x-0 space-y-2">
+              <StatusBadge status={order.data.status} className="text-end" />
             </div>
           </div>
-          <div className="mb-4 flex w-full items-center justify-between text-xs sm:text-sm md:text-lg">
-            <div className="flex flex-col  justify-between">
-              <h5 className="mb-2 font-medium">Required Vehicles</h5>
-              <div className="flex flex-wrap gap-2">
-                {order.data.requiredVehicles?.map((req, index) => (
-                  <Badge key={index} color="dark">
-                    {req.type} x{req.quantity}
-                  </Badge>
-                ))}
-              </div>
+          <div className="columns-1 text-right sm:columns-auto">
+            <div className="text-sm font-bold sm:text-base md:text-xl">
+              {formatPrice(order.data.priceInUSD)}
             </div>
-            <div className="flex flex-col items-end gap-3">
-              <div className="flex items-center gap-1">
-                <HiArrowRight className="text-gray-500" />
-                <span className="text-sm font-medium">
-                  {order.data.distanceInMiles?.toFixed(1)} miles
-                </span>
-              </div>
-              <PriorityBadge priority={order.data.priority} />
+            <div className="text-xs text-gray-500 sm:text-base">
+              {order.data.createdAt &&
+                customDateFormat(order.data.createdAt, "")}
             </div>
           </div>
-
-          <div>
-            <h5 className="mb-2 font-medium">Products</h5>
-            <div className="mb-4 overflow-x-auto">
-              <Table>
-                <Table.Head>
-                  <Table.HeadCell>Product</Table.HeadCell>
-                  <Table.HeadCell>Dimensions</Table.HeadCell>
-                  <Table.HeadCell>Weight</Table.HeadCell>
-                  <Table.HeadCell>Quantity</Table.HeadCell>
-                </Table.Head>
-                <Table.Body>
-                  {order.data.products?.map((product, index) => (
-                    <Table.Row key={index}>
-                      <Table.Cell className="text-xs font-medium sm:text-sm md:text-base">
-                        {product.name}
-                      </Table.Cell>
-                      <Table.Cell className="text-xs sm:text-sm md:text-base">
-                        {product.dimensions.lengthInInches}" x{" "}
-                        {product.dimensions.widthInInches}" x{" "}
-                        {product.dimensions.heightInInches}"
-                      </Table.Cell>
-                      <Table.Cell className="text-xs sm:text-sm md:text-base">
-                        {product.weightInLbs} lbs
-                      </Table.Cell>
-                      <Table.Cell>{product.quantity}</Table.Cell>
-                    </Table.Row>
-                  ))}
-                </Table.Body>
-              </Table>
-            </div>
-          </div>
-
-          <div className="mb-6 grid grid-cols-1 gap-6 text-xs sm:grid-cols-2 md:text-base">
-            {(viewType !== "customer" && (
-              <Card className="shadow-none [&>div]:p-2">
-                <h4 className="text-sm font-semibold md:mb-3 md:text-lg">
-                  Customer Information
-                </h4>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <HiUser className="text-gray-500" />
-                    <span>{order.data.clientName}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <HiMail className="text-gray-500" />
-                    <span>{order.data.clientEmail}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <HiPhone className="text-gray-500" />
-                    <span>{order.data.clientPhone}</span>
-                  </div>
-                </div>
-              </Card>
-            )) ||
-              null}
-            {(order.data.driverId && viewType !== "driver" && (
-              <Card className="shadow-none [&>div]:p-2">
-                <h4 className="text-sm font-semibold md:text-base">
-                  Assigned Driver
-                </h4>
-                <div className="flex items-center gap-3 overflow-hidden">
-                  <Avatar size="md" rounded />
-                  <div className="flex flex-col">
-                    <div className="text-xs font-medium md:text-sm">
-                      {order.data.driverName || "Unknown Driver"}
-                    </div>
-                    <span className="text-ellipsis text-nowrap break-all text-xs text-gray-500">
-                      ID: {order.data.driverId}
-                    </span>
-                  </div>
-                </div>
-                {(order.data.driverEmail || order.data.driverPhone) && (
-                  <div className="space-y-2 text-xs md:text-sm">
-                    {order.data.driverEmail && (
-                      <div className="flex items-center gap-2">
-                        <HiMail className="text-gray-500" />
-                        <span>{order.data.driverEmail}</span>
-                      </div>
-                    )}
-                    {order.data.driverPhone && (
-                      <div className="flex items-center gap-2">
-                        <HiPhone className="text-gray-500" />
-                        <span>{order.data.driverPhone}</span>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </Card>
-            )) ||
-              null}
-          </div>
-          <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-            <div>
-              <span className="mb-0 text-sm font-semibold">
-                Pickup Location
-              </span>
-              <div className="mb-3 flex items-center gap-2">
-                <FaMapMarkerAlt className="mt-1 flex-shrink-0 text-xl text-green-500" />
-                <span className="text-xs">
-                  {order.data.pickupLocation?.address}
-                </span>
-              </div>
-            </div>
-            <div>
-              <span className="mb-0 text-sm font-semibold">
-                Dropoff Location
-              </span>
-              <div className="mb-3 flex items-center gap-2">
-                <FaMapMarkerAlt className="mt-1 flex-shrink-0 text-xl text-red-700" />
-                <span className="text-xs">
-                  {order.data.deliveryLocation?.address}
-                </span>
-              </div>
-            </div>
-          </div>
-          <Accordion collapseAll className="w-full border-none">
-            <Accordion.Panel className="border-none">
-              <Accordion.Title className="border-b-[1px] bg-transparent p-0 text-secondary-950 hover:bg-transparent focus:right-0 focus:bg-transparent focus:ring-transparent [&>h2]:w-full">
-                <span className="text-base font-semibold">View On Map</span>
-              </Accordion.Title>
-              <Accordion.Content className="border-none px-0">
-                {center ? null : (
-                  <div className="flex h-64 items-center justify-center">
-                    <p className="text-gray-500">No location data available</p>
-                  </div>
-                )}
-                {(center && viewType === "driver" && (
-                  <Map
-                    mapId={"DEMO_MAP_ID"}
-                    style={{ width: "100%", height: "50vh" }}
-                    defaultCenter={center}
-                    defaultZoom={10}
-                    minZoom={7}
-                    gestureHandling={"greedy"}
-                    disableDefaultUI={true}
-                  >
-                    <AdvancedMarker
-                      position={pickupPosition}
-                      ref={pickupMarkerRef}
-                    >
-                      <Pin
-                        background={"#0f9d58"}
-                        borderColor={"#006425"}
-                        glyphColor={"#60d98f"}
-                      />
-                    </AdvancedMarker>
-                    <InfoWindow
-                      anchor={pickupMarker}
-                      className="m-0 p-0"
-                      headerContent={<span>Pickup Location</span>}
-                    />
-                    <AdvancedMarker
-                      position={deliveryPosition}
-                      ref={deliveryMarkerRef}
-                    />
-                    <InfoWindow
-                      anchor={deliveryMarker}
-                      className="m-0 p-0"
-                      headerContent={<span>Delivery Location</span>}
-                    />
-                  </Map>
-                )) ||
-                  null}
-                {(center && viewType !== "driver" && (
-                  <StaticMap url={staticMapsUrl} />
-                )) ||
-                  null}
-              </Accordion.Content>
-            </Accordion.Panel>
-          </Accordion>
-          {viewType === "driver" && (
-            <div className="mt-3 flex justify-end">
-              <GetNextActionButton orderPath={order.path} order={order.data} />
-            </div>
-          )}
         </div>
-      )}
+        <div className="mb-4 flex w-full items-center justify-between text-xs sm:text-sm md:text-lg">
+          <div className="flex flex-col  justify-between">
+            <h5 className="mb-2 font-medium">Required Vehicles</h5>
+            <div className="flex flex-wrap gap-2">
+              {order.data.requiredVehicles?.map((req, index) => (
+                <Badge key={index} color="dark">
+                  {req.type} x{req.quantity}
+                </Badge>
+              ))}
+            </div>
+          </div>
+          <div className="flex flex-col items-end gap-3">
+            <div className="flex items-center gap-1">
+              <HiArrowRight className="text-gray-500" />
+              <span className="text-sm font-medium">
+                {order.data.distanceInMiles?.toFixed(1)} miles
+              </span>
+            </div>
+            <PriorityBadge priority={order.data.priority} />
+          </div>
+        </div>
+
+        <div>
+          <h5 className="mb-2 font-medium">Products</h5>
+          <div className="mb-4 overflow-x-auto">
+            <Table>
+              <Table.Head>
+                <Table.HeadCell>Product</Table.HeadCell>
+                <Table.HeadCell>Dimensions</Table.HeadCell>
+                <Table.HeadCell>Weight</Table.HeadCell>
+                <Table.HeadCell>Quantity</Table.HeadCell>
+              </Table.Head>
+              <Table.Body>
+                {order.data.products?.map((product, index) => (
+                  <Table.Row key={index}>
+                    <Table.Cell className="text-xs font-medium sm:text-sm md:text-base">
+                      {product.name}
+                    </Table.Cell>
+                    <Table.Cell className="text-xs sm:text-sm md:text-base">
+                      {product.dimensions.lengthInInches}" x{" "}
+                      {product.dimensions.widthInInches}" x{" "}
+                      {product.dimensions.heightInInches}"
+                    </Table.Cell>
+                    <Table.Cell className="text-xs sm:text-sm md:text-base">
+                      {product.weightInLbs} lbs
+                    </Table.Cell>
+                    <Table.Cell>{product.quantity}</Table.Cell>
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table>
+          </div>
+        </div>
+
+        <div className="mb-6 grid grid-cols-1 gap-6 text-xs sm:grid-cols-2 md:text-base">
+          {(viewType !== "customer" && (
+            <Card className="shadow-none [&>div]:p-2">
+              <h4 className="text-sm font-semibold md:mb-3 md:text-lg">
+                Customer Information
+              </h4>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <HiUser className="text-gray-500" />
+                  <span>{order.data.clientName}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <HiMail className="text-gray-500" />
+                  <span>{order.data.clientEmail}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <HiPhone className="text-gray-500" />
+                  <span>{order.data.clientPhone}</span>
+                </div>
+              </div>
+            </Card>
+          )) ||
+            null}
+          {(isAuthorizedToViewTasks && (
+            <Card className="shadow-none [&>div]:justify-start [&>div]:p-2">
+              <h4 className="text-sm font-semibold md:text-base">
+                Assigned Tasks
+              </h4>
+              {(order.data[OrderEntityFields.assignedDriverIds] || []).map(
+                (driverId, index) => (
+                  <div key={driverId}>
+                    {index > 0 && <hr className="my-2" />}
+                    <div className="flex items-center gap-3 overflow-hidden">
+                      <Avatar size="md" rounded />
+                      <div className="flex flex-col">
+                        <div className="text-xs font-medium md:text-sm">
+                          {order.data?.[`task-${driverId}`]?.driverName ||
+                            "Unknown Driver"}
+                        </div>
+                        <span className="text-ellipsis text-nowrap break-all text-xs text-gray-500">
+                          ID: {driverId.slice(0, 5)}-*****
+                        </span>
+                      </div>
+                    </div>
+                    {(order.data?.[`task-${driverId}`]?.driverEmail ||
+                      order.data?.[`task-${driverId}`]?.driverPhone) && (
+                      <div className="space-y-2 p-2 text-xs md:text-sm">
+                        {order.data?.[`task-${driverId}`]?.driverEmail && (
+                          <div className="flex items-center gap-2">
+                            <HiMail className="text-gray-500" />
+                            <span>
+                              {order.data?.[`task-${driverId}`]?.driverEmail}
+                            </span>
+                          </div>
+                        )}
+                        {order.data?.[`task-${driverId}`]?.driverPhone && (
+                          <div className="flex items-center gap-2">
+                            <HiPhone className="text-gray-500" />
+                            <span>
+                              {order.data?.[`task-${driverId}`]?.driverPhone}
+                            </span>
+                          </div>
+                        )}
+                        {order.data?.[`task-${driverId}`]?.driverStatus && (
+                          <div className="flex items-center gap-2">
+                            <span className="inline-flex">
+                              status:{" "}
+                              {
+                                driverStatusMap[
+                                  order.data?.[`task-${driverId}`]?.driverStatus
+                                ].badge
+                              }
+                            </span>
+                          </div>
+                        )}
+                        {user.info.isAdmin &&
+                          order.data?.[`task-${driverId}`]?.deliveryFee && (
+                            <div className="flex items-center gap-2">
+                              <span className="inline-flex">
+                                Delivery Fee:{" "}
+                                {formatPrice(
+                                  order.data?.[`task-${driverId}`]?.deliveryFee,
+                                )}
+                              </span>
+                            </div>
+                          )}
+                      </div>
+                    )}
+                  </div>
+                ),
+              )}
+            </Card>
+          )) ||
+            null}
+        </div>
+        <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+          <div>
+            <span className="mb-0 text-sm font-semibold">Pickup Location</span>
+            <div className="mb-3 flex items-center gap-2">
+              <FaMapMarkerAlt className="mt-1 flex-shrink-0 text-xl text-green-500" />
+              <span className="text-xs">
+                {order.data.pickupLocation?.address}
+              </span>
+            </div>
+          </div>
+          <div>
+            <span className="mb-0 text-sm font-semibold">Dropoff Location</span>
+            <div className="mb-3 flex items-center gap-2">
+              <FaMapMarkerAlt className="mt-1 flex-shrink-0 text-xl text-red-700" />
+              <span className="text-xs">
+                {order.data.deliveryLocation?.address}
+              </span>
+            </div>
+          </div>
+        </div>
+        <Accordion collapseAll className="w-full border-none">
+          <Accordion.Panel className="border-none">
+            <Accordion.Title className="border-b-[1px] bg-transparent p-0 text-secondary-950 hover:bg-transparent focus:right-0 focus:bg-transparent focus:ring-transparent [&>h2]:w-full">
+              <span className="text-base font-semibold">View On Map</span>
+            </Accordion.Title>
+            <Accordion.Content className="border-none px-0">
+              {center ? null : (
+                <div className="flex h-64 items-center justify-center">
+                  <p className="text-gray-500">No location data available</p>
+                </div>
+              )}
+              {(center && (
+                /* viewType === "driver" && */ <Map
+                  mapId={"DEMO_MAP_ID"}
+                  style={{ width: "100%", height: "50vh" }}
+                  defaultCenter={center}
+                  defaultZoom={10}
+                  minZoom={7}
+                  gestureHandling={"greedy"}
+                  disableDefaultUI={true}
+                >
+                  <AdvancedMarker
+                    position={pickupPosition}
+                    ref={pickupMarkerRef}
+                  >
+                    <Pin
+                      background={"#0f9d58"}
+                      borderColor={"#006425"}
+                      glyphColor={"#60d98f"}
+                    />
+                  </AdvancedMarker>
+                  <InfoWindow
+                    anchor={pickupMarker}
+                    className="m-0 p-0"
+                    headerContent={<span>Pickup Location</span>}
+                  />
+                  <AdvancedMarker
+                    position={deliveryPosition}
+                    ref={deliveryMarkerRef}
+                  />
+                  <InfoWindow
+                    anchor={deliveryMarker}
+                    className="m-0 p-0"
+                    headerContent={<span>Delivery Location</span>}
+                  />
+                  {(order.data[OrderEntityFields.assignedDriverIds] || []).map(
+                    (driverId, index) => (
+                      <>
+                        {Object.entries(
+                          order.data?.[`task-${driverId}`]?.driverPositions ||
+                            {},
+                        ).map(([status, position]) => (
+                          <AdvancedMarker
+                            key={`${index}-${status}`}
+                            position={{
+                              lat: position.latitude,
+                              lng: position.longitude,
+                            }}
+                            anchorPoint={AdvancedMarkerAnchorPoint.CENTER}
+                          >
+                            <TbTruckDelivery size={32} color="#472E1E" />
+                          </AdvancedMarker>
+                        ))}
+                      </>
+                    ),
+                  )}
+                </Map>
+              )) ||
+                null}
+              {(center && <>{null}</>) || <StaticMap url={staticMapsUrl} />}
+            </Accordion.Content>
+          </Accordion.Panel>
+        </Accordion>
+        {viewType === "driver" && (
+          <div className="mt-3 flex justify-end">
+            <GetNextActionButton
+              orderPath={order.path}
+              driverStatus={
+                driverTask?.driverStatus || DriverOrderStatus.WAITING
+              }
+            />
+          </div>
+        )}
+      </div>
     </Card>
   );
 };
@@ -611,6 +729,9 @@ export const Order: React.FC<{
 }> & {
   Details: typeof OrderDetails;
 } = ({ order, viewType }) => {
+  const { user } = useAuth();
+  const driverTask = order.data[`task-${user.info.uid}`] || null;
+
   return (
     <>
       <Card
@@ -622,22 +743,19 @@ export const Order: React.FC<{
             <h5 className="text-lg font-bold tracking-tight text-secondary-950">
               {order.data.clientName}
             </h5>
-            <p className="mb-2 font-normal text-secondary-800 dark:text-gray-400">
-              ORD:{order.path.split("/").pop()?.slice(0, 8)}-****-****
+            <div className="mb-2 font-normal text-secondary-800 dark:text-gray-400">
+              <span>
+                ORD:{order.path.split("/").pop()?.slice(0, 8)}-****-****
+              </span>
               <div>
                 <DisplayRequiredVehicles
                   vehicles={order.data.requiredVehicles || []}
                 />
               </div>
-            </p>
+            </div>
           </div>
           <div className="flex flex-col items-end gap-2">
-            <StatusBadge
-              status={order.data.status}
-              viewType={viewType}
-              className="text-end"
-              driverStatus={order.data.driverStatus}
-            />
+            <StatusBadge status={order.data.status} className="text-end" />
             <p className="text-lg font-bold text-secondary-950">
               {formatPrice(order.data.priceInUSD)}
             </p>
@@ -671,7 +789,12 @@ export const Order: React.FC<{
         </div>
         {viewType === "driver" && (
           <div className="mt-3 flex justify-end">
-            <GetNextActionButton orderPath={order.path} order={order.data} />
+            <GetNextActionButton
+              orderPath={order.path}
+              driverStatus={
+                driverTask?.driverStatus || DriverOrderStatus.WAITING
+              }
+            />
           </div>
         )}
       </Card>

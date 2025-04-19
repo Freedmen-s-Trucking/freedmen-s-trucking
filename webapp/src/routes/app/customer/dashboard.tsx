@@ -71,7 +71,7 @@ const CustomerDashboard = () => {
   });
 
   const hasUpdatedOrders = activeOrders.some(
-    (order) => order.data.status === OrderStatus.ASSIGNED_TO_DRIVER,
+    (order) => order.data.status === OrderStatus.TASKS_ASSIGNED,
   );
 
   const { data: customerProfileUrl } = useQuery({

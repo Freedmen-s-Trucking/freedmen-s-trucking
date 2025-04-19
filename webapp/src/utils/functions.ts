@@ -1,5 +1,10 @@
 import { ArkErrors, Type } from "arktype";
-import { DriverEntity, VerificationStatus } from "@freedmen-s-trucking/types";
+import {
+  DateStringOrTimestamp,
+  DriverEntity,
+  VerificationStatus,
+} from "@freedmen-s-trucking/types";
+import { Timestamp } from "firebase/firestore";
 
 export function checkFalsyAndThrow(
   paramsToCheck: Record<string, unknown>,
@@ -36,11 +41,25 @@ export function formatPrice(amount: number) {
 
 /**
  * Formats a date to a string.
- * @param {Date} date - The date to format.
+ * @param {DateStringOrTimestamp} rawDate - The date to format.
  * @param {string} space - The space between the date components.
  * @returns {string} The formatted date string.
  */
-export const formatDate = (date: Date, space: string = " ") => {
+export const customDateFormat = (
+  rawDate: DateStringOrTimestamp | Date | Timestamp,
+  space: string = " ",
+): string => {
+  let date: Date;
+  if (typeof rawDate === "string") {
+    date = new Date(rawDate);
+  } else if (rawDate instanceof Date) {
+    date = rawDate;
+  } else if (rawDate === null) {
+    return "N/A";
+  } else {
+    date = new Timestamp(rawDate.seconds, rawDate.nanoseconds).toDate();
+  }
+
   return date
     .toLocaleTimeString([], {
       weekday: "short",

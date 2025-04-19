@@ -41,6 +41,16 @@ export const locationType = type({
 });
 export type Location = typeof locationType.infer;
 
+export const dateStringOrTimestampType = type("string.date")
+  .or(
+    type({
+      seconds: "number",
+      nanoseconds: "number",
+    })
+  )
+  .or("null");
+export type DateStringOrTimestamp = typeof dateStringOrTimestampType.infer;
+
 export const coordinateType = locationType.omit("address");
 export type Coordinate = typeof coordinateType.infer;
 
@@ -77,3 +87,4 @@ export const accountTypeType = type("'driver' | 'customer' | 'admin'");
 export type AccountType = typeof accountTypeType.infer;
 
 export type EntityWithPath<T> = { path: string; data: T };
+export type EntityWithID<T> = { id: string; data: T };
