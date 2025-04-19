@@ -1,8 +1,8 @@
 import { useContext } from "react";
-import { RemoteConfigCtx } from "../provider/remote-config";
+import { RemoteConfigCtx } from "~/provider/remote-config";
 import { getBoolean, getNumber, getString } from "firebase/remote-config";
-import { RemoteConfigKeys } from "../utils/constants";
-import { DEFAULT_REMOTE_CONFIG_MAP } from "../utils/constants";
+import { RemoteConfigKeys } from "~/utils/constants";
+import { DEFAULT_REMOTE_CONFIG_MAP } from "~/utils/constants";
 
 /**
  * Gets the remote config value of the provided key and ensures the type is correct.

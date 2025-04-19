@@ -19,9 +19,9 @@ import ourServicesHeroImgBlured from "~/assets/images/our-services-hero-blur.web
 import Hero from "~/components/molecules/hero";
 import FAQ from "~/components/molecules/faq";
 import AppFooter from "~/components/organisms/footer";
-import { AppImage } from "~/components/atoms/image";
+import { AppImage } from "~/components/atoms";
 import { SPECIALTIES_DATA } from "~/utils/constants";
-import { AppImageBackground } from "~/components/atoms/image-background";
+import { AppImageBackground } from "~/components/atoms";
 
 const ACCORDION_THEME = {
   theme: {

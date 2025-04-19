@@ -5,12 +5,12 @@ import {
   useStripe,
 } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
-import { STRIPE_CLIENT_SECRET } from "../../utils/envs";
+import { STRIPE_CLIENT_SECRET } from "~/utils/envs";
 import { useState } from "react";
 import { Modal } from "flowbite-react";
 import { SERVER_API } from "~/utils/constants";
 import { useQuery } from "@tanstack/react-query";
-import { PrimaryButton } from "../atoms/base";
+import { PrimaryButton } from "~/components/atoms";
 import {
   apiResScheduleDeliveryIntent,
   NewOrder,

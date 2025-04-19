@@ -1,5 +1,5 @@
 import { Popover } from "flowbite-react";
-import { useGeocoding } from "../../hooks/use-geocoding";
+import { useGeocoding } from "~/hooks/use-geocoding";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { TextInput } from "./base";
 import { useQuery } from "@tanstack/react-query";

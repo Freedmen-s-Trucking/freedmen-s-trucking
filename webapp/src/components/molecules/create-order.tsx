@@ -15,12 +15,9 @@ import { useAppDispatch, useAppSelector } from "~/stores/hooks";
 import { FaTrash } from "react-icons/fa6";
 import { Dropdown } from "flowbite-react";
 import StripePayment from "~/components/molecules/stripe-payment";
-import {
-  AddressSearchInput,
-  OnAddressChangedParams,
-} from "~/components/atoms/address-search-input";
+import { AddressSearchInput, OnAddressChangedParams } from "~/components/atoms";
 import { useComputeDeliveryEstimation } from "~/hooks/use-price-calculator";
-import { PrimaryButton, SecondaryButton, TextInput } from "../atoms/base";
+import { PrimaryButton, SecondaryButton, TextInput } from "~/components/atoms";
 import { useQuery } from "@tanstack/react-query";
 import { useDbOperations } from "~/hooks/use-firestore";
 import { formatPrice } from "~/utils/functions";

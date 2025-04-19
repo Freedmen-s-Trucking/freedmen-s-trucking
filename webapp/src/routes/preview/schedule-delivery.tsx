@@ -7,7 +7,7 @@ import FAQ from "~/components/molecules/faq";
 import AppFooter from "~/components/organisms/footer";
 import scheduleDeliveryHeroImg from "~/assets/images/schedule-delivery-hero.webp";
 import scheduleDeliveryHeroImgBlured from "~/assets/images/schedule-delivery-hero-blur.webp";
-import { AppImageBackground } from "~/components/atoms/image-background";
+import { AppImageBackground } from "~/components/atoms";
 import { useAuth } from "~/hooks/use-auth";
 import { CreateOrderForm } from "~/components/molecules/create-order";
 

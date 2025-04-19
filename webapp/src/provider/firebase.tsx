@@ -1,7 +1,6 @@
 import { FirebaseApp, initializeApp } from "firebase/app";
 import { createContext, useMemo } from "react";
-// import firebaseConfig from "../assets/configs/firebase.json";
-import { FIREBASE_CONFIG_JSON } from "../utils/envs";
+import { FIREBASE_CONFIG_JSON } from "~/utils/envs";
 
 const FirebaseCtx = createContext<FirebaseApp | null>(null);
 

@@ -23,7 +23,7 @@ import {
 } from "@freedmen-s-trucking/types";
 import { useDbOperations } from "~/hooks/use-firestore";
 import { useQuery } from "@tanstack/react-query";
-import { Order } from "../order-details";
+import { Order } from "~/components/molecules/order-details";
 
 const Orders: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");

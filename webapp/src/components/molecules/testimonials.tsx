@@ -1,6 +1,6 @@
 import { Carousel } from "flowbite-react";
-import testimonialLogo from "../../assets/images/testimonial-1.webp";
-import { AppImage } from "../atoms/image";
+import testimonialLogo from "~/assets/images/testimonial-1.webp";
+import { AppImage } from "~/components/atoms";
 
 const Testimonials: React.FC = () => {
   const TESTIMONIALS_DATA = [

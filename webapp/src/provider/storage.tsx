@@ -1,5 +1,5 @@
 import { createContext, useEffect, useMemo } from "react";
-import { isDevMode } from "../utils/envs";
+import { isDevMode } from "~/utils/envs";
 import {
   FirebaseStorage,
   getStorage,

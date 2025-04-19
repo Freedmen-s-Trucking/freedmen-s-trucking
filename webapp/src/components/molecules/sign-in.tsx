@@ -1,11 +1,11 @@
 import { ChangeEvent, useCallback, useRef, useState } from "react";
-import { useAuth } from "../../hooks/use-auth";
+import { useAuth } from "~/hooks/use-auth";
 import { FirebaseError } from "firebase/app";
 import { UserCredential } from "firebase/auth";
-import { Label, Popover, Spinner, TextInput } from "flowbite-react";
+import { Label, Spinner, TextInput } from "flowbite-react";
 import { GoogleSignIn } from "./google-sign-in";
 import { IoCheckmark, IoClose } from "react-icons/io5";
-import { PrimaryButton } from "../atoms/base";
+import { PrimaryButton, CustomPopover } from "~/components/atoms";
 const PASSWORD_SECURITY_LEVELS = [
   {
     label: "weak",
@@ -204,10 +204,9 @@ const SignIn: React.FC<{
           <div className="mb-2 block">
             <Label htmlFor="password1" value="Your password" />
           </div>
-          <Popover
-            trigger="hover"
-            onOpenChange={onOpenChanged}
-            open={isPasswordPopoverOpen}
+          <CustomPopover
+            trigger={["hover", "focus"]}
+            autoFocus={false}
             content={
               <div className="space-y-2 p-3">
                 {password.length < 8 && (
@@ -264,7 +263,7 @@ const SignIn: React.FC<{
               type="password"
               required
             />
-          </Popover>
+          </CustomPopover>
         </div>
         <PrimaryButton
           className="self-center justify-self-end px-8 py-3 text-xl"

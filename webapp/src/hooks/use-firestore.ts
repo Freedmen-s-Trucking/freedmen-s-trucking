@@ -1,5 +1,5 @@
 import { useCallback, useContext } from "react";
-import { FireStoreCtx } from "../provider/firestore";
+import { FireStoreCtx } from "~/provider/firestore";
 import {
   collection,
   doc,
@@ -36,7 +36,7 @@ import {
   userEntity,
   driverEntity,
 } from "@freedmen-s-trucking/types";
-import { checkFalsyAndThrow } from "../utils/functions";
+import { checkFalsyAndThrow } from "~/utils/functions";
 
 const useFirestore = () => {
   const context = useContext(FireStoreCtx);

@@ -4,7 +4,7 @@ import {
   connectFirestoreEmulator,
 } from "firebase/firestore";
 import { createContext, useEffect, useMemo } from "react";
-import { isDevMode } from "../utils/envs";
+import { isDevMode } from "~/utils/envs";
 
 const FireStoreCtx = createContext<Firestore | null>(null);
 

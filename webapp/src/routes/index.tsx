@@ -9,7 +9,7 @@ import {
   PrimaryButton,
   SecondaryButton,
   Container,
-} from "~/components/atoms/base";
+} from "~/components/atoms";
 import { useAppDispatch } from "~/stores/hooks";
 import { setRequestedAuthAction } from "~/stores/controllers/app-ctrl";
 import { CreateOrder } from "~/components/molecules/create-order";
