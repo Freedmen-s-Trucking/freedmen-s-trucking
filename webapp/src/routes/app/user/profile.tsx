@@ -47,9 +47,7 @@ function ProfileScreen() {
     {
       icon: <LogOut className="w-6 h-6 stroke-red-500" />,
       label: "Sign out",
-      link: "/auth/logout",
-      textColor: "text-red-500"
-    }
+      link: "/auth/logout", textColor: "text-red-500" }
   ];
 
   return (

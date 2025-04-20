@@ -1,106 +1,100 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { IoHomeOutline, IoCalendarOutline, IoPersonOutline } from "react-icons/io5";
-
-interface DeliveryRequest {
-  id: string;
-  type: string;
-  price: number;
-  distance: string;
-  estimatedTime: string;
-}
+import { MobileTopBar } from "../../../components/mobile/mobile-top-bar";
+import { MobileBottomBar } from "../../../components/mobile/mobile-bottom-bar";
+import { AlertTriangle, Users2, Eye, EyeOff } from "lucide-react";
+import { useState } from "react";
 
 function HomeScreen() {
-  const deliveryRequests: DeliveryRequest[] = [
-    {
-      id: "1",
-      type: "Electronics/Gadgets",
-      price: 20.45,
-      distance: "2.5 km",
-      estimatedTime: "15-20 min"
-    },
-    {
-      id: "2",
-      type: "Food Items/Groceries",
-      price: 15.00,
-      distance: "1.8 km",
-      estimatedTime: "10-15 min"
-    }
-  ];
+  const [isBalanceVisible, setIsBalanceVisible] = useState(true);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="p-4">
-        {/* Welcome Section */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <div className="text-sm text-gray-500">Welcome Back</div>
-            <div className="text-lg font-medium">Allan Smith</div>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
-            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-              <span className="text-sm">DE</span>
+    <div className="min-h-screen bg-mobile-background font-mobile flex flex-col">
+      <MobileTopBar />
+
+      <div className="px-6 flex-1">
+        {/* Todo Section */}
+        <h2 className="text-[16px] font-medium text-mobile-text mb-4">Todo</h2>
+        
+        {/* Identity Verification Card */}
+        <div className="bg-mobile-background border border-mobile-text rounded-xl p-4 mb-3">
+          <div className="flex justify-between">
+            <div>
+              <h3 className="text-[16px] font-medium text-mobile-text mb-1">Identity Verification</h3>
+              <p className="text-[14px] text-gray-600">
+                Add your driving license, or any other means of driving identification used in your country
+              </p>
             </div>
+            <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
+          </div>
+        </div>
+
+        {/* Add Vehicle Card */}
+        <div className="bg-mobile-background border border-mobile-text rounded-xl p-4 mb-6">
+          <div className="flex justify-between">
+            <div>
+              <h3 className="text-[16px] font-medium text-mobile-text mb-1">Add Vehicle</h3>
+              <p className="text-[14px] text-gray-600">
+                Upload insurance and registration documents of the vehicle you intend to use.
+              </p>
+            </div>
+            <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
           </div>
         </div>
 
         {/* Available Balance */}
-        <div className="bg-teal-50 rounded-xl p-4 mb-6">
-          <div className="text-sm text-gray-600 mb-1">Available Balance</div>
-          <div className="text-2xl font-semibold text-teal-700">$0</div>
+        <div className="bg-mobile-text text-white border border-mobile-text rounded-xl p-4 mb-6">
+          <h3 className="text-[14px] text-white mb-1">Available balance</h3>
+          <div className="flex items-center gap-2">
+            {isBalanceVisible ? (
+              <span className="text-[32px] font-semibold text-white">$0</span>
+            ) : (
+              <span className="text-[32px] font-semibold text-white">••••</span>
+            )}
+            <button 
+              onClick={() => setIsBalanceVisible(!isBalanceVisible)}
+              className="text-white flex-shrink-0"
+            >
+              {isBalanceVisible ? (
+                <Eye className="w-5 h-5" />
+              ) : (
+                <EyeOff className="w-5 h-5" />
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Direction Specification */}
+        <div className="mb-6">
+          <h3 className="text-[16px] text-mobile-text mb-3">Would you like to specify direction for deliveries?</h3>
+          <div className="bg-mobile-background border border-mobile-text rounded-xl p-4 flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-mobile-text"></div>
+            <input 
+              type="text" 
+              placeholder="Where to?"
+              className="bg-transparent text-[14px] text-mobile-text outline-none border-none flex-1"
+            />
+          </div>
         </div>
 
         {/* Available Requests */}
-        <div>
+        <div className="mb-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="font-medium">Available Requests</h2>
-            <button className="text-sm text-teal-600">View all</button>
+            <h2 className="text-[16px] font-medium text-mobile-text">Available Requests</h2>
+            <button className="text-[14px] text-mobile-text">View all</button>
           </div>
-          
-          <div className="space-y-4">
-            {deliveryRequests.map((request) => (
-              <div key={request.id} className="bg-white rounded-xl p-4">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 bg-gray-100 rounded-lg"></div>
-                  <div>
-                    <div className="text-sm font-medium">{request.type}</div>
-                    <div className="text-xs text-gray-500">{request.distance} • {request.estimatedTime}</div>
-                  </div>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="text-lg font-medium">${request.price.toFixed(2)}</div>
-                  <div className="flex gap-2">
-                    <button className="px-4 py-2 text-sm text-gray-600 bg-gray-100 rounded-lg">
-                      Reject
-                    </button>
-                    <button className="px-4 py-2 text-sm text-white bg-teal-600 rounded-lg">
-                      Accept
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
+
+          <div className="flex flex-col items-center justify-center py-8">
+            <div className="w-12 h-12 bg-mobile-background border border-mobile-text rounded-full flex items-center justify-center mb-4">
+              <Users2 className="w-6 h-6 text-mobile-text" />
+            </div>
+            <p className="text-[14px] text-mobile-text text-center">
+              Complete Onboarding to start taking requests
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t py-2">
-        <div className="flex justify-around">
-          <button className="flex flex-col items-center text-teal-600">
-            <IoHomeOutline className="w-6 h-6" />
-            <span className="text-xs mt-1">Home</span>
-          </button>
-          <button className="flex flex-col items-center text-gray-400">
-            <IoCalendarOutline className="w-6 h-6" />
-            <span className="text-xs mt-1">History</span>
-          </button>
-          <button className="flex flex-col items-center text-gray-400">
-            <IoPersonOutline className="w-6 h-6" />
-            <span className="text-xs mt-1">Profile</span>
-          </button>
-        </div>
-      </div>
+      <MobileBottomBar isAgent={true} />
     </div>
   );
 }
