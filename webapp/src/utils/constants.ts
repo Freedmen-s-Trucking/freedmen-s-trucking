@@ -104,7 +104,7 @@ export const DEFAULT_REMOTE_CONFIG_MAP: {
 } = {
   [RemoteConfigKeys.can_show_preview_landing_page]: false,
   [RemoteConfigKeys.test_number_key]: 1,
-  [RemoteConfigKeys.order_form_type]: "manual", // manual, ai-assisted, multiple
+  [RemoteConfigKeys.order_form_type]: "ai-assisted", // manual, ai-assisted, multiple
 };
 
 export const tabTheme = {

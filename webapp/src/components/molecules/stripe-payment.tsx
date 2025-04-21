@@ -48,7 +48,7 @@ const StripePayment: React.FC<{
         show={showModal}
         onClose={onCloseModal}
         size={"md"}
-        className=" bg-black bg-opacity-30 [&>div>div]:bg-primary-100 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-end md:[&>div]:h-auto"
+        className=" bg-black bg-opacity-30 [&>div>div]:bg-primary-100 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-center md:[&>div]:h-auto"
       >
         <Modal.Header>
           <span className="text-lg font-medium">Process Payment</span>

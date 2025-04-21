@@ -88,7 +88,7 @@ export const CreateOrder: React.FC<{
         show={showModal}
         onClose={onCloseModal}
         size={"lg"}
-        className="mb-4 bg-black bg-opacity-30 [&>div>div]:mb-8 [&>div>div]:bg-primary-50 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-end md:[&>div]:h-auto"
+        className="mb-4 bg-black bg-opacity-30 [&>div>div]:mb-8 [&>div>div]:bg-primary-50 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-center md:[&>div]:h-auto"
       >
         <Modal.Header>
           <span className="text-lg font-medium">Schedule Delivery</span>
@@ -733,7 +733,7 @@ const AIAssistedForm: React.FC<{
 
   return (
     <div
-      className={`flex flex-col items-center gap-4 rounded-3xl border ${brightness === "dark" ? "border-white bg-white/20" : ""} ${className}`}
+      className={`flex flex-col items-center gap-4 rounded-3xl border pb-8 ${brightness === "dark" ? "border-white bg-white/20" : ""} ${className}`}
     >
       <form
         onSubmit={autoDetectRequestAndEstimateFees}
@@ -751,16 +751,7 @@ const AIAssistedForm: React.FC<{
         {/* <PrimaryButton
           type="submit"
           className="py-2"
-          loadingIcon={
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              className="flex w-full flex-row items-center justify-evenly gap-2"
-              transition={{ type: "spring", stiffness: 100 }}
-            >
-              <span className="inline-block h-7 w-7 animate-spin rounded-full border-4 border-primary-100/10 border-t-primary-50" />
-            </motion.div>
-          }
+          loadingIcon=
         >
           Estimate Delivery
         </PrimaryButton> */}
@@ -827,6 +818,16 @@ const AIAssistedForm: React.FC<{
           </motion.div>
         )}
       </form>
+      {(isPending || isFetching) && !estimations && (
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          className="flex w-full flex-row items-center justify-evenly gap-2"
+          transition={{ type: "spring", stiffness: 100 }}
+        >
+          <span className="inline-block h-7 w-7 animate-spin rounded-full border-4 border-primary-100/10 border-t-primary-900" />
+        </motion.div>
+      )}
       {estimations && (
         <PaymentButton
           disabled={!!error}

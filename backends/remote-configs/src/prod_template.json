@@ -10,7 +10,7 @@
     },
     "order_form_type": {
       "defaultValue": {
-        "value": "manual"
+        "value": "ai-assisted"
       },
       "description": "String used to determine the type of order form to display. Possible values are 'manual', 'ai-assisted', and 'multiple'.",
       "valueType": "STRING"

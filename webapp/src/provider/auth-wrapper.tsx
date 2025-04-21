@@ -42,7 +42,7 @@ export const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({
         onClose={onCloseModal}
         size="lg"
         position="center"
-        className="bg-black bg-opacity-30 [&>div>div]:bg-primary-50/95 [&>div]:mb-[1vh] [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-end  md:[&>div]:h-auto"
+        className="bg-black bg-opacity-30 [&>div>div]:bg-primary-50/95 [&>div]:mb-[1vh] [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-center md:[&>div]:h-auto"
       >
         <Modal.Header>
           {authAction === "login" ? "Login" : "Sign Up"}
