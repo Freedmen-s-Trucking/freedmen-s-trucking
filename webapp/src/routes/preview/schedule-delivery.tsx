@@ -9,7 +9,7 @@ import scheduleDeliveryHeroImg from "~/assets/images/schedule-delivery-hero.webp
 import scheduleDeliveryHeroImgBlured from "~/assets/images/schedule-delivery-hero-blur.webp";
 import { AppImageBackground } from "~/components/atoms";
 import { useAuth } from "~/hooks/use-auth";
-import { CreateOrderForm } from "~/components/molecules/create-order";
+import { CreateOrder } from "~/components/molecules/create-order";
 
 export const Route = createFileRoute("/preview/schedule-delivery")({
   beforeLoad({ context }) {
@@ -106,7 +106,7 @@ function RouteComponent() {
               ))}
           </div>
           <div className="w-full min-w-96 max-w-md overflow-hidden rounded-2xl bg-gradient-to-r from-[rgba(102,102,102,0.6)] to-[rgba(0,0,0,0.6)]">
-            <CreateOrderForm brightness="dark" />
+            <CreateOrder brightness="dark" />
           </div>
         </div>
       </Hero>

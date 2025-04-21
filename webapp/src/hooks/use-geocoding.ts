@@ -140,7 +140,7 @@ const fetchPlacesFromOSRM = async (query: string) => {
  * @param query The text to autocomplete.
  * @returns
  */
-const fetchPlacesFromGoogle = async (
+export const fetchPlacesFromGoogle = async (
   query: string,
   options: {
     viewPort?: PlaceLocation["viewPort"];
@@ -168,7 +168,7 @@ const fetchPlacesFromGoogle = async (
   });
 };
 
-const fetchPlaceDetails = async (
+export const fetchPlaceDetails = async (
   args: MinPlaceLocation & Partial<PlaceLocation>,
 ): Promise<Required<PlaceLocation>> => {
   if (args.latitude && args.longitude && args.viewPort) {

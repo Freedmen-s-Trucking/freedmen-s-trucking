@@ -303,7 +303,7 @@ const CustomerDashboard = () => {
       </Tabs>
       {isCreateOrderModalOpen && (
         <CreateOrder
-          showInModal
+          showInModal={{ onClose: () => setIsCreateOrderModalOpen(false) }}
           brightness="light"
           onComplete={() => setIsCreateOrderModalOpen(false)}
         />

@@ -1,5 +1,5 @@
 import { HTMLMotionProps, motion } from "motion/react";
-import React from "react";
+import React, { useEffect, useRef } from "react";
 
 // Primary Color #553A26;
 // Secondary Color #F2E7D8;
@@ -45,7 +45,6 @@ export const BodyText: React.FC<
 );
 
 // BUTTON COMPONENTS
-
 export const PrimaryButton: React.FC<
   React.PropsWithChildren<
     {
@@ -53,6 +52,7 @@ export const PrimaryButton: React.FC<
       className?: string;
       isLoading?: boolean;
       loadingText?: string;
+      loadingIcon?: React.ReactNode;
     } & HTMLMotionProps<"button">
   >
 > = ({
@@ -61,14 +61,18 @@ export const PrimaryButton: React.FC<
   className = "",
   isLoading = false,
   loadingText = "Loading...",
+  loadingIcon,
+  disabled,
+  type,
   ...buttonProps
 }) => {
+  const isDisabled = disabled || isLoading || (!onClick && type !== "submit");
   const buttonVariants = {
     initial: {
       opacity: 1,
     },
     loading: {
-      opacity: 0.5,
+      opacity: 0.8,
     },
   };
 
@@ -77,9 +81,9 @@ export const PrimaryButton: React.FC<
       {...buttonProps}
       onClick={onClick}
       variants={buttonVariants}
-      whileHover={{ scale: isLoading ? 1 : 1.05 }}
-      whileTap={{ scale: isLoading ? 1 : 0.975 }}
-      disabled={isLoading}
+      whileHover={isDisabled ? undefined : { scale: isLoading ? 1 : 1.05 }}
+      whileTap={isDisabled ? undefined : { scale: isLoading ? 1 : 0.975 }}
+      disabled={isDisabled}
       initial="initial"
       animate={isLoading ? "loading" : "initial"}
       className={`flex flex-row items-center justify-center rounded-lg bg-primary-700  p-4 font-medium text-primary-100 transition-colors duration-300 hover:bg-primary-800 disabled:bg-primary-800 ${className}`}
@@ -91,7 +95,9 @@ export const PrimaryButton: React.FC<
           className="flex w-full flex-row items-center justify-evenly gap-2"
           transition={{ type: "spring", stiffness: 100 }}
         >
-          <span className="inline-block h-7 w-7 animate-spin rounded-full border-4 border-primary-100/30 border-t-primary-50" />
+          {loadingIcon || (
+            <span className="inline-block h-7 w-7 animate-spin rounded-full border-4 border-primary-100/30 border-t-primary-50" />
+          )}
           <span className="text-primary-100">{loadingText}</span>
         </motion.div>
       ) : (
@@ -160,18 +166,128 @@ export const SecondaryButton: React.FC<
     </motion.button>
   );
 };
-
-// iNPUT COMPONENTS
 export const TextInput = React.forwardRef<
   HTMLInputElement,
-  { className?: string } & React.ComponentProps<"input">
+  { className?: string } & React.ComponentPropsWithoutRef<"input">
 >(({ className = "", ...inputProps }, ref) => (
   <input
     {...inputProps}
     className={`block w-full rounded-lg border border-gray-300 bg-primary-50 p-2.5 py-3 text-sm text-secondary-950 focus:border-secondary-500 focus:ring-secondary-500 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
     ref={ref}
+    onKeyDown={(e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        const form = e.currentTarget.form;
+        if (!form) return;
+        const index = Array.from(form).indexOf(e.currentTarget);
+        const nextElement = form.elements[index + 1];
+        if (nextElement) {
+          (nextElement as { focus?: () => void }).focus?.();
+        } else {
+          form.dispatchEvent(
+            new Event("submit", { bubbles: true, cancelable: true }),
+          );
+        }
+      }
+    }}
   />
 ));
+
+export const TextArea = React.forwardRef<
+  HTMLTextAreaElement,
+  {
+    className?: string;
+    rows?: number;
+    maxLength?: number;
+    resize?: "none";
+  } & React.ComponentPropsWithoutRef<"textarea">
+>(({ className = "", maxLength, resize = "none", ...textAreaProps }, ref) => {
+  const internalRef = useRef<HTMLTextAreaElement | null>(null);
+  const combinedRef = (node: HTMLTextAreaElement) => {
+    internalRef.current = node;
+    if (typeof ref === "function") ref(node);
+    else if (ref)
+      (ref as React.MutableRefObject<HTMLTextAreaElement | null>).current =
+        node;
+  };
+
+  const handleInput = () => {
+    const el = internalRef.current;
+    if (!el) return;
+
+    el.style.minHeight = "auto";
+    el.style.minHeight = `${Math.min(el.scrollHeight, 3 * 24)}px`; // limit to 3 rows (assuming ~24px line-height)
+  };
+
+  useEffect(() => {
+    handleInput();
+  }, []);
+
+  return (
+    <textarea
+      {...textAreaProps}
+      ref={combinedRef}
+      rows={1}
+      maxLength={maxLength}
+      onInput={handleInput}
+      className={`block w-full resize-none overflow-hidden rounded-lg border border-gray-300 bg-primary-50 p-1 text-sm text-secondary-950 focus:border-secondary-500 focus:ring-secondary-500 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+      style={{ resize }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          const form = e.currentTarget.form;
+          if (!form) return;
+          const index = Array.from(form).indexOf(e.currentTarget);
+          const nextElement = form.elements[index + 1];
+          if (nextElement) {
+            (nextElement as { focus?: () => void }).focus?.();
+          } else {
+            console.log("No next element");
+            form.dispatchEvent(
+              new Event("submit", { bubbles: true, cancelable: true }),
+            );
+          }
+        }
+      }}
+    />
+  );
+});
+
+// export const TextArea = React.forwardRef<
+//   HTMLTextAreaElement,
+//   {
+//     className?: string;
+//     rows?: number;
+//     maxLength?: number;
+//     resize?: "none";
+//   } & React.ComponentPropsWithoutRef<"textarea">
+// >(({ className = "", maxLength, resize = "none", ...textAreaProps }, ref) => (
+//   <textarea
+//     {...textAreaProps}
+//     className={`block w-full rounded-lg border border-gray-300 bg-primary-50 p-1 text-sm text-secondary-950 focus:border-secondary-500 focus:ring-secondary-500 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+//     ref={ref}
+//     maxLength={maxLength}
+//     style={{ resize }}
+//     onKeyDown={(e) => {
+//       if (e.key === "Enter") {
+//         e.preventDefault();
+//         const form = e.currentTarget.form;
+//         console.log({ form });
+//         if (!form) return;
+//         const index = Array.from(form).indexOf(e.currentTarget);
+//         const nextElement = form.elements[index + 1];
+//         if (nextElement) {
+//           (nextElement as { focus?: () => void }).focus?.();
+//         } else {
+//           console.log("No next element");
+//           // form.dispatchEvent(
+//           //   new Event("submit", { bubbles: true, cancelable: true }),
+//           // );
+//         }
+//       }
+//     }}
+//   />
+// ));
 
 // CARD COMPONENTS
 

@@ -3,7 +3,7 @@ import {
   // useComputeDeliveryEstimation,
   computeTheMinimumRequiredVehiclesAndFees,
 } from "~/hooks/use-price-calculator";
-import { OrderPriority } from "@freedmen-s-trucking/types";
+import { OrderPriority, ProductWithQuantity } from "@freedmen-s-trucking/types";
 // import { renderHook } from "@testing-library/react";
 
 describe("computeTheMinimumRequiredVehiclesAndFees", () => {
@@ -11,17 +11,17 @@ describe("computeTheMinimumRequiredVehiclesAndFees", () => {
     const products = [
       {
         name: "TEST SUV",
-        dimensions: {
+        estimatedDimensions: {
           widthInInches: 33,
           heightInInches: 33,
           lengthInInches: 33,
         },
-        weightInLbs: 80,
+        estimatedWeightInLbsPerUnit: 80,
         quantity: 1,
-        volumeInCuFeet: 20,
+        // volumeInCuFeet: 20,
       },
-    ];
-    const distanceInMiles = 75;
+    ] as ProductWithQuantity[];
+    const distanceInMiles = 75; // From: Bluhill Rd, Silver Spring, MD 20902, USA => To: Fredericksburg, VA 22408, USA
     const priority = OrderPriority.STANDARD;
     const result = computeTheMinimumRequiredVehiclesAndFees(
       products,

@@ -477,12 +477,12 @@ const OrderDetailsView: React.FC<{
                       {product.name}
                     </Table.Cell>
                     <Table.Cell className="text-xs sm:text-sm md:text-base">
-                      {product.dimensions.lengthInInches}" x{" "}
-                      {product.dimensions.widthInInches}" x{" "}
-                      {product.dimensions.heightInInches}"
+                      {product.estimatedDimensions.lengthInInches}" x{" "}
+                      {product.estimatedDimensions.widthInInches}" x{" "}
+                      {product.estimatedDimensions.heightInInches}"
                     </Table.Cell>
                     <Table.Cell className="text-xs sm:text-sm md:text-base">
-                      {product.weightInLbs} lbs
+                      {product.estimatedWeightInLbsPerUnit} lbs
                     </Table.Cell>
                     <Table.Cell>{product.quantity}</Table.Cell>
                   </Table.Row>

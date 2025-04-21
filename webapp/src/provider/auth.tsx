@@ -8,7 +8,7 @@ import {
   signInWithPopup,
   UserCredential,
 } from "firebase/auth";
-import { createContext, useEffect, useMemo } from "react";
+import { createContext, useEffect, useMemo, useState } from "react";
 import { DriverEntity, UserEntity } from "@freedmen-s-trucking/types";
 import { isDevMode } from "~/utils/envs";
 import { useDbOperations } from "~/hooks/use-firestore";
@@ -17,6 +17,7 @@ import { useAppDispatch, useAppSelector } from "~/stores/hooks";
 
 interface AppAuth {
   user: AppUser;
+  getIDToken: (forceRefresh?: boolean) => Promise<string>;
   signOut: () => Promise<void>;
   signUpWithEmailAndPassword: (
     email: string,
@@ -73,34 +74,38 @@ const AuthProvider: React.FC<{
   }, []);
   const { user } = useAppSelector((state) => state.authCtrl);
   const { createUser, getDriver, getUser } = useDbOperations();
+  const [{ getIdToken }, setGetIdToken] = useState({
+    getIdToken: auth.currentUser?.getIdToken?.bind(auth.currentUser),
+  });
 
   useEffect(() => {
     auth.useDeviceLanguage();
   }, [auth]);
 
-  const authValue = useMemo(() => {
+  const authValue = useMemo((): AppAuth => {
     return {
       user: user!,
+      getIDToken: getIdToken || (() => Promise.resolve("")),
       signOut: _signOut,
       signInWithEmailAndPassword: _signInWithEmailAndPassword,
       signUpWithEmailAndPassword: _signUpWithEmailAndPassword,
       signInWithGoogle: _signInWithGoogle,
     };
-  }, [user]);
+  }, [user, getIdToken]);
 
   const dispatch = useAppDispatch();
   useEffect(() => {
-    const unSubscribe = auth.onAuthStateChanged(async (user) => {
-      if (user) {
+    const unSubscribe = auth.onAuthStateChanged(async (fbUser) => {
+      if (fbUser) {
         let dbUser: UserEntity = {
-          uid: user.uid,
-          email: user.email,
-          displayName: user.displayName ?? user.email?.split("@")[0] ?? "",
-          photoURL: user.photoURL,
-          phoneNumber: user.phoneNumber,
-          isPhoneNumberVerified: !!user.phoneNumber,
-          isEmailVerified: user.emailVerified,
-          authMethods: user.providerData.map((provider) => ({
+          uid: fbUser.uid,
+          email: fbUser.email,
+          displayName: fbUser.displayName ?? fbUser.email?.split("@")[0] ?? "",
+          photoURL: fbUser.photoURL,
+          phoneNumber: fbUser.phoneNumber,
+          isPhoneNumberVerified: !!fbUser.phoneNumber,
+          isEmailVerified: fbUser.emailVerified,
+          authMethods: fbUser.providerData.map((provider) => ({
             provider: provider.providerId,
             providerRowData: { ...provider },
           })),
@@ -108,12 +113,12 @@ const AuthProvider: React.FC<{
           firstName: "",
           lastName: "",
           birthDate: null,
-          createdAt: user.metadata.creationTime || null,
-          updatedAt: user.metadata.creationTime || null,
+          createdAt: fbUser.metadata.creationTime || null,
+          updatedAt: fbUser.metadata.creationTime || null,
         };
 
         let driverInfo: DriverEntity | null = null;
-        if (!user.isAnonymous) {
+        if (!fbUser.isAnonymous) {
           try {
             const firestoreUser = await getUser(dbUser.uid);
             if (firestoreUser) {
@@ -137,16 +142,16 @@ const AuthProvider: React.FC<{
           setUser({
             info: dbUser,
             driverInfo: driverInfo ?? undefined,
-            isAnonymous: user.isAnonymous,
-            isEmailVerified: user.emailVerified,
+            isAnonymous: fbUser.isAnonymous,
+            isEmailVerified: fbUser.emailVerified,
             meta: {
-              lastSignInTime: user.metadata.lastSignInTime,
-              creationTime: user.metadata.creationTime,
+              lastSignInTime: fbUser.metadata.lastSignInTime,
+              creationTime: fbUser.metadata.creationTime,
             },
-            providerData: user.providerData,
-            getIDToken: user.getIdToken.bind(user),
+            providerData: fbUser.providerData,
           }),
         );
+        setGetIdToken({ getIdToken: fbUser.getIdToken.bind(fbUser) });
       } else {
         console.log("user logged out, Sign in anonymously");
         signInAnonymously(auth);

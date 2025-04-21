@@ -16,8 +16,6 @@ export class AppUser {
   readonly isAnonymous: boolean;
   readonly isEmailVerified: boolean;
 
-  getIDToken?: () => Promise<string>;
-
   constructor({
     info,
     driverInfo,
