@@ -3,15 +3,24 @@ import { createContext, useMemo } from "react";
 import { FIREBASE_CONFIG_JSON } from "~/utils/envs";
 
 const FirebaseCtx = createContext<FirebaseApp | null>(null);
+console.log("FIREBASE_CONFIG_JSON", FIREBASE_CONFIG_JSON);
+
 
 const _initializeFirebaseApp = () => {
+
   try {
     const config = JSON.parse(FIREBASE_CONFIG_JSON);
+    console.log("config", config);
+    console.log("initializing firebase app!!!!!!!", config);
     return initializeApp(config);
   } catch (e) {
-    console.error("failed to parse firebase app", e);
-    console.info(import.meta.env);
-    return initializeApp();
+    console.error("Failed to initialize Firebase:", e);
+    console.info("Environment variables:", {
+      configPresent: !!FIREBASE_CONFIG_JSON,
+      configType: typeof FIREBASE_CONFIG_JSON,
+      configValue: FIREBASE_CONFIG_JSON
+    });
+    throw e;
   }
 };
 
