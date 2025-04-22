@@ -28,7 +28,7 @@ import {
   DriverOrderStatus,
   RequiredVehicleEntity,
   OrderStatus,
-} from "@freedman-trucking/types";
+} from "../../../../../common/types/src";
 import { useAppDispatch } from "@/stores/hooks";
 import { BsTrainFreightFront } from "react-icons/bs";
 import { GiTruck } from "react-icons/gi";
