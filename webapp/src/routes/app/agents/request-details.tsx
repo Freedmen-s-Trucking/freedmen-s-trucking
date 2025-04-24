@@ -4,6 +4,7 @@ import "leaflet/dist/leaflet.css";
 import { Icon, LatLngTuple } from "leaflet";
 import { useNavigate } from "@tanstack/react-router";
 import { IoChevronBack } from "react-icons/io5";
+import { MobileButton } from "../../../components/mobile/mobileButton";
 
 // Fix for default marker icons in Leaflet
 const pickupIcon = new Icon({
@@ -49,11 +50,11 @@ function RequestDetailsScreen() {
         <div className="px-4 py-3 flex items-center gap-3">
           <button
             onClick={() => window.history.back()}
-            className="text-gray-700"
+            className="text-mobile-text"
           >
             <IoChevronBack className="w-6 h-6" />
           </button>
-          <h1 className="text-xl font-medium">Request Map Details</h1>
+          <h1 className="text-xl font-mobile text-mobile-text">Request Map Details</h1>
         </div>
       </div>
 
@@ -74,19 +75,17 @@ function RequestDetailsScreen() {
       </MapContainer>
 
       {/* Action Buttons */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 flex gap-4 bg-white z-[1000]">
-        <button 
+      <div className="absolute text-mobile-text bottom-0 left-0 right-0 p-4 flex gap-4 bg-mobile-background z-[1000]">
+        <MobileButton 
+          isPrimary={false}
+          text="Reject"
           onClick={handleReject}
-          className="flex-1 px-4 py-3 text-teal-600 bg-white border border-teal-600 rounded-xl font-medium"
-        >
-          Reject
-        </button>
-        <button 
+        />
+        <MobileButton 
+          isPrimary={true}
+          text="Accept"
           onClick={handleAccept}
-          className="flex-1 px-4 py-3 text-white bg-teal-600 rounded-xl font-medium"
-        >
-          Accept
-        </button>
+        />
       </div>
     </div>
   );
