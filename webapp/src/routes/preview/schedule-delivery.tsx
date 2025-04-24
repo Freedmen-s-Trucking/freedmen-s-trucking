@@ -124,7 +124,7 @@ function InstantDeliveryScreen() {
           </div>
 
           <div className="px-6 mt-6">
-            <MobileButton isPrimary={true} text="Next" link="/app/user/instant-delivery" />
+            <MobileButton isPrimary={true} text="Next" link="/app/user/delivery-details" />
           </div>
         </DrawerContent>
       </Drawer>
@@ -132,6 +132,6 @@ function InstantDeliveryScreen() {
   );
 }
 
-export const Route = createFileRoute("/app/user/instant-delivery")({
+export const Route = createFileRoute("/preview/schedule-delivery")({
   component: InstantDeliveryScreen,
 }); 

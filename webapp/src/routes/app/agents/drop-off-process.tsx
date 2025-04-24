@@ -112,6 +112,7 @@ function DropOffProcessScreen() {
           </div>
 
           <MobileButton 
+            link="/app/agents/drop-off-photo"
             isPrimary={true}
             text="Start Drop off process"
             onClick={handleStartDropOff}

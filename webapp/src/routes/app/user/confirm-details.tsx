@@ -102,6 +102,7 @@ function ConfirmDetailsScreen() {
             </Link>
           <div className=" bottom-8 w-[90%]">
             <MobileButton 
+              link="/app/user/delivery-in-progress"
               isPrimary={true} 
               text="Look for courier"
               onClick={() => {

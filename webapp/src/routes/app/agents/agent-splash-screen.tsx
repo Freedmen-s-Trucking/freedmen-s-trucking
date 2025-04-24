@@ -1,14 +1,14 @@
-import { createFileRoute,  useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import { useEffect } from "react";
-// import splashScreen from "@/assets/images/new-logo.jpeg";
+// import splashScreen from "@/assets/images/splash-screen-logo.png";
 
-const SplashScreen = () => {
+const AgentSplashScreen = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      navigate({ to: "/app/user/onboarding" });
+      navigate({ to: "/app/agents/welcome" });
     }, 1500);
 
     return () => clearTimeout(timer);
@@ -35,14 +35,14 @@ const SplashScreen = () => {
 };
 
 // Route definition
-export const Route = createFileRoute("/app/user/splash-screen")({
-  // beforeLoad({ context }) {
+export const Route = createFileRoute("/app/agents/agent-splash-screen")({
+//   beforeLoad({ context }) {
     
-  //   if (context.user?.isAnonymous === true) {
-  //     throw redirect({
-  //       to: "/",
-  //     });
-  //   }
-  // },
-  component: SplashScreen,
+//     if (context.user?.isAnonymous === true) {
+//       throw redirect({
+//         to: "/",
+//       });
+//     }
+//   },
+  component: AgentSplashScreen,
 }); 

@@ -141,7 +141,7 @@ function DeliveryDetailsScreen() {
       {/* <button className="w-full bg-teal-700 text-white py-4 rounded-xl font-medium mb-8">
         Continue
       </button> */}
-      <MobileButton text="Continue" isPrimary={true} link="/"   />
+      <MobileButton text="Continue" isPrimary={true} link="/app/user/confirm-details"   />
     </div>
   );
 }

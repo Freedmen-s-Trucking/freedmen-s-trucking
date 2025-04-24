@@ -36,11 +36,15 @@ import { Route as AppUserConfirmDetailsImport } from './routes/app/user/confirm-
 import { Route as AppUserArriveLocationImport } from './routes/app/user/arrive-location'
 import { Route as AppDriverDashboardImport } from './routes/app/driver/dashboard'
 import { Route as AppCustomerDashboardImport } from './routes/app/customer/dashboard'
+import { Route as AppAgentsWelcomeImport } from './routes/app/agents/welcome'
 import { Route as AppAgentsVehiclesImport } from './routes/app/agents/vehicles'
 import { Route as AppAgentsVehicleDetailsImport } from './routes/app/agents/vehicle-details'
 import { Route as AppAgentsStartDeliveryImport } from './routes/app/agents/start-delivery'
+import { Route as AppAgentsSigninImport } from './routes/app/agents/signin'
 import { Route as AppAgentsRequestMapImport } from './routes/app/agents/request-map'
 import { Route as AppAgentsRequestDetailsImport } from './routes/app/agents/request-details'
+import { Route as AppAgentsRegisterFormImport } from './routes/app/agents/register-form'
+import { Route as AppAgentsRegisterImport } from './routes/app/agents/register'
 import { Route as AppAgentsProfileImport } from './routes/app/agents/profile'
 import { Route as AppAgentsIdFrontImport } from './routes/app/agents/id-front'
 import { Route as AppAgentsHomeVerificationImport } from './routes/app/agents/home-verification'
@@ -54,6 +58,8 @@ import { Route as AppAgentsDocumentsImport } from './routes/app/agents/documents
 import { Route as AppAgentsDeliveryDetailsImport } from './routes/app/agents/delivery-details'
 import { Route as AppAgentsDeliveryCompleteImport } from './routes/app/agents/delivery-complete'
 import { Route as AppAgentsCompleteImport } from './routes/app/agents/complete'
+import { Route as AppAgentsAgentSplashScreenImport } from './routes/app/agents/agent-splash-screen'
+import { Route as AppAgentsAgentOtpImport } from './routes/app/agents/agent-otp'
 import { Route as AppAdminDashboardImport } from './routes/app/admin/dashboard'
 import { Route as AppUserDeliveryDetailsDeliveryIdImport } from './routes/app/user/delivery-details.$deliveryId'
 
@@ -209,6 +215,12 @@ const AppCustomerDashboardRoute = AppCustomerDashboardImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const AppAgentsWelcomeRoute = AppAgentsWelcomeImport.update({
+  id: '/app/agents/welcome',
+  path: '/app/agents/welcome',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const AppAgentsVehiclesRoute = AppAgentsVehiclesImport.update({
   id: '/app/agents/vehicles',
   path: '/app/agents/vehicles',
@@ -227,6 +239,12 @@ const AppAgentsStartDeliveryRoute = AppAgentsStartDeliveryImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const AppAgentsSigninRoute = AppAgentsSigninImport.update({
+  id: '/app/agents/signin',
+  path: '/app/agents/signin',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const AppAgentsRequestMapRoute = AppAgentsRequestMapImport.update({
   id: '/app/agents/request-map',
   path: '/app/agents/request-map',
@@ -236,6 +254,18 @@ const AppAgentsRequestMapRoute = AppAgentsRequestMapImport.update({
 const AppAgentsRequestDetailsRoute = AppAgentsRequestDetailsImport.update({
   id: '/app/agents/request-details',
   path: '/app/agents/request-details',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppAgentsRegisterFormRoute = AppAgentsRegisterFormImport.update({
+  id: '/app/agents/register-form',
+  path: '/app/agents/register-form',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppAgentsRegisterRoute = AppAgentsRegisterImport.update({
+  id: '/app/agents/register',
+  path: '/app/agents/register',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -317,6 +347,20 @@ const AppAgentsCompleteRoute = AppAgentsCompleteImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const AppAgentsAgentSplashScreenRoute = AppAgentsAgentSplashScreenImport.update(
+  {
+    id: '/app/agents/agent-splash-screen',
+    path: '/app/agents/agent-splash-screen',
+    getParentRoute: () => rootRoute,
+  } as any,
+)
+
+const AppAgentsAgentOtpRoute = AppAgentsAgentOtpImport.update({
+  id: '/app/agents/agent-otp',
+  path: '/app/agents/agent-otp',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const AppAdminDashboardRoute = AppAdminDashboardImport.update({
   id: '/app/admin/dashboard',
   path: '/app/admin/dashboard',
@@ -388,6 +432,20 @@ declare module '@tanstack/react-router' {
       path: '/app/admin/dashboard'
       fullPath: '/app/admin/dashboard'
       preLoaderRoute: typeof AppAdminDashboardImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/agents/agent-otp': {
+      id: '/app/agents/agent-otp'
+      path: '/app/agents/agent-otp'
+      fullPath: '/app/agents/agent-otp'
+      preLoaderRoute: typeof AppAgentsAgentOtpImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/agents/agent-splash-screen': {
+      id: '/app/agents/agent-splash-screen'
+      path: '/app/agents/agent-splash-screen'
+      fullPath: '/app/agents/agent-splash-screen'
+      preLoaderRoute: typeof AppAgentsAgentSplashScreenImport
       parentRoute: typeof rootRoute
     }
     '/app/agents/complete': {
@@ -481,6 +539,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAgentsProfileImport
       parentRoute: typeof rootRoute
     }
+    '/app/agents/register': {
+      id: '/app/agents/register'
+      path: '/app/agents/register'
+      fullPath: '/app/agents/register'
+      preLoaderRoute: typeof AppAgentsRegisterImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/agents/register-form': {
+      id: '/app/agents/register-form'
+      path: '/app/agents/register-form'
+      fullPath: '/app/agents/register-form'
+      preLoaderRoute: typeof AppAgentsRegisterFormImport
+      parentRoute: typeof rootRoute
+    }
     '/app/agents/request-details': {
       id: '/app/agents/request-details'
       path: '/app/agents/request-details'
@@ -493,6 +565,13 @@ declare module '@tanstack/react-router' {
       path: '/app/agents/request-map'
       fullPath: '/app/agents/request-map'
       preLoaderRoute: typeof AppAgentsRequestMapImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/agents/signin': {
+      id: '/app/agents/signin'
+      path: '/app/agents/signin'
+      fullPath: '/app/agents/signin'
+      preLoaderRoute: typeof AppAgentsSigninImport
       parentRoute: typeof rootRoute
     }
     '/app/agents/start-delivery': {
@@ -514,6 +593,13 @@ declare module '@tanstack/react-router' {
       path: '/app/agents/vehicles'
       fullPath: '/app/agents/vehicles'
       preLoaderRoute: typeof AppAgentsVehiclesImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/agents/welcome': {
+      id: '/app/agents/welcome'
+      path: '/app/agents/welcome'
+      fullPath: '/app/agents/welcome'
+      preLoaderRoute: typeof AppAgentsWelcomeImport
       parentRoute: typeof rootRoute
     }
     '/app/customer/dashboard': {
@@ -678,6 +764,8 @@ export interface FileRoutesByFullPath {
   '/preview/tracking': typeof PreviewTrackingRoute
   '/preview': typeof PreviewIndexRoute
   '/app/admin/dashboard': typeof AppAdminDashboardRoute
+  '/app/agents/agent-otp': typeof AppAgentsAgentOtpRoute
+  '/app/agents/agent-splash-screen': typeof AppAgentsAgentSplashScreenRoute
   '/app/agents/complete': typeof AppAgentsCompleteRoute
   '/app/agents/delivery-complete': typeof AppAgentsDeliveryCompleteRoute
   '/app/agents/delivery-details': typeof AppAgentsDeliveryDetailsRoute
@@ -691,11 +779,15 @@ export interface FileRoutesByFullPath {
   '/app/agents/home-verification': typeof AppAgentsHomeVerificationRoute
   '/app/agents/id-front': typeof AppAgentsIdFrontRoute
   '/app/agents/profile': typeof AppAgentsProfileRoute
+  '/app/agents/register': typeof AppAgentsRegisterRoute
+  '/app/agents/register-form': typeof AppAgentsRegisterFormRoute
   '/app/agents/request-details': typeof AppAgentsRequestDetailsRoute
   '/app/agents/request-map': typeof AppAgentsRequestMapRoute
+  '/app/agents/signin': typeof AppAgentsSigninRoute
   '/app/agents/start-delivery': typeof AppAgentsStartDeliveryRoute
   '/app/agents/vehicle-details': typeof AppAgentsVehicleDetailsRoute
   '/app/agents/vehicles': typeof AppAgentsVehiclesRoute
+  '/app/agents/welcome': typeof AppAgentsWelcomeRoute
   '/app/customer/dashboard': typeof AppCustomerDashboardRoute
   '/app/driver/dashboard': typeof AppDriverDashboardRoute
   '/app/user/arrive-location': typeof AppUserArriveLocationRoute
@@ -726,6 +818,8 @@ export interface FileRoutesByTo {
   '/preview/tracking': typeof PreviewTrackingRoute
   '/preview': typeof PreviewIndexRoute
   '/app/admin/dashboard': typeof AppAdminDashboardRoute
+  '/app/agents/agent-otp': typeof AppAgentsAgentOtpRoute
+  '/app/agents/agent-splash-screen': typeof AppAgentsAgentSplashScreenRoute
   '/app/agents/complete': typeof AppAgentsCompleteRoute
   '/app/agents/delivery-complete': typeof AppAgentsDeliveryCompleteRoute
   '/app/agents/delivery-details': typeof AppAgentsDeliveryDetailsRoute
@@ -739,11 +833,15 @@ export interface FileRoutesByTo {
   '/app/agents/home-verification': typeof AppAgentsHomeVerificationRoute
   '/app/agents/id-front': typeof AppAgentsIdFrontRoute
   '/app/agents/profile': typeof AppAgentsProfileRoute
+  '/app/agents/register': typeof AppAgentsRegisterRoute
+  '/app/agents/register-form': typeof AppAgentsRegisterFormRoute
   '/app/agents/request-details': typeof AppAgentsRequestDetailsRoute
   '/app/agents/request-map': typeof AppAgentsRequestMapRoute
+  '/app/agents/signin': typeof AppAgentsSigninRoute
   '/app/agents/start-delivery': typeof AppAgentsStartDeliveryRoute
   '/app/agents/vehicle-details': typeof AppAgentsVehicleDetailsRoute
   '/app/agents/vehicles': typeof AppAgentsVehiclesRoute
+  '/app/agents/welcome': typeof AppAgentsWelcomeRoute
   '/app/customer/dashboard': typeof AppCustomerDashboardRoute
   '/app/driver/dashboard': typeof AppDriverDashboardRoute
   '/app/user/arrive-location': typeof AppUserArriveLocationRoute
@@ -775,6 +873,8 @@ export interface FileRoutesById {
   '/preview/tracking': typeof PreviewTrackingRoute
   '/preview/': typeof PreviewIndexRoute
   '/app/admin/dashboard': typeof AppAdminDashboardRoute
+  '/app/agents/agent-otp': typeof AppAgentsAgentOtpRoute
+  '/app/agents/agent-splash-screen': typeof AppAgentsAgentSplashScreenRoute
   '/app/agents/complete': typeof AppAgentsCompleteRoute
   '/app/agents/delivery-complete': typeof AppAgentsDeliveryCompleteRoute
   '/app/agents/delivery-details': typeof AppAgentsDeliveryDetailsRoute
@@ -788,11 +888,15 @@ export interface FileRoutesById {
   '/app/agents/home-verification': typeof AppAgentsHomeVerificationRoute
   '/app/agents/id-front': typeof AppAgentsIdFrontRoute
   '/app/agents/profile': typeof AppAgentsProfileRoute
+  '/app/agents/register': typeof AppAgentsRegisterRoute
+  '/app/agents/register-form': typeof AppAgentsRegisterFormRoute
   '/app/agents/request-details': typeof AppAgentsRequestDetailsRoute
   '/app/agents/request-map': typeof AppAgentsRequestMapRoute
+  '/app/agents/signin': typeof AppAgentsSigninRoute
   '/app/agents/start-delivery': typeof AppAgentsStartDeliveryRoute
   '/app/agents/vehicle-details': typeof AppAgentsVehicleDetailsRoute
   '/app/agents/vehicles': typeof AppAgentsVehiclesRoute
+  '/app/agents/welcome': typeof AppAgentsWelcomeRoute
   '/app/customer/dashboard': typeof AppCustomerDashboardRoute
   '/app/driver/dashboard': typeof AppDriverDashboardRoute
   '/app/user/arrive-location': typeof AppUserArriveLocationRoute
@@ -825,6 +929,8 @@ export interface FileRouteTypes {
     | '/preview/tracking'
     | '/preview'
     | '/app/admin/dashboard'
+    | '/app/agents/agent-otp'
+    | '/app/agents/agent-splash-screen'
     | '/app/agents/complete'
     | '/app/agents/delivery-complete'
     | '/app/agents/delivery-details'
@@ -838,11 +944,15 @@ export interface FileRouteTypes {
     | '/app/agents/home-verification'
     | '/app/agents/id-front'
     | '/app/agents/profile'
+    | '/app/agents/register'
+    | '/app/agents/register-form'
     | '/app/agents/request-details'
     | '/app/agents/request-map'
+    | '/app/agents/signin'
     | '/app/agents/start-delivery'
     | '/app/agents/vehicle-details'
     | '/app/agents/vehicles'
+    | '/app/agents/welcome'
     | '/app/customer/dashboard'
     | '/app/driver/dashboard'
     | '/app/user/arrive-location'
@@ -872,6 +982,8 @@ export interface FileRouteTypes {
     | '/preview/tracking'
     | '/preview'
     | '/app/admin/dashboard'
+    | '/app/agents/agent-otp'
+    | '/app/agents/agent-splash-screen'
     | '/app/agents/complete'
     | '/app/agents/delivery-complete'
     | '/app/agents/delivery-details'
@@ -885,11 +997,15 @@ export interface FileRouteTypes {
     | '/app/agents/home-verification'
     | '/app/agents/id-front'
     | '/app/agents/profile'
+    | '/app/agents/register'
+    | '/app/agents/register-form'
     | '/app/agents/request-details'
     | '/app/agents/request-map'
+    | '/app/agents/signin'
     | '/app/agents/start-delivery'
     | '/app/agents/vehicle-details'
     | '/app/agents/vehicles'
+    | '/app/agents/welcome'
     | '/app/customer/dashboard'
     | '/app/driver/dashboard'
     | '/app/user/arrive-location'
@@ -919,6 +1035,8 @@ export interface FileRouteTypes {
     | '/preview/tracking'
     | '/preview/'
     | '/app/admin/dashboard'
+    | '/app/agents/agent-otp'
+    | '/app/agents/agent-splash-screen'
     | '/app/agents/complete'
     | '/app/agents/delivery-complete'
     | '/app/agents/delivery-details'
@@ -932,11 +1050,15 @@ export interface FileRouteTypes {
     | '/app/agents/home-verification'
     | '/app/agents/id-front'
     | '/app/agents/profile'
+    | '/app/agents/register'
+    | '/app/agents/register-form'
     | '/app/agents/request-details'
     | '/app/agents/request-map'
+    | '/app/agents/signin'
     | '/app/agents/start-delivery'
     | '/app/agents/vehicle-details'
     | '/app/agents/vehicles'
+    | '/app/agents/welcome'
     | '/app/customer/dashboard'
     | '/app/driver/dashboard'
     | '/app/user/arrive-location'
@@ -968,6 +1090,8 @@ export interface RootRouteChildren {
   PreviewTrackingRoute: typeof PreviewTrackingRoute
   PreviewIndexRoute: typeof PreviewIndexRoute
   AppAdminDashboardRoute: typeof AppAdminDashboardRoute
+  AppAgentsAgentOtpRoute: typeof AppAgentsAgentOtpRoute
+  AppAgentsAgentSplashScreenRoute: typeof AppAgentsAgentSplashScreenRoute
   AppAgentsCompleteRoute: typeof AppAgentsCompleteRoute
   AppAgentsDeliveryCompleteRoute: typeof AppAgentsDeliveryCompleteRoute
   AppAgentsDeliveryDetailsRoute: typeof AppAgentsDeliveryDetailsRoute
@@ -981,11 +1105,15 @@ export interface RootRouteChildren {
   AppAgentsHomeVerificationRoute: typeof AppAgentsHomeVerificationRoute
   AppAgentsIdFrontRoute: typeof AppAgentsIdFrontRoute
   AppAgentsProfileRoute: typeof AppAgentsProfileRoute
+  AppAgentsRegisterRoute: typeof AppAgentsRegisterRoute
+  AppAgentsRegisterFormRoute: typeof AppAgentsRegisterFormRoute
   AppAgentsRequestDetailsRoute: typeof AppAgentsRequestDetailsRoute
   AppAgentsRequestMapRoute: typeof AppAgentsRequestMapRoute
+  AppAgentsSigninRoute: typeof AppAgentsSigninRoute
   AppAgentsStartDeliveryRoute: typeof AppAgentsStartDeliveryRoute
   AppAgentsVehicleDetailsRoute: typeof AppAgentsVehicleDetailsRoute
   AppAgentsVehiclesRoute: typeof AppAgentsVehiclesRoute
+  AppAgentsWelcomeRoute: typeof AppAgentsWelcomeRoute
   AppCustomerDashboardRoute: typeof AppCustomerDashboardRoute
   AppDriverDashboardRoute: typeof AppDriverDashboardRoute
   AppUserArriveLocationRoute: typeof AppUserArriveLocationRoute
@@ -1015,6 +1143,8 @@ const rootRouteChildren: RootRouteChildren = {
   PreviewTrackingRoute: PreviewTrackingRoute,
   PreviewIndexRoute: PreviewIndexRoute,
   AppAdminDashboardRoute: AppAdminDashboardRoute,
+  AppAgentsAgentOtpRoute: AppAgentsAgentOtpRoute,
+  AppAgentsAgentSplashScreenRoute: AppAgentsAgentSplashScreenRoute,
   AppAgentsCompleteRoute: AppAgentsCompleteRoute,
   AppAgentsDeliveryCompleteRoute: AppAgentsDeliveryCompleteRoute,
   AppAgentsDeliveryDetailsRoute: AppAgentsDeliveryDetailsRoute,
@@ -1028,11 +1158,15 @@ const rootRouteChildren: RootRouteChildren = {
   AppAgentsHomeVerificationRoute: AppAgentsHomeVerificationRoute,
   AppAgentsIdFrontRoute: AppAgentsIdFrontRoute,
   AppAgentsProfileRoute: AppAgentsProfileRoute,
+  AppAgentsRegisterRoute: AppAgentsRegisterRoute,
+  AppAgentsRegisterFormRoute: AppAgentsRegisterFormRoute,
   AppAgentsRequestDetailsRoute: AppAgentsRequestDetailsRoute,
   AppAgentsRequestMapRoute: AppAgentsRequestMapRoute,
+  AppAgentsSigninRoute: AppAgentsSigninRoute,
   AppAgentsStartDeliveryRoute: AppAgentsStartDeliveryRoute,
   AppAgentsVehicleDetailsRoute: AppAgentsVehicleDetailsRoute,
   AppAgentsVehiclesRoute: AppAgentsVehiclesRoute,
+  AppAgentsWelcomeRoute: AppAgentsWelcomeRoute,
   AppCustomerDashboardRoute: AppCustomerDashboardRoute,
   AppDriverDashboardRoute: AppDriverDashboardRoute,
   AppUserArriveLocationRoute: AppUserArriveLocationRoute,
@@ -1071,6 +1205,8 @@ export const routeTree = rootRoute
         "/preview/tracking",
         "/preview/",
         "/app/admin/dashboard",
+        "/app/agents/agent-otp",
+        "/app/agents/agent-splash-screen",
         "/app/agents/complete",
         "/app/agents/delivery-complete",
         "/app/agents/delivery-details",
@@ -1084,11 +1220,15 @@ export const routeTree = rootRoute
         "/app/agents/home-verification",
         "/app/agents/id-front",
         "/app/agents/profile",
+        "/app/agents/register",
+        "/app/agents/register-form",
         "/app/agents/request-details",
         "/app/agents/request-map",
+        "/app/agents/signin",
         "/app/agents/start-delivery",
         "/app/agents/vehicle-details",
         "/app/agents/vehicles",
+        "/app/agents/welcome",
         "/app/customer/dashboard",
         "/app/driver/dashboard",
         "/app/user/arrive-location",
@@ -1133,6 +1273,12 @@ export const routeTree = rootRoute
     "/app/admin/dashboard": {
       "filePath": "app/admin/dashboard.tsx"
     },
+    "/app/agents/agent-otp": {
+      "filePath": "app/agents/agent-otp.tsx"
+    },
+    "/app/agents/agent-splash-screen": {
+      "filePath": "app/agents/agent-splash-screen.tsx"
+    },
     "/app/agents/complete": {
       "filePath": "app/agents/complete.tsx"
     },
@@ -1172,11 +1318,20 @@ export const routeTree = rootRoute
     "/app/agents/profile": {
       "filePath": "app/agents/profile.tsx"
     },
+    "/app/agents/register": {
+      "filePath": "app/agents/register.tsx"
+    },
+    "/app/agents/register-form": {
+      "filePath": "app/agents/register-form.tsx"
+    },
     "/app/agents/request-details": {
       "filePath": "app/agents/request-details.tsx"
     },
     "/app/agents/request-map": {
       "filePath": "app/agents/request-map.tsx"
+    },
+    "/app/agents/signin": {
+      "filePath": "app/agents/signin.tsx"
     },
     "/app/agents/start-delivery": {
       "filePath": "app/agents/start-delivery.tsx"
@@ -1186,6 +1341,9 @@ export const routeTree = rootRoute
     },
     "/app/agents/vehicles": {
       "filePath": "app/agents/vehicles.tsx"
+    },
+    "/app/agents/welcome": {
+      "filePath": "app/agents/welcome.tsx"
     },
     "/app/customer/dashboard": {
       "filePath": "app/customer/dashboard.tsx"

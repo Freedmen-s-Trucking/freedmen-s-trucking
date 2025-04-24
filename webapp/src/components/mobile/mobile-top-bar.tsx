@@ -11,7 +11,7 @@ const user = useAppSelector((state) => state.authCtrl.user);
     <div className="flex justify-between items-center mb-6">
       <div>
         <h1 className="text-[12px] text-gray-600">Welcome Back</h1>
-        <h2 className="text-[16px] font-semibold">{user?.info.displayName}</h2>
+        <h2 className="text-[16px] font-semibold">{user?.info.displayName || "Davidson Edgar"}</h2>
       </div>
       <div className="flex items-center gap-4">
         <div className="relative">
@@ -20,7 +20,7 @@ const user = useAppSelector((state) => state.authCtrl.user);
           rounded-full "></span>
         </div>
         <div className="w-[32px] h-[32px] rounded-full bg-mobile-button flex items-center justify-center text-white text-[12px]">
-          {user?.info.displayName?.slice(0, 2).toUpperCase()}
+          {user?.info.displayName?.slice(0, 2).toUpperCase() || "G"}
         </div>
       </div>
     </div>

@@ -127,7 +127,7 @@ function ScheduleDeliveryScreen() {
 
           {/* Fixed Next button */}
           <div className="fixed bottom-0 left-0 right-0 p-6 bg-mobile-background border-t border-gray-200">
-            <MobileButton isPrimary={true} text="Next" link="/app/user/instant-delivery" />
+            <MobileButton isPrimary={true} text="Next" link="/app/user/delivery-details" />
           </div>
         </DrawerContent>
       </Drawer>

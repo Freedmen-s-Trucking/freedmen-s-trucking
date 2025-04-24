@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { IoChevronBack, IoAdd, IoCheckmarkCircle } from "react-icons/io5";
 import { useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 
 interface VehicleItem {
   id: string;
@@ -57,7 +58,8 @@ function VehiclesScreen() {
       {/* Vehicle List */}
       <div className="p-4 space-y-3">
         {vehicles.map((vehicle) => (
-          <button
+          <Link to="/app/agents/vehicle-details" className="mb-3">
+            <button
             key={vehicle.id}
             onClick={() => navigate({ to: `/app/agents/vehicles/${vehicle.plateNumber}` })}
             className="w-full flex items-center gap-4 p-4 bg-mobile-background  rounded-2xl"
@@ -75,6 +77,7 @@ function VehiclesScreen() {
               <IoCheckmarkCircle className="w-6 h-6 text-green-500" />
             )}
           </button>
+          </Link>
         ))}
       </div>
     </div>

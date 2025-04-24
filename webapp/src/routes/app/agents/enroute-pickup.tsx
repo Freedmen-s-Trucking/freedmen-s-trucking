@@ -71,6 +71,7 @@ function EnroutePickupScreen() {
             You are Enroute Pick Up Location
           </p>
           <MobileButton 
+            link="/app/agents/start-delivery"
             isPrimary={true}
             text="Arrive"
             onClick={handleArrive}

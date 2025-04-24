@@ -76,6 +76,7 @@ function DeliveryReviewScreen() {
 
             {/* Submit Button */}
             <MobileButton 
+              link="/app/user/home"
               isPrimary={true}
               text="Done"
               onClick={handleSubmitReview}

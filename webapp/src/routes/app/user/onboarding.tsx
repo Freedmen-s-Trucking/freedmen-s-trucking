@@ -1,6 +1,6 @@
 import { createFileRoute,  Link } from "@tanstack/react-router";
 import { useState } from "react";
-import snapLogo from "@/assets/images/snap-logo.png";
+// import snapLogo from "@/assets/images/snap-logo.png";
 import onBoardingImage from "@/assets/images/user-image-1.png";
 
 const onboardingSteps = [
@@ -31,12 +31,12 @@ const OnboardingScreen = () => {
         <div className="absolute inset-0 flex flex-col p-6">
           {/* Top section with logo */}
           <div className="mt-8 flex items-center w-full  justify-center">
-            <img 
+            {/* <img 
               src={snapLogo} 
               alt="Snap Logo" 
               className="w-[41px] h-[41px]"
-            />
-            <span className="ml-2 text-2xl font-bold text-white">Snap</span>
+            /> */}
+            {/* <span className="ml-2 text-2xl font-bold text-white">Snap</span> */}
           </div>
 
           {/* Middle section with text */}

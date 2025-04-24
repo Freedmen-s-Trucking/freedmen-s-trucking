@@ -3,7 +3,7 @@ import { IoChevronBack, IoWarning } from "react-icons/io5";
 import { useNavigate } from "@tanstack/react-router";
 import idFront from "@/assets/images/id-front.png";
 import idBack from "@/assets/images/id-back.png";
-
+import { Link } from "@tanstack/react-router";
 interface DocumentItem {
   id: string;
   image: string;
@@ -55,10 +55,11 @@ function DocumentsScreen() {
       {/* Document List */}
       <div className="p-4 space-y-3">
         {documents.map((doc) => (
+         <Link to="/app/agents/id-front" className="mb-3">
           <button
             key={doc.id}
             onClick={() => navigate({ to: doc.route })}
-            className="w-full flex items-center gap-4 p-4 bg-mobile-background border border-mobile-text rounded-2xl"
+            className="w-full mb-3 flex items-center gap-4 p-4 bg-mobile-background border border-mobile-text rounded-2xl"
           >
             <div className="w-10 h-10 bg-stone-500  flex items-center justify-center overflow-hidden">
               <img 
@@ -72,6 +73,7 @@ function DocumentsScreen() {
               <IoWarning className="w-6 h-6 text-red-500" />
             )}
           </button>
+         </Link>
         ))}
       </div>
     </div>

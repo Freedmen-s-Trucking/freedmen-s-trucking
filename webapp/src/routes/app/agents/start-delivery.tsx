@@ -73,7 +73,7 @@ function StartDeliveryScreen() {
       </div>
 
       {/* Bottom Card */}
-      <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-lg z-[1000]">
+      <div className="absolute bottom-0 left-0 right-0 bg-mobile-background rounded-t-3xl shadow-lg z-[1000]">
         <div className="p-6 space-y-6">
           {/* User Info Section */}
           <div className="flex items-start gap-4">
@@ -123,6 +123,7 @@ function StartDeliveryScreen() {
 
           {/* Action Button */}
           <MobileButton 
+            link="/app/agents/drop-off-process"
             isPrimary={true}
             text="Start Delivery"
             onClick={() => {}}

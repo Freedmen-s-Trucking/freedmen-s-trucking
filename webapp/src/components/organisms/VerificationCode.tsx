@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import { Link } from '@tanstack/react-router';
-import snapLogo from "@/assets/images/splash-screen-logo.png";
+// import snapLogo from "@/assets/images/splash-screen-logo.png";
 
 interface VerificationCodeProps {
   phoneNumber: string;
   onVerify: (code: string) => void;
+  isAgent?: boolean;
 }
 
 export const VerificationCode: React.FC<VerificationCodeProps> = ({
   phoneNumber,
   onVerify,
+  isAgent = false
 }) => {
   const [code, setCode] = useState(['', '', '', '']);
 
@@ -42,9 +44,9 @@ export const VerificationCode: React.FC<VerificationCodeProps> = ({
   return (
     <div className="flex flex-col items-center px-4 pt-8 bg-mobile-background text-mobile-text font-mobile h-screen">
       <div className="w-full max-w-md ">
-        <div className="flex items-center justify-center mt-[39px] mb-[45px]">
+        {/* <div className="flex items-center justify-center mt-[39px] mb-[45px]">
           <img src={snapLogo} alt="Snap Logo" className="h-[41px] w-[108px]" />
-        </div>
+        </div> */}
         
         <h1 className="text-[20px] font-semibold mb-2 ">Enter the 4-digit code</h1>
         <p className="text-[12px] text-gray-600 mb-4">
@@ -81,7 +83,7 @@ export const VerificationCode: React.FC<VerificationCodeProps> = ({
         </div>
 
        
-       <Link to="/app/user/home" className="w-full">
+       <Link to={isAgent ? "/app/agents/home" : "/app/user/home"} className="w-full">
        <button
           onClick={handleVerify}
           disabled={code.some(digit => !digit)}

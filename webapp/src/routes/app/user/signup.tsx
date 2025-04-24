@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 // import logo from "@/assets/images/logo.webp";
-import snapLogo from "@/assets/images/splash-screen-logo.png";
-
+// import snapLogo from "@/assets/images/new-logo.jpeg";
+import { MobileButton } from "../../../components/mobile/mobileButton";
 const SignUpScreen = () => {
   const [formData, setFormData] = useState({
     firstName: "",
@@ -21,11 +21,11 @@ const SignUpScreen = () => {
     <div className="mx-auto flex h-screen max-w-[375px] flex-col text-mobile-text px-6 font-mobile bg-mobile-background">
       {/* Logo section */}
       <div className="mt-16 flex items-center justify-center">
-        <img 
+        {/* <img 
           src={snapLogo} 
           alt="Snap Logo" 
-          className="h-[41px] w-[108px]"
-        />
+          className="h-[70px] w-[100px]"
+        /> */}
         {/* <span className="ml-2 text-2xl font-bold text-[#1a2b3c]">Snap</span> */}
       </div>
 
@@ -103,12 +103,11 @@ const SignUpScreen = () => {
         </div>
 
         {/* Continue button */}
-        <button
-          type="submit"
-          className="mb-6 bg-mobile-button rounded-lg  py-4 text-center text-[16px] font-semibold text-white"
-        >
-          Continue
-        </button>
+        <MobileButton 
+          isPrimary={true} 
+          text="Continue" 
+          link="/app/user/verify"
+        />
 
         {/* Terms and Privacy */}
         <p className="mb-6 text-center text-sm text-gray-600">

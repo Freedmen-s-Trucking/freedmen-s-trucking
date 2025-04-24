@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import snapLogo from "@/assets/images/splash-screen-logo.png";
+// import snapLogo from "@/assets/images/splash-screen-logo.png";
 
 const SignInScreen = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -16,11 +16,11 @@ const SignInScreen = () => {
     <div className="mx-auto flex h-screen max-w-[375px] flex-col bg-mobile-background text-mobile-text font-mobile px-6">
       {/* Logo section */}
       <div className="mt-16 flex items-center justify-center">
-        <img 
+        {/* <img 
           src={snapLogo} 
           alt="Snap Logo" 
           className="h-[41px] w-[108px]"
-        />
+        /> */}
       </div>
 
       {/* Welcome text */}

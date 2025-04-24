@@ -39,6 +39,7 @@ function DropOffPhotoScreen() {
         {/* Complete Button */}
         <div className="mt-6">
           <MobileButton 
+            link="/app/agents/home"
             isPrimary={true}
             text="Complete"
             onClick={handleComplete}

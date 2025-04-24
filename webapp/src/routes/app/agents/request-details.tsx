@@ -82,6 +82,7 @@ function RequestDetailsScreen() {
           onClick={handleReject}
         />
         <MobileButton 
+          link="/app/agents/enroute-pickup"
           isPrimary={true}
           text="Accept"
           onClick={handleAccept}

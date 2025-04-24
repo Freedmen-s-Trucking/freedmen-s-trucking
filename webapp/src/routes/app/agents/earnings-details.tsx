@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { IoChevronBack, IoTime, IoGrid } from "react-icons/io5";
 import { Line } from "react-chartjs-2";
+import { MobileBottomBar } from "@/components/mobile/mobile-bottom-bar";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -9,7 +10,8 @@ import {
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  TooltipItem
 } from 'chart.js';
 
 // Register ChartJS components
@@ -51,7 +53,7 @@ function EarningsDetailsScreen() {
       },
       tooltip: {
         callbacks: {
-          label: (context: any) => `₦${context.raw.toLocaleString()}`
+          label: (context: TooltipItem<"line">) => `₦${(context.raw as number).toLocaleString()}`
         }
       }
     },
@@ -59,7 +61,9 @@ function EarningsDetailsScreen() {
       y: {
         beginAtZero: true,
         ticks: {
-          callback: (value: number) => `${value/1000}k`,
+          callback: function(value: number | string) {
+            return `${Number(value)/1000}k`;
+          },
           color: '#4A5568'
         },
         grid: {
@@ -77,52 +81,57 @@ function EarningsDetailsScreen() {
     },
     interaction: {
       intersect: false,
-      mode: 'index'
+      mode: 'nearest' as const
     }
   };
 
   return (
-    <div className="min-h-screen bg-mobile-background font-mobile">
-      {/* Header */}
-      <div className="px-4 py-3 flex items-center gap-3 border-b border-gray-200">
-        <button
-          onClick={() => window.history.back()}
-          className="text-mobile-text"
-        >
-          <IoChevronBack className="w-6 h-6" />
-        </button>
-        <h1 className="text-xl font-mobile text-mobile-text">Dec 14 - Dec 21</h1>
+    <div className="min-h-screen bg-mobile-background font-mobile flex flex-col">
+      <div className="flex-1">
+        {/* Header */}
+        <div className="px-4 py-3 flex items-center gap-3 border-b border-gray-200">
+          <button
+            onClick={() => window.history.back()}
+            className="text-mobile-text"
+          >
+            <IoChevronBack className="w-6 h-6" />
+          </button>
+          <h1 className="text-xl font-mobile text-mobile-text">Dec 14 - Dec 21</h1>
+        </div>
+
+        <div className="p-4 space-y-6">
+          {/* Earnings Amount */}
+          <div className="text-center">
+            <div className="text-4xl font-semibold text-mobile-text">₦750.45</div>
+          </div>
+
+          {/* Graph */}
+          <div className="h-64 bg-mobile-background rounded-xl p-4">
+            <Line data={data} options={options} />
+          </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-2 gap-4 mt-6">
+            <div className="bg-mobile-background border border-mobile-text p-4 rounded-xl">
+              <div className="flex items-center gap-2 mb-2">
+                <IoTime className="w-6 h-6 text-mobile-text" />
+                <span className="text-gray-600">Time</span>
+              </div>
+              <div className="text-lg font-medium text-mobile-text">42h 32m</div>
+            </div>
+            <div className="bg-mobile-background border border-mobile-text p-4 rounded-xl">
+              <div className="flex items-center gap-2 mb-2">
+                <IoGrid className="w-6 h-6 text-mobile-text" />
+                <span className="text-gray-600">Deliveries</span>
+              </div>
+              <div className="text-lg font-medium text-mobile-text">38</div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="p-4 space-y-6">
-        {/* Earnings Amount */}
-        <div className="text-center">
-          <div className="text-4xl font-semibold text-mobile-text">₦750.45</div>
-        </div>
-
-        {/* Graph */}
-        <div className="h-64 bg-mobile-background  rounded-xl p-4">
-          <Line data={data} options={options} />
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-2 gap-4 mt-6">
-          <div className="bg-mobile-background border border-mobile-text p-4 rounded-xl">
-            <div className="flex items-center gap-2 mb-2">
-              <IoTime className="w-6 h-6 text-mobile-text" />
-              <span className="text-gray-600">Time</span>
-            </div>
-            <div className="text-lg font-medium text-mobile-text">42h 32m</div>
-          </div>
-          <div className="bg-mobile-background border border-mobile-text p-4 rounded-xl">
-            <div className="flex items-center gap-2 mb-2">
-              <IoGrid className="w-6 h-6 text-mobile-text" />
-              <span className="text-gray-600">Deliveries</span>
-            </div>
-            <div className="text-lg font-medium text-mobile-text">38</div>
-          </div>
-        </div>
-      </div>
+      {/* Mobile Bottom Bar */}
+      <MobileBottomBar isAgent={true} />
     </div>
   );
 }

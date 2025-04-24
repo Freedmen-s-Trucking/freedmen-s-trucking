@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { BackButton } from "../../../components/mobile/back-button";
 import { OrderCard } from "../../../components/mobile/order-card";
+// import { Home } from "lucide-react";
+import { MobileBottomBar } from "@/components/mobile/mobile-bottom-bar";
 
 interface DeliveryHistoryItem {
   id: string;
@@ -42,30 +44,37 @@ const mockDeliveries: DeliveryHistoryItem[] = [
 
 function DeliveryHistoryScreen() {
   return (
-    <div className="min-h-screen bg-mobile-background font-mobile">
-      {/* Header */}
-      <div className="px-6 pt-8 pb-4 flex items-center gap-4">
-        <BackButton isPrimary={true} mainText="Delivery History" />
+    <div className="relative min-h-screen bg-mobile-background font-mobile">
+      <div className="pb-24">
+        {/* Header */}
+        <div className="px-6 pt-8 pb-4 flex items-center gap-4">
+          <BackButton isPrimary={true} mainText="Delivery History" />
+        </div>
+
+        {/* Delivery List */}
+        <div className="px-6 space-y-4">
+          {mockDeliveries.map((delivery) => (
+            <Link
+              key={delivery.id}
+              to="/app/user/arrive-location"
+              params={{ deliveryId: delivery.id }}
+            >
+              <OrderCard
+                orderId={delivery.id}
+                recipient={delivery.recipient}
+                location={delivery.location}
+                status={delivery.status}
+                timestamp={delivery.timestamp}
+                expectedTime={delivery.expectedTime}
+              />
+            </Link>
+          ))}
+        </div>
       </div>
 
-      {/* Delivery List */}
-      <div className="px-6 space-y-4">
-        {mockDeliveries.map((delivery) => (
-          <Link
-            key={delivery.id}
-            to="/app/user/delivery-details/$deliveryId"
-            params={{ deliveryId: delivery.id }}
-          >
-            <OrderCard
-              orderId={delivery.id}
-              recipient={delivery.recipient}
-              location={delivery.location}
-              status={delivery.status}
-              timestamp={delivery.timestamp}
-              expectedTime={delivery.expectedTime}
-            />
-          </Link>
-        ))}
+      {/* Mobile Bottom Bar */}
+      <div className="fixed bottom-0 left-0 right-0">
+        <MobileBottomBar isAgent={false}/>
       </div>
     </div>
   );
