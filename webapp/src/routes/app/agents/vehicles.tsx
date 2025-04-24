@@ -34,21 +34,21 @@ function VehiclesScreen() {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-mobile-background font-mobile">
       {/* Header */}
-      <div className="px-4 py-3 flex items-center justify-between border-b">
+      <div className="px-4 py-3 flex items-center justify-between border-b border-mobile-text">
         <div className="flex items-center gap-3">
           <button
             onClick={() => window.history.back()}
-            className="text-gray-700"
+            className="text-mobile-text"
           >
             <IoChevronBack className="w-6 h-6" />
           </button>
-          <h1 className="text-xl font-medium">Vehicles</h1>
+          <h1 className="text-xl font-medium text-mobile-text">Vehicles</h1>
         </div>
         <button
           onClick={() => navigate({ to: "/" })}
-          className="text-teal-600"
+          className="text-mobile-text"
         >
           <IoAdd className="w-6 h-6" />
         </button>
@@ -60,16 +60,16 @@ function VehiclesScreen() {
           <button
             key={vehicle.id}
             onClick={() => navigate({ to: `/app/agents/vehicles/${vehicle.plateNumber}` })}
-            className="w-full flex items-center gap-4 p-4 bg-gray-50 rounded-xl"
+            className="w-full flex items-center gap-4 p-4 bg-mobile-background  rounded-2xl"
           >
-            <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-xl">
+            <div className="w-10 h-10 bg-stone-500 rounded-xl flex items-center justify-center text-xl">
               {vehicle.type === "car" ? "🚗" : "🏍️"}
             </div>
             <div className="flex-1 text-left">
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-mobile-text">
                 {vehicle.type === "car" ? "Vehicle" : "Bike"} • {vehicle.model} {vehicle.year}
               </div>
-              <div className="font-medium text-gray-900">{vehicle.plateNumber}</div>
+              <div className="font-medium text-mobile-text">{vehicle.plateNumber}</div>
             </div>
             {vehicle.isActive && (
               <IoCheckmarkCircle className="w-6 h-6 text-green-500" />
