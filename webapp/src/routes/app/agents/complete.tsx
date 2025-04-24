@@ -73,8 +73,8 @@ function CompleteScreen() {
       <div className="absolute bottom-0 left-0 right-0 bg-mobile-background rounded-t-3xl shadow-lg z-[1000]">
         <div className="p-6 space-y-6">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-[#E5F3F3] rounded-full flex items-center justify-center">
-              <IoCheckmark className="w-8 h-8 text-green-600" />
+            <div className="w-12 h-12 bg-mobile-background rounded-full flex items-center justify-center">
+              <IoCheckmark className="w-8 h-8 text-mobile-text" />
             </div>
             <div className="flex-1">
               <div className="text-3xl font-semibold text-mobile-text mb-1">$300</div>
