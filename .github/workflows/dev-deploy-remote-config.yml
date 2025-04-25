@@ -56,4 +56,4 @@ jobs:
           project_id: freedman-trucking-dev
 
       # Deploy Firebase Remote Config settings.
-      - run: npm run deploy -- --environment=dev
+      - run: bun deploy.ts --environment=dev
