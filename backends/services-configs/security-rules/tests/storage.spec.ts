@@ -4,27 +4,19 @@ import {
   initializeTestEnvironment,
   RulesTestEnvironment,
 } from "@firebase/rules-unit-testing";
-import {getDoc, setDoc} from "firebase/firestore";
 import {uploadBytes, getBytes} from "firebase/storage";
 import {readFileSync} from "fs";
 import {afterAll, beforeAll, beforeEach, describe, it} from "vitest";
 
-const MY_DEV_PROJECT_ID = "id-4444";
+const MY_DEV_PROJECT_ID = "id-3333";
 
 let testEnvironment: RulesTestEnvironment;
 
 beforeAll(async () => {
   const testEnv = await initializeTestEnvironment({
     projectId: MY_DEV_PROJECT_ID,
-    firestore: {
-      rules: readFileSync(`${__dirname}/../rules/firestore.rules`, "utf8"),
-      host: "localhost",
-      port: 8080,
-    },
     storage: {
       rules: readFileSync(`${__dirname}/../rules/storage.rules`, "utf8"),
-      host: "localhost",
-      port: 9199,
     },
   });
   testEnvironment = testEnv;

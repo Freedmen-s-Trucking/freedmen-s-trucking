@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "test": "firebase emulators:exec --only firestore,storage \"vitest\"",
+    "test": "firebase emulators:exec --only firestore,storage \"vitest --run\"",
     "lint": "eslint --max-warnings=0 --ext .js,.ts .",
     "format": "prettier --write ."
   },

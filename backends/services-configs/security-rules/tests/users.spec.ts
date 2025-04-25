@@ -8,7 +8,7 @@ import {getDoc, setDoc} from "firebase/firestore";
 import {readFileSync} from "fs";
 import {afterAll, beforeAll, beforeEach, describe, it} from "vitest";
 
-const MY_DEV_PROJECT_ID = "id-4444";
+const MY_DEV_PROJECT_ID = "freedman-trucking-dev";
 
 let testEnvironment: RulesTestEnvironment;
 
@@ -17,8 +17,6 @@ beforeAll(async () => {
     projectId: MY_DEV_PROJECT_ID,
     firestore: {
       rules: readFileSync(`${__dirname}/../rules/firestore.rules`, "utf8"),
-      host: "localhost",
-      port: 8080,
     },
   });
   testEnvironment = testEnv;

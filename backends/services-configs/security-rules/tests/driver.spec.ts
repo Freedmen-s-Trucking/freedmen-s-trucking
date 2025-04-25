@@ -4,11 +4,11 @@ import {
   initializeTestEnvironment,
   RulesTestEnvironment,
 } from "@firebase/rules-unit-testing";
-import {addDoc, getDoc, setDoc} from "firebase/firestore";
+import {getDoc, setDoc} from "firebase/firestore";
 import {readFileSync} from "fs";
 import {afterAll, beforeAll, beforeEach, describe, it} from "vitest";
 
-const MY_DEV_PROJECT_ID = "id-4444";
+const MY_DEV_PROJECT_ID = "id-3333";
 
 let testEnvironment: RulesTestEnvironment;
 
@@ -17,14 +17,7 @@ beforeAll(async () => {
     projectId: MY_DEV_PROJECT_ID,
     firestore: {
       rules: readFileSync(`${__dirname}/../rules/firestore.rules`, "utf8"),
-      host: "localhost",
-      port: 8080,
-    },
-    storage: {
-      rules: readFileSync(`${__dirname}/../rules/storage.rules`, "utf8"),
-      host: "localhost",
-      port: 9199,
-    },
+    }
   });
   testEnvironment = testEnv;
 });
@@ -81,10 +74,11 @@ describe("Drivers collection rules", () => {
     const authedDb = testEnvironment.authenticatedContext("user_2").firestore();
 
     const testdoc = authedDb.collection("drivers").doc("user_1");
-    const newTestdoc = authedDb.collection("drivers").doc("user_3");
+    const newTestdoc = authedDb.collection("drivers").doc("user_new");
 
     await assertSucceeds(getDoc(testdoc));
     await assertSucceeds(setDoc(newTestdoc, {}));
+
   });
 
   it("allows write from driver's own document.", async function () {

@@ -41,7 +41,8 @@ service cloud.firestore {
     }
 
     match /drivers/{uid} {
-      allow read, create: if isNotAnonymous(); // todo: Must create own document with same driver id.
+      // todo: Must create own document with same driver id. 
+      allow read, create: if isNotAnonymous();
       allow update, delete: if isResourceOwner() || isAdmin();
     }
 

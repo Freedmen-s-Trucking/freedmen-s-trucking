@@ -17,8 +17,6 @@ beforeAll(async () => {
     projectId: MY_DEV_PROJECT_ID,
     firestore: {
       rules: readFileSync(`${__dirname}/../rules/firestore.rules`, "utf8"),
-      host: "localhost",
-      port: 8080,
     },
   });
   testEnvironment = testEnv;
@@ -58,8 +56,7 @@ describe("Orders collection rules", () => {
 
     const testdoc = unauthedDb.collection("orders").doc("order_1");
 
-    await assertFails(getDoc(testdoc));
-    await assertFails(setDoc(testdoc, {test: "test1"}));
+    await assertFails(Promise.all([getDoc(testdoc), setDoc(testdoc, {test: "test1"})]));
   });
 
   it("allows read authenticated users.", async function () {
@@ -117,4 +114,6 @@ describe("Orders collection rules", () => {
 
     await assertFails(setDoc(testdoc, {user_2: {key: "test1"}}));
   });
+
+  // TODO: Add order status change tests.
 });

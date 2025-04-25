@@ -51,7 +51,14 @@ jobs:
       - run: bun add -g firebase-tools
 
       # Setup credentials for Firebase and Google Cloud tools.
-      - run: echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT_FREEDMEN_S_TRUCKING }}" | base64 --decode > "${{ env.GCP_CREDENTIALS_FILE_PATH }}"
+      - id: "auth"
+        uses: "google-github-actions/auth@v2"
+        with:
+          credentials_json: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_FREEDMEN_S_TRUCKING }}"
+
+      - uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: freedmen-s-trucking
 
       # Deploy Firestore indexes.
       - run: >
