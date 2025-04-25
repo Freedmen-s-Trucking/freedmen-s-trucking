@@ -55,15 +55,10 @@ jobs:
           echo "STRIPE_WEBHOOK_SECRET_SELF_ACCOUNT=${{ secrets.STRIPE_WEBHOOK_SECRET_SELF_ACCOUNT_DEV }}" >> .env
           echo "STRIPE_WEBHOOK_SECRET_CONNECTED_ACCOUNT=${{ secrets.STRIPE_WEBHOOK_SECRET_CONNECTED_ACCOUNT_DEV }}" >> .env
 
-      # Set artefact policy
-      - run: >
-          firebase functions:artifacts:setpolicy \
-          --project="${{ env.FIREBASE_PROJECT_ID }}" \
-          --region="us-central1" \
-          --max-age-days=15
-
       # Deploy Cloud Functions.
+      # The double --force is not a mistake — the second one applies to artifact policy setup.
       - run: >
           firebase deploy --force --project "${{ env.FIREBASE_PROJECT_ID }}" 
           --only functions 
           -m "Deployment of cloud functions to dev environment"
+          --force
