@@ -17,11 +17,22 @@ jobs:
   changes:
     runs-on: ubuntu-latest
     outputs:
-      src: ${{ steps.filter.outputs.src }}
+      # True if changes are detected or tag does not exist.
+      changeDetected: ${{ steps.filter.outputs.src == 'true' || steps.tag_check.outputs.exists == 'false' }}
     steps:
       - uses: actions/checkout@v4
+      - name: Check if tag exists
+        id: tag_check
+        run: |
+          TAG_NAME="${{ env.WORK_FLOW_FILE_NAME }}"
+          if git ls-remote --tags origin "refs/tags/$TAG_NAME" | grep "$TAG_NAME" > /dev/null; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
       - uses: dorny/paths-filter@v3
         id: filter
+        if: steps.tag_check.outputs.exists == 'true'
         with:
           base: ${{ env.WORK_FLOW_FILE_NAME }}
           filters: |
@@ -32,7 +43,7 @@ jobs:
 
   build_and_deploy_prod:
     needs: changes
-    if: ${{ needs.changes.outputs.src == 'true' }}
+    if: ${{ needs.changes.outputs.changeDetected }}
     timeout-minutes: 5
     runs-on: ubuntu-latest
     steps:
@@ -53,6 +64,16 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_FREEDMEN_S_TRUCKING }}
           channelId: live
           projectId: freedmen-s-trucking
+
+  update-tag:
+    needs: build_and_deploy_prod
+    if: ${{ needs.build_and_deploy_prod.result == 'success' }}
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
 
       # Update workflow base tag.
       - name: Update tag to current commit

@@ -82,12 +82,13 @@ jobs:
       - name: Firestore deploy security rules.
         run: bun deploy.ts
 
-  create-tag:
+  update-tag:
     needs: deploy-rules
+    if: ${{ needs.deploy-rules.result == 'success' }}
+    timeout-minutes: 5
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    if: ${{ needs.deploy-rules.result == 'success' }}
     steps:
       - uses: actions/checkout@v4
 

@@ -19,11 +19,22 @@ jobs:
   changes:
     runs-on: ubuntu-latest
     outputs:
-      src: ${{ steps.filter.outputs.src }}
+      # True if changes are detected or tag does not exist.
+      changeDetected: ${{ steps.filter.outputs.src == 'true' || steps.tag_check.outputs.exists == 'false' }}
     steps:
       - uses: actions/checkout@v4
+      - name: Check if tag exists
+        id: tag_check
+        run: |
+          TAG_NAME="${{ env.WORK_FLOW_FILE_NAME }}"
+          if git ls-remote --tags origin "refs/tags/$TAG_NAME" | grep "$TAG_NAME" > /dev/null; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
       - uses: dorny/paths-filter@v3
         id: filter
+        if: steps.tag_check.outputs.exists == 'true'
         with:
           base: ${{ env.WORK_FLOW_FILE_NAME }}
           filters: |
@@ -33,7 +44,7 @@ jobs:
 
   lint-remote-config:
     needs: changes
-    if: ${{ needs.changes.outputs.src == 'true' }}
+    if: ${{ needs.changes.outputs.changeDetected }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -71,6 +82,16 @@ jobs:
 
       # Deploy Firebase Remote Config settings.
       - run: bun deploy.ts --environment=prod
+
+  update-tag:
+    needs: deploy-remote-config
+    if: ${{ needs.deploy-remote-config.result == 'success' }}
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
 
       # Update workflow base tag.
       - name: Update tag to current commit
