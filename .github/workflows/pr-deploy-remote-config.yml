@@ -8,6 +8,10 @@ env:
   BUN_VERSION: 1.2.4
   NODE_VERSION: 22.*
 
+concurrency:
+  group: "${{ github.workflow }}-${{ github.ref }}"
+  cancel-in-progress: true
+
 defaults:
   run:
     working-directory: ./backends/remote-configs

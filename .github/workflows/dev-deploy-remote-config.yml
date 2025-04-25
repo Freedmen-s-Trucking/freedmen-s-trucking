@@ -1,15 +1,16 @@
 name: "[DEV] Deploy Remote Configs"
 on:
-  pull_request:
-    paths:
-      - backends/remote-configs/**
-      - .github/workflows/dev-deploy-remote-config.yml
   push:
     branches:
       - main
     paths:
       - backends/remote-configs/**
       - .github/workflows/dev-deploy-remote-config.yml
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.ref }}"
+  cancel-in-progress: true
+
 env:
   BUN_VERSION: 1.2.4
 

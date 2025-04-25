@@ -8,6 +8,10 @@ on:
       - webapp/**
       - .github/workflows/pr-firebase-hosting.yml
 
+concurrency:
+  group: "${{ github.workflow }}-${{ github.ref }}"
+  cancel-in-progress: true
+
 permissions:
   checks: write
   contents: read
