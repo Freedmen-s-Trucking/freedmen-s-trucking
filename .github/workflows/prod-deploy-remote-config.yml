@@ -8,7 +8,7 @@ env:
 
 defaults:
   run:
-    working-directory: ./backend/remote-configs
+    working-directory: ./backends/remote-configs
 
 jobs:
   lint-remote-config:
@@ -24,7 +24,7 @@ jobs:
       - run: bun lint
 
   deploy-remote-config:
-    needs: 
+    needs:
       - lint-remote-config
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -34,7 +34,7 @@ jobs:
       #   with:
       #     node-version: ${{ env.NODE_VERSION }}
       #     cache: "npm"
-      #     cache-dependency-path: "backend/remote_config/package-lock.json"
+      #     cache-dependency-path: "backends/remote_config/package-lock.json"
 
       - uses: oven-sh/setup-bun@v2
         with:

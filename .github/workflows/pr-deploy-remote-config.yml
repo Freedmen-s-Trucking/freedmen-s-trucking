@@ -1,8 +1,8 @@
-name: "[DEV] Deploy Remote Configs"
+name: "[PR] Validate Remote Configs"
 on:
   pull_request:
-    paths: 
-      - backend/remote-configs/**
+    paths:
+      - backends/remote-configs/**
       - .github/workflows/pr-deploy-remote-config.yml
 env:
   BUN_VERSION: 1.2.4
@@ -10,7 +10,7 @@ env:
 
 defaults:
   run:
-    working-directory: ./backend/remote-configs
+    working-directory: ./backends/remote-configs
 
 jobs:
   lint-remote-config:
@@ -30,7 +30,7 @@ jobs:
     timeout-minutes: 10
     defaults:
       run:
-        working-directory: ./backend/remote-configs
+        working-directory: ./backends/remote-configs
     steps:
       - uses: actions/checkout@v4
       # - uses: actions/setup-node@v4
@@ -65,4 +65,3 @@ jobs:
           project_id: freedmen-s-trucking
       - name: Validate PROD remote config
         run: npm run deploy -- --environment=prod --dry_run
-

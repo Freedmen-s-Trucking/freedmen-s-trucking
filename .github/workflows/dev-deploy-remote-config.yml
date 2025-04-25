@@ -1,21 +1,21 @@
 name: "[DEV] Deploy Remote Configs"
 on:
   pull_request:
-    paths: 
-      - backend/remote-configs/**
+    paths:
+      - backends/remote-configs/**
       - .github/workflows/dev-deploy-remote-config.yml
   push:
     branches:
       - main
     paths:
-      - backend/remote-configs/**
+      - backends/remote-configs/**
       - .github/workflows/dev-deploy-remote-config.yml
 env:
   BUN_VERSION: 1.2.4
 
 defaults:
   run:
-    working-directory: ./backend/remote-configs
+    working-directory: ./backends/remote-configs
 
 jobs:
   lint-remote-config:
