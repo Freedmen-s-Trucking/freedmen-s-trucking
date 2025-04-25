@@ -11,10 +11,6 @@ import { PiTruck, PiVan } from "react-icons/pi";
 import { VehicleType } from "@freedmen-s-trucking/types";
 import { up } from "up-fetch";
 
-export const SERVER_API = isDevMode
-  ? "http://127.0.0.1:5001/freedman-trucking-dev/us-central1/httpServer/api"
-  : "/api";
-
 export const PAGE_ROUTES = [
   { name: "Home", href: "/preview" },
   { name: "About", href: "/preview/about" },
@@ -98,13 +94,17 @@ export const SPECIALTIES_DATA = [
 export enum RemoteConfigKeys {
   can_show_preview_landing_page = "can_show_preview_landing_page",
   test_number_key = "test_number_key",
-  test_string_key = "test_string_key",
+  order_form_type = "order_form_type",
 }
 
-export const DEFAULT_REMOTE_CONFIG_MAP = {
+export const DEFAULT_REMOTE_CONFIG_MAP: {
+  can_show_preview_landing_page: boolean;
+  test_number_key: number;
+  order_form_type: "multiple" | "manual" | "ai-assisted";
+} = {
   [RemoteConfigKeys.can_show_preview_landing_page]: false,
   [RemoteConfigKeys.test_number_key]: 1,
-  [RemoteConfigKeys.test_string_key]: "test",
+  [RemoteConfigKeys.order_form_type]: "ai-assisted", // manual, ai-assisted, multiple
 };
 
 export const tabTheme = {

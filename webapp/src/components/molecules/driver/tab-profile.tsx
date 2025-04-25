@@ -25,7 +25,6 @@ import {
   authenticateApiRequest,
   driverVerificationBadges,
   isAuthenticateMockApi,
-  SERVER_API,
   vehicleTypes,
 } from "~/utils/constants";
 import {
@@ -40,7 +39,7 @@ import { fileToBase64, getDriverVerificationStatus } from "~/utils/functions";
 import { CiImageOff } from "react-icons/ci";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
-import { PUBLIC_WEBAPP_URL } from "~/utils/envs";
+import { PUBLIC_WEBAPP_URL, VITE_SERVER_API } from "~/utils/envs";
 import { useRouterState } from "@tanstack/react-router";
 
 const getVerificationBadge = (
@@ -64,7 +63,7 @@ const getVerificationBadge = (
 
 export const DriverProfile: React.FC = () => {
   const { fetchImage, uploadCertificate } = useStorageOperations();
-  const { user } = useAuth();
+  const { user, getIDToken } = useAuth();
   const driverInfo = user.driverInfo;
   const dispatch = useAppDispatch();
   const queryClient = useQueryClient();
@@ -437,12 +436,12 @@ export const DriverProfile: React.FC = () => {
     useMutation({
       mutationFn: async () => {
         console.log("Setting up driver payment");
-        const idToken = await user.getIDToken?.();
+        const idToken = await getIDToken();
         if (!idToken) {
           throw new Error("Failed to get ID token");
         }
         const request = up(fetch, async () => ({
-          baseUrl: SERVER_API,
+          baseUrl: VITE_SERVER_API,
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${idToken}`,
@@ -802,7 +801,7 @@ export const DriverProfile: React.FC = () => {
               </Badge>
             </span>
           </div>
-          {driverInfo.payoutMethods.map((method) => (
+          {driverInfo.payoutMethods?.map((method) => (
             <div
               key={method.id}
               className="mb-3 flex items-center justify-between rounded-lg border p-3"
@@ -861,12 +860,12 @@ export const DriverProfile: React.FC = () => {
             <h6 className="mb-2 font-medium">Recent Withdrawals</h6>
             <div className="flow-root">
               <ul className="divide-y divide-gray-200">
-                {driverInfo.withdrawalHistory.length === 0 && (
+                {!driverInfo.withdrawalHistory?.length && (
                   <li className="py-3">
                     <p className="text-xs font-medium">No withdrawals yet</p>
                   </li>
                 )}
-                {driverInfo.withdrawalHistory.map((withdrawal) => (
+                {driverInfo.withdrawalHistory?.map((withdrawal) => (
                   <li key={withdrawal.id} className="py-3">
                     <div className="flex justify-between">
                       <div>

@@ -13,7 +13,7 @@ const options = {
   bundle: true,
   write: true,
   treeShaking: true,
-  minify: true,
+  minify: !isWatchMode,
   // minifyWhitespace: true,
   // minifyIdentifiers: true,
   // minifySyntax: true,

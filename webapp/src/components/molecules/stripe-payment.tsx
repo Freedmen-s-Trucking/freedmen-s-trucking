@@ -5,10 +5,9 @@ import {
   useStripe,
 } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
-import { STRIPE_CLIENT_SECRET } from "~/utils/envs";
+import { STRIPE_CLIENT_SECRET, VITE_SERVER_API } from "~/utils/envs";
 import { useState } from "react";
 import { Modal } from "flowbite-react";
-import { SERVER_API } from "~/utils/constants";
 import { useQuery } from "@tanstack/react-query";
 import { PrimaryButton } from "~/components/atoms";
 import {
@@ -49,7 +48,7 @@ const StripePayment: React.FC<{
         show={showModal}
         onClose={onCloseModal}
         size={"md"}
-        className=" bg-black bg-opacity-30 [&>div>div]:bg-primary-100 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-end md:[&>div]:h-auto"
+        className=" bg-black bg-opacity-30 [&>div>div]:bg-primary-100 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-center md:[&>div]:h-auto"
       >
         <Modal.Header>
           <span className="text-lg font-medium">Process Payment</span>
@@ -65,7 +64,7 @@ const StripePayment: React.FC<{
 
 const scheduleDeliveryRequest = async (order: NewOrder) => {
   const request = up(fetch, () => ({
-    baseUrl: SERVER_API,
+    baseUrl: VITE_SERVER_API,
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${STRIPE_CLIENT_SECRET}`,

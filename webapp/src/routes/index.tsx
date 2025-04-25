@@ -151,7 +151,7 @@ function Index() {
       </motion.div>
       {isSchedulingDelivery && (
         <CreateOrder
-          showInModal
+          showInModal={{ onClose: () => setIsSchedulingDelivery(false) }}
           brightness="light"
           onComplete={onOrderCreated}
         />

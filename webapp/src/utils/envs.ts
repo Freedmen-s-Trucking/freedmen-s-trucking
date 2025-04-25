@@ -9,3 +9,4 @@ export const isProdMode = import.meta.env.PROD;
 export const APP_ENV: "dev" | "prod" | "local" =
   import.meta.env.VITE_APP_ENV || "local";
 export const PUBLIC_WEBAPP_URL = import.meta.env.VITE_PUBLIC_WEBAPP_URL;
+export const VITE_SERVER_API = import.meta.env.VITE_SERVER_API;

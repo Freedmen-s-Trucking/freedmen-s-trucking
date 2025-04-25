@@ -1,27 +1,62 @@
-import { Modal } from "flowbite-react";
-import { motion } from "motion/react";
-import { add, formatDuration, intervalToDuration } from "date-fns";
 import {
+  ApiResExtractOrderRequestFromText,
+  apiResExtractOrderRequestFromText,
+  DistanceMeasurement,
   LATEST_PLATFORM_SETTINGS_PATH,
+  Location,
   NewOrder,
   OrderPriority,
   PlaceLocation,
   PlatformSettingsEntity,
   ProductWithQuantity,
+  RequiredVehicleEntity,
 } from "@freedmen-s-trucking/types";
-import { useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { add, formatDuration, intervalToDuration } from "date-fns";
+import { Dropdown, Modal, Tabs } from "flowbite-react";
+import { motion } from "motion/react";
+import React, { useCallback, useState } from "react";
+import { FaTrash } from "react-icons/fa6";
+import {
+  AddressSearchInput,
+  Heading2,
+  OnAddressChangedParams,
+  PrimaryButton,
+  SecondaryButton,
+  TextInput,
+} from "~/components/atoms";
+import StripePayment from "~/components/molecules/stripe-payment";
+import { useAuth } from "~/hooks/use-auth";
+import { useDbOperations } from "~/hooks/use-firestore";
+import { useComputeDeliveryEstimation } from "~/hooks/use-price-calculator";
+import { useGetRemoteConfig } from "~/hooks/use-remote-config";
+import { useServerRequest } from "~/hooks/use-server-request";
 import { setRequestedAuthAction } from "~/stores/controllers/app-ctrl";
 import { useAppDispatch } from "~/stores/hooks";
-import { FaTrash } from "react-icons/fa6";
-import { Dropdown } from "flowbite-react";
-import StripePayment from "~/components/molecules/stripe-payment";
-import { AddressSearchInput, OnAddressChangedParams } from "~/components/atoms";
-import { useComputeDeliveryEstimation } from "~/hooks/use-price-calculator";
-import { PrimaryButton, SecondaryButton, TextInput } from "~/components/atoms";
-import { useQuery } from "@tanstack/react-query";
-import { useDbOperations } from "~/hooks/use-firestore";
+import { RemoteConfigKeys } from "~/utils/constants";
 import { formatPrice } from "~/utils/functions";
-import { useAuth } from "~/hooks/use-auth";
+import { TextArea } from "../atoms/base";
+import {
+  fetchPlaceDetails,
+  fetchPlacesFromGoogle,
+} from "~/hooks/use-geocoding";
+
+const tabTheme = {
+  tablist: {
+    // className="focus:[&>button]: focus:[&>button]:ring-secondary-800"
+    tabitem: {
+      variant: {
+        underline: {
+          base: "rounded-t-lg focus:outline-transparent focus:ring-transparent",
+          active: {
+            on: "active rounded-t-lg border-b-2 border-primary-700 text-primary-700",
+            off: "border-b-2 border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-600",
+          },
+        },
+      },
+    },
+  },
+};
 
 const OrderPriorities = [
   {
@@ -38,13 +73,14 @@ const OrderPriorities = [
   },
 ] as const;
 export const CreateOrder: React.FC<{
-  showInModal: boolean;
+  showInModal?: { onClose: () => void };
   brightness: "dark" | "light";
-  onComplete: () => void;
+  onComplete?: () => void;
 }> = ({ showInModal, brightness, onComplete }) => {
-  const [showModal, setShowModal] = useState(showInModal);
+  const [showModal, setShowModal] = useState(!!showInModal);
   const onCloseModal = () => {
     setShowModal(false);
+    showInModal?.onClose?.();
   };
   if (showInModal) {
     return (
@@ -52,7 +88,7 @@ export const CreateOrder: React.FC<{
         show={showModal}
         onClose={onCloseModal}
         size={"lg"}
-        className=" bg-black bg-opacity-30 [&>div>div]:bg-primary-50 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-end md:[&>div]:h-auto"
+        className="mb-4 bg-black bg-opacity-30 [&>div>div]:mb-8 [&>div>div]:bg-primary-50 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-center md:[&>div]:h-auto"
       >
         <Modal.Header>
           <span className="text-lg font-medium">Schedule Delivery</span>
@@ -72,12 +108,11 @@ export const CreateOrder: React.FC<{
   );
 };
 
-export const CreateOrderForm: React.FC<{
+const ManualForm: React.FC<{
   brightness: "dark" | "light";
   className?: string;
   onOrderCreated?: () => void;
 }> = ({ brightness, className, onOrderCreated }) => {
-  const { user } = useAuth();
   const [deliveryPriority, setDeliveryPriorityInput] =
     useState<(typeof OrderPriorities)[number]>();
   const [error, setError] = useState<string | null>(null);
@@ -132,11 +167,6 @@ export const CreateOrderForm: React.FC<{
     products: packages,
   });
 
-  const dispatch = useAppDispatch();
-  const requestSignIn = () =>
-    dispatch(
-      setRequestedAuthAction({ type: "login", targetAccount: "customer" }),
-    );
   const handlePackageChange =
     (index: number) =>
     (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -145,15 +175,15 @@ export const CreateOrderForm: React.FC<{
       setPackages((previousPackages) => {
         const newPackages = [...previousPackages];
         if (
-          name === "dimensions.heightInInches" ||
-          name === "dimensions.widthInInches" ||
-          name === "dimensions.lengthInInches"
+          name === "estimatedDimensions.heightInInches" ||
+          name === "estimatedDimensions.widthInInches" ||
+          name === "estimatedDimensions.lengthInInches"
         ) {
           const dimensionName = name.split(".")[1];
           newPackages[index] = {
             ...newPackages[index],
-            dimensions: {
-              ...newPackages[index].dimensions,
+            estimatedDimensions: {
+              ...newPackages[index].estimatedDimensions,
               [dimensionName]:
                 value && type === "number" ? parseFloat(value) : value,
             },
@@ -173,59 +203,17 @@ export const CreateOrderForm: React.FC<{
       ...previousPackages,
       {
         name: "",
-        weightInLbs: 0,
-        dimensions: {
+        estimatedDimensions: {
           heightInInches: 0,
           widthInInches: 0,
           lengthInInches: 0,
         },
+        estimatedWeightInLbsPerUnit: 0,
         quantity: 1,
       },
     ]);
   };
 
-  const [isScheduling, setIsScheduling] = useState(false);
-  const [processPayment, setProcessPayment] = useState<NewOrder | null>(null);
-
-  const handleScheduleDelivery = async () => {
-    if (
-      !pickupLocation ||
-      !deliveryLocation ||
-      !user ||
-      user.isAnonymous ||
-      !deliveryPriority ||
-      !packages?.length ||
-      !estimations
-    ) {
-      return;
-    }
-    setIsScheduling(true);
-    try {
-      setProcessPayment({
-        ownerId: user.info.uid,
-        distanceInMiles: estimations.distanceInMiles || 0,
-        distanceMeasurement: estimations.distanceMeasurement!,
-        pickupLocation: {
-          address: pickupLocation?.address || "",
-          latitude: +pickupLocation.latitude || 0,
-          longitude: +pickupLocation.longitude || 0,
-        },
-        deliveryLocation: {
-          address: deliveryLocation?.address || "",
-          latitude: +deliveryLocation.latitude || 0,
-          longitude: +deliveryLocation.longitude || 0,
-        },
-        products: packages,
-        priority: deliveryPriority?.value || "standard",
-        priceInUSD: +estimations.fees,
-        requiredVehicles: estimations.vehicles,
-      });
-    } catch (error) {
-      console.error("Error creating order:", error);
-    } finally {
-      setIsScheduling(false);
-    }
-  };
   const getValidationErrorMessage = () => {
     if (!pickupLocation) {
       return "Pickup location is required";
@@ -251,29 +239,17 @@ export const CreateOrderForm: React.FC<{
     return null;
   };
 
-  const onPaymentComplete = () => {
-    setProcessPayment(null);
-    if (onOrderCreated) {
-      onOrderCreated();
-    }
-  };
-
   const handleComputeEstimation = async (e: React.FormEvent) => {
     e.preventDefault();
     const validationResult = validateForm();
     if (validationResult) {
       return;
     }
-    if (!user || user.isAnonymous) {
-      requestSignIn();
-      return;
-    }
     if (!estimations) {
       setError(`Failed to compute estimation: ${estimationError?.message}`);
       return;
     }
-    setProcessPayment(null);
-    handleScheduleDelivery();
+    setError(null);
   };
 
   const handleRemovePackage = (index: number) => () => {
@@ -378,9 +354,9 @@ export const CreateOrderForm: React.FC<{
                     type="number"
                     min={1}
                     step={0.01}
-                    name="weightInLbs"
+                    name="estimatedWeightInLbsPerUnit"
                     id={`package-weight-input-${index}`}
-                    value={`${packageProps.weightInLbs}`}
+                    value={`${packageProps.estimatedWeightInLbsPerUnit}`}
                     onChange={handlePackageChange(index)}
                     className={`block w-full rounded-xl border p-3 text-center text-lg text-black placeholder:text-lg focus:border-red-400 focus:outline-none focus:ring-transparent ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
                     placeholder="Weight (lbs)"
@@ -395,9 +371,9 @@ export const CreateOrderForm: React.FC<{
                     type="number"
                     min={1}
                     step={0.01}
-                    name="dimensions.heightInInches"
+                    name="estimatedDimensions.heightInInches"
                     id={`package-height-input-${index}`}
-                    value={`${packageProps.dimensions.heightInInches}`}
+                    value={`${packageProps.estimatedDimensions.heightInInches}`}
                     onChange={handlePackageChange(index)}
                     className={`block w-full rounded-xl border p-3 text-center text-lg text-black placeholder:text-lg focus:border-red-400 focus:outline-none focus:ring-transparent ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
                     placeholder="Height (in)"
@@ -410,9 +386,9 @@ export const CreateOrderForm: React.FC<{
                     type="number"
                     min={1}
                     step={0.01}
-                    name="dimensions.widthInInches"
+                    name="estimatedDimensions.widthInInches"
                     id={`package-width-input-${index}`}
-                    value={`${packageProps.dimensions.widthInInches}`}
+                    value={`${packageProps.estimatedDimensions.widthInInches}`}
                     onChange={handlePackageChange(index)}
                     className={`block w-full rounded-xl border p-3 text-center text-lg text-black placeholder:text-lg focus:border-red-400 focus:outline-none focus:ring-transparent ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
                     placeholder="Width (in)"
@@ -425,9 +401,9 @@ export const CreateOrderForm: React.FC<{
                     type="number"
                     min={1}
                     step={0.01}
-                    name="dimensions.lengthInInches"
+                    name="estimatedDimensions.lengthInInches"
                     id={`package-length-input-${index}`}
-                    value={`${packageProps.dimensions.lengthInInches}`}
+                    value={`${packageProps.estimatedDimensions.lengthInInches}`}
                     onChange={handlePackageChange(index)}
                     className={`block w-full rounded-xl border p-3 text-center text-lg text-black placeholder:text-lg focus:border-red-400 focus:outline-none focus:ring-transparent ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
                     placeholder="Length (in)"
@@ -497,31 +473,434 @@ export const CreateOrderForm: React.FC<{
         >
           {error}
         </motion.div>
-        {!user || user.isAnonymous ? (
-          <PrimaryButton onClick={requestSignIn}>
-            Sign In To Continue
-          </PrimaryButton>
-        ) : (
-          <>
-            {estimations && processPayment && (
-              <StripePayment
-                showInModal
-                price={estimations.fees}
-                order={processPayment}
-                onComplete={onPaymentComplete}
-              />
-            )}
-            <PrimaryButton
-              type="submit"
-              disabled={isEstimationLoading || isScheduling}
-            >
-              {isScheduling
-                ? "Scheduling..."
-                : `Schedule Now For ${estimations?.fees !== undefined ? formatPrice(estimations.fees) : "N/A"}`}
-            </PrimaryButton>
-          </>
-        )}
+        <PaymentButton
+          isLoading={isEstimationLoading}
+          pickupLocation={pickupLocation}
+          deliveryLocation={deliveryLocation}
+          deliveryPriority={deliveryPriority?.value || null}
+          packages={packages}
+          disabled={!!error}
+          onOrderCreated={onOrderCreated}
+          estimations={estimations || null}
+        />
       </form>
     </div>
   );
+};
+
+const PaymentButton: React.FC<{
+  isLoading: boolean;
+  onOrderCreated?: () => void;
+  pickupLocation: Location | null;
+  deliveryLocation: Location | null;
+  deliveryPriority: OrderPriority | null;
+  packages: ProductWithQuantity[];
+  disabled: boolean;
+  estimations: {
+    distanceInMiles?: number | undefined;
+    durationInSeconds?: number | undefined;
+    distanceMeasurement?: DistanceMeasurement | undefined;
+    vehicles: RequiredVehicleEntity[];
+    fees: number;
+  } | null;
+}> = ({
+  isLoading,
+  onOrderCreated,
+  estimations,
+  disabled,
+  pickupLocation,
+  deliveryLocation,
+  deliveryPriority,
+  packages,
+}) => {
+  const { user } = useAuth();
+  const [isScheduling, setIsScheduling] = useState(false);
+  const [processPayment, setProcessPayment] = useState<NewOrder | null>(null);
+
+  const onPaymentComplete = () => {
+    setProcessPayment(null);
+    if (onOrderCreated) {
+      onOrderCreated();
+    }
+  };
+  const dispatch = useAppDispatch();
+  const requestSignIn = useCallback(
+    () =>
+      dispatch(
+        setRequestedAuthAction({ type: "login", targetAccount: "customer" }),
+      ),
+    [dispatch],
+  );
+
+  const handleScheduleDelivery = useCallback(async () => {
+    console.log("handleScheduleDelivery");
+    if (isScheduling) {
+      return;
+    }
+    if (
+      !pickupLocation ||
+      !deliveryLocation ||
+      !deliveryPriority ||
+      !packages?.length ||
+      !estimations
+    ) {
+      return;
+    }
+    if (!user || user.isAnonymous) {
+      requestSignIn();
+      return;
+    }
+    setIsScheduling(true);
+    try {
+      setProcessPayment({
+        ownerId: user.info.uid,
+        distanceInMiles: estimations.distanceInMiles || 0,
+        distanceMeasurement: estimations.distanceMeasurement!,
+        pickupLocation: {
+          address: pickupLocation?.address || "",
+          latitude: +pickupLocation.latitude || 0,
+          longitude: +pickupLocation.longitude || 0,
+        },
+        deliveryLocation: {
+          address: deliveryLocation?.address || "",
+          latitude: +deliveryLocation.latitude || 0,
+          longitude: +deliveryLocation.longitude || 0,
+        },
+        products: packages,
+        priority: deliveryPriority || "standard",
+        priceInUSD: +estimations.fees,
+        requiredVehicles: estimations.vehicles,
+      });
+    } catch (error) {
+      console.error("Error creating order:", error);
+    } finally {
+      setIsScheduling(false);
+    }
+  }, [
+    pickupLocation,
+    deliveryLocation,
+    user,
+    requestSignIn,
+    deliveryPriority,
+    packages,
+    estimations,
+    isScheduling,
+  ]);
+
+  const validEstimations =
+    estimations?.fees !== undefined &&
+    estimations?.vehicles?.length > 0 &&
+    estimations?.distanceInMiles !== undefined &&
+    estimations?.durationInSeconds !== undefined;
+
+  if (!user || user.isAnonymous) {
+    return (
+      <PrimaryButton onClick={requestSignIn}>Sign In To Continue</PrimaryButton>
+    );
+  }
+  return (
+    <>
+      {estimations && processPayment && (
+        <StripePayment
+          showInModal
+          price={estimations.fees}
+          order={processPayment}
+          onComplete={onPaymentComplete}
+        />
+      )}
+      <PrimaryButton
+        disabled={disabled}
+        type={validEstimations ? "button" : "submit"}
+        onClick={validEstimations ? handleScheduleDelivery : undefined}
+        isLoading={isLoading || isScheduling}
+      >
+        {isScheduling || isLoading
+          ? "Scheduling..."
+          : estimations?.fees
+            ? `Schedule Now For ${formatPrice(estimations.fees)}`
+            : "Estimate Delivery"}
+      </PrimaryButton>
+    </>
+  );
+};
+
+const AIAssistedForm: React.FC<{
+  brightness: "dark" | "light";
+  className?: string;
+  onOrderCreated?: () => void;
+}> = ({ brightness, className, onOrderCreated }) => {
+  const request = useServerRequest();
+  const { fetchPlatformSettings } = useDbOperations();
+
+  const { data: availableCities } = useQuery({
+    initialData: null,
+    queryKey: [LATEST_PLATFORM_SETTINGS_PATH],
+    queryFn: fetchPlatformSettings,
+    select: (result) => {
+      return (
+        (
+          result?.data || ({ availableCities: [] } as PlatformSettingsEntity)
+        ).availableCities?.map((city) => city.viewPort) || []
+      );
+    },
+  });
+
+  type RequestInfo = Partial<
+    Omit<
+      ApiResExtractOrderRequestFromText,
+      "pickupLocation" | "dropoffLocation"
+    >
+  > & {
+    pickupLocation?: Location;
+    dropoffLocation?: Location;
+  };
+  const [reqInfo, setReqInfo] = useState<RequestInfo>({});
+
+  const { mutate: autoDetectRequestAndEstimateFees, isPending } = useMutation({
+    mutationKey: ["auto-detect-request-and-estimate-fees", availableCities],
+    mutationFn: async (ev: React.FormEvent<HTMLFormElement>) => {
+      ev.preventDefault();
+      // WARNING: e.currentTarget is null for unknown reason that is why we use the target instead.
+      const formData = new FormData(ev.currentTarget || ev.target);
+      const requestDAO: Record<string, unknown> = {};
+      formData.forEach((value, key) => {
+        requestDAO[key] = value;
+      });
+
+      const res = await request("/v1/ai-agent/extract-order-request", {
+        method: "POST",
+        body: requestDAO,
+        schema: apiResExtractOrderRequestFromText,
+      });
+
+      const pickupLocationsSuggestions = await fetchPlacesFromGoogle(
+        res.pickupLocation,
+        {
+          viewPort: availableCities[0],
+        },
+      );
+      const rowPickupLocation = pickupLocationsSuggestions.suggestions?.[0];
+      if (!rowPickupLocation) {
+        throw new Error(`Pickup location not found for ${res.pickupLocation}`);
+      }
+      const pickupLocation = await fetchPlaceDetails({
+        placeId: rowPickupLocation.placePrediction.placeId,
+        address: rowPickupLocation.placePrediction.text.text,
+      });
+
+      const dropoffLocationsSuggestions = await fetchPlacesFromGoogle(
+        res.dropoffLocation,
+        {
+          viewPort: availableCities[0],
+        },
+      );
+      const rowDropoffLocation = dropoffLocationsSuggestions.suggestions?.[0];
+      if (!rowDropoffLocation) {
+        throw new Error(
+          `Dropoff location not found for ${res.dropoffLocation}`,
+        );
+      }
+      const dropoffLocation = await fetchPlaceDetails({
+        placeId: rowDropoffLocation.placePrediction.placeId,
+        address: rowDropoffLocation.placePrediction.text.text,
+      });
+
+      return {
+        ...res,
+        pickupLocation,
+        dropoffLocation,
+      };
+    },
+    onSuccess(data, variables, context) {
+      console.log({ data, variables, context });
+      setReqInfo(data);
+    },
+    onError(error, variables, context) {
+      console.error({ error, variables, context });
+    },
+  });
+
+  const {
+    error,
+    isFetching,
+    result: estimations,
+  } = useComputeDeliveryEstimation({
+    products: reqInfo.items,
+    deliveryLocation: reqInfo.dropoffLocation,
+    pickupLocation: reqInfo.pickupLocation,
+    priority: reqInfo.urgencyLevel,
+  });
+
+  return (
+    <div
+      className={`flex flex-col items-center gap-4 rounded-3xl border pb-8 ${brightness === "dark" ? "border-white bg-white/20" : ""} ${className}`}
+    >
+      <form
+        onSubmit={autoDetectRequestAndEstimateFees}
+        className="flex flex-col items-center gap-4"
+      >
+        <Heading2 className="text-center font-serif">
+          Describe What You Need Delivered - We'll Handle The Rest
+        </Heading2>
+        <TextArea
+          name="text"
+          required
+          className={`word-spacing-tight block h-11 w-full rounded-xl border p-[8px] text-xs tracking-tight text-black placeholder:text-xs focus:border-red-400 focus:outline-none focus:ring-transparent md:h-auto md:w-11/12 ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
+          placeholder="e.g. 4 tires from Waldorf to Baltimore - need by 3PM"
+        />
+        {/* <PrimaryButton
+          type="submit"
+          className="py-2"
+          loadingIcon=
+        >
+          Estimate Delivery
+        </PrimaryButton> */}
+        {estimations && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.5 }}
+            className={`block w-full text-wrap rounded-xl border  p-3 text-sm  focus:outline-none focus:ring-transparent sm:text-[16px] ${brightness === "dark" ? "border-gray-300 bg-amber-400/30 text-white focus:border-red-400" : "border-gray-300 bg-amber-200/30 text-secondary-900 focus:border-red-900"}`}
+          >
+            <span className="block"> Priority: {reqInfo.urgencyLevel}</span>
+            <span className="block">
+              Pickup Location: {reqInfo.pickupLocation?.address}
+            </span>
+            <span className="block">
+              Dropoff Location: {reqInfo.dropoffLocation?.address}
+            </span>
+            <span className="block">
+              Required Vehicle Type:{" "}
+              {estimations?.vehicles
+                ?.map((v) => `${v.quantity}*${v.type}`)
+                .join(", ") || "N/A"}
+            </span>
+            <span className="block">
+              Estimated Delivery Cost:{" "}
+              {estimations?.fees !== undefined
+                ? formatPrice(estimations.fees)
+                : "N/A"}
+            </span>
+            <span className="block">
+              Estimated Delivery Time:{" "}
+              {estimations?.durationInSeconds
+                ? formatDuration(
+                    intervalToDuration({
+                      start: new Date(0),
+                      end: add(new Date(0), {
+                        seconds: estimations.durationInSeconds,
+                      }),
+                    }),
+                    { zero: true, format: ["hours", "minutes", "seconds"] },
+                  )
+                : "N/A"}
+            </span>
+            <span className="block">
+              Estimated Distance:{" "}
+              {estimations?.distanceInMiles !== undefined
+                ? `${estimations.distanceInMiles.toFixed(3)} miles`
+                : "N/A"}
+            </span>
+          </motion.div>
+        )}
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, scaleY: 0, scaleX: 0.8 }}
+            animate={{
+              opacity: 1,
+              scaleY: 1,
+              scaleX: 1,
+              transition: { duration: 0.2, type: "spring", stiffness: 300 },
+            }}
+            className={`inline-block w-full rounded-lg p-1 text-center text-red-500 transition-all duration-500 ${error ? "" : "hidden"} ${brightness === "dark" ? "bg-white " : ""}`}
+          >
+            {error.message}
+          </motion.div>
+        )}
+      </form>
+      {(isPending || isFetching) && !estimations && (
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          className="flex w-full flex-row items-center justify-evenly gap-2"
+          transition={{ type: "spring", stiffness: 100 }}
+        >
+          <span className="inline-block h-7 w-7 animate-spin rounded-full border-4 border-primary-100/10 border-t-primary-900" />
+        </motion.div>
+      )}
+      {estimations && (
+        <PaymentButton
+          disabled={!!error}
+          isLoading={isPending || isFetching}
+          estimations={estimations || null}
+          pickupLocation={reqInfo.pickupLocation || null}
+          deliveryLocation={reqInfo.dropoffLocation || null}
+          deliveryPriority={reqInfo.urgencyLevel || null}
+          packages={reqInfo.items || []}
+          onOrderCreated={onOrderCreated}
+        />
+      )}
+    </div>
+  );
+};
+
+const MultipleForms: React.FC<{
+  brightness: "dark" | "light";
+  className?: string;
+  onOrderCreated?: () => void;
+}> = ({ brightness, className, onOrderCreated }) => {
+  return (
+    <Tabs theme={tabTheme} variant="underline">
+      <Tabs.Item title="Manual" active>
+        <ManualForm
+          brightness={brightness}
+          className={className}
+          onOrderCreated={onOrderCreated}
+        />
+      </Tabs.Item>
+      <Tabs.Item title="AI Assisted">
+        <AIAssistedForm
+          brightness={brightness}
+          className={className}
+          onOrderCreated={onOrderCreated}
+        />
+      </Tabs.Item>
+    </Tabs>
+  );
+};
+
+export const CreateOrderForm: React.FC<{
+  brightness: "dark" | "light";
+  className?: string;
+  onOrderCreated?: () => void;
+}> = ({ brightness, className, onOrderCreated }) => {
+  const orderFormType = useGetRemoteConfig(RemoteConfigKeys.order_form_type);
+
+  switch (orderFormType) {
+    case "ai-assisted":
+      return (
+        <AIAssistedForm
+          brightness={brightness}
+          className={className}
+          onOrderCreated={onOrderCreated}
+        />
+      );
+    case "multiple":
+      return (
+        <MultipleForms
+          brightness={brightness}
+          className={className}
+          onOrderCreated={onOrderCreated}
+        />
+      );
+    case "manual":
+    default:
+      return (
+        <ManualForm
+          brightness={brightness}
+          className={className}
+          onOrderCreated={onOrderCreated}
+        />
+      );
+  }
 };

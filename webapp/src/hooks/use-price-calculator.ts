@@ -23,9 +23,9 @@ import {
 
 function getPackageVolumeInCubicFeet(pkg: ProductWithQuantity): number {
   return (
-    (pkg.dimensions.heightInInches *
-      pkg.dimensions.widthInInches *
-      pkg.dimensions.lengthInInches) /
+    (pkg.estimatedDimensions.heightInInches *
+      pkg.estimatedDimensions.widthInInches *
+      pkg.estimatedDimensions.lengthInInches) /
     1728
   );
 }
@@ -68,7 +68,8 @@ export function computeTheMinimumRequiredVehiclesAndFees(
     if (remainingVehicleVolume >= 0) {
       // we found the smallest vehicle that fit the volume.
       remainingVolume = totalPkgVolumeToUse;
-      remainingWeight = currentPackage.weightInLbs * currentPackage.quantity;
+      remainingWeight =
+        currentPackage.estimatedWeightInLbsPerUnit * currentPackage.quantity;
       currentPackageId++;
       currentPackage = packages[currentPackageId] || null;
       continue;
@@ -89,7 +90,8 @@ export function computeTheMinimumRequiredVehiclesAndFees(
       quantity: (vehicles[currentVehicle.type]?.quantity || 0) + 1,
       weightToBeUsedInLbs: [
         ...(vehicles[currentVehicle.type]?.weightToBeUsedInLbs || []),
-        remainingWeight + usedPackageQuantity * currentPackage.weightInLbs,
+        remainingWeight +
+          usedPackageQuantity * currentPackage.estimatedWeightInLbsPerUnit,
       ],
     };
 
@@ -290,7 +292,6 @@ export const useComputeDeliveryEstimation = (
     isFetching,
     error: computeError,
   } = useQuery({
-    initialData: null,
     enabled: !(computeListOfVehiclesValidation instanceof type.errors),
     queryKey: [
       "calculate-vehicles",
@@ -309,6 +310,12 @@ export const useComputeDeliveryEstimation = (
       }
       return res;
     },
+    throwOnError(error, query) {
+      if (error instanceof Error) {
+        console.error({ error, query });
+      }
+      return false;
+    },
     select(data) {
       const milesAndDuration = !distanceData
         ? null
@@ -324,6 +331,5 @@ export const useComputeDeliveryEstimation = (
       };
     },
   });
-
   return { result, isFetching, error: distanceError || computeError };
 };

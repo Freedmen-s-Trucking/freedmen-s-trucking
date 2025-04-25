@@ -20,12 +20,12 @@ export type AuthMethod = typeof authMethodType.infer;
 
 export const productType = type({
   name: "string",
-  dimensions: {
+  estimatedDimensions: {
     widthInInches: "number > 0",
     heightInInches: "number > 0",
     lengthInInches: "number > 0",
   },
-  weightInLbs: "number > 0",
+  estimatedWeightInLbsPerUnit: "number > 0",
 });
 export type Product = typeof productType.infer;
 

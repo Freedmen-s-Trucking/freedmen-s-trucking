@@ -63,8 +63,8 @@ export const driverEntity = userEntity.and({
   })
     .array()
     .optional(),
-  withdrawalHistory: withdrawalEntity.array(),
-  payoutMethods: payoutMethodType.array(),
+  withdrawalHistory: withdrawalEntity.array().optional(),
+  payoutMethods: payoutMethodType.array().optional(),
   payoutCapabilities: type({
     transfers: "'active' | 'inactive' | 'pending'",
   }).optional(),

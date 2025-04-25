@@ -41,3 +41,23 @@ export const apiResSetupConnectedAccount = userEntity
 
 export type ApiResSetupConnectedAccount =
   typeof apiResSetupConnectedAccount.infer;
+
+export const apiReqExtractOrderRequestFromText = type({
+  text: type("string").atLeastLength(4),
+});
+
+export type ApiReqExtractOrderRequestFromText =
+  typeof apiReqExtractOrderRequestFromText.infer;
+
+export const apiResExtractOrderRequestFromText = type({
+  pickupLocation: "string",
+  dropoffLocation: "string",
+  items: productWithQuantityType.array().atLeastLength(1),
+  urgencyLevel: type.valueOf(OrderPriority),
+  deliveryTime: "string",
+});
+
+export const ApiResExtractOrderRequestFromTextSchema =
+  apiResExtractOrderRequestFromText.toJsonSchema();
+export type ApiResExtractOrderRequestFromText =
+  typeof apiResExtractOrderRequestFromText.infer;
