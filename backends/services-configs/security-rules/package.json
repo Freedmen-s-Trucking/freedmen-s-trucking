@@ -24,6 +24,7 @@
     "eslint-config-prettier": "9.1.0",
     "eslint-plugin-import": "2.25.4",
     "eslint-plugin-prettier": "5.2.6",
+    "firebase-tools": "*",
     "ts-node": "10.9.2",
     "tslib": "^2.8.1",
     "vitest": "3.1.2"
