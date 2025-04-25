@@ -1,8 +1,15 @@
-name: "[DEV] Deploy to Firebase Hosting"
+# This workflow deploys the webapp to Firebase Hosting when changes
+# to the webapp or any of the common files are pushed to the main branch.
+
+name: "[DEV] Deploy Firebase Hosting"
 on:
   push:
     branches:
       - main
+    paths:
+      - webapp/**
+      - common/**
+      - .github/workflows/dev-deploy-firebase-hosting.yml
 
 concurrency:
   group: "${{ github.workflow }}-${{ github.ref }}"

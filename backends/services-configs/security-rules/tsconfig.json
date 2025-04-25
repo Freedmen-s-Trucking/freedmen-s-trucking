@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2022", // Set target to ES2022
+    "module": "ESNext", // Use Node.js's modern module resolution for ESM (or ESNext/ES2022)
+    "moduleResolution": "node", // Aligns with the 'module' setting for modern Node.js behavior (or "Bundler")
+    "resolveJsonModule": true,
+    "outDir": "dist",
+    "rootDir": ".",
+    /* --- General Build Options --- */
+    "esModuleInterop": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "sourceMap": true,
+
+    "strict": true,
+    "skipLibCheck": true,
+    "isolatedModules": true
+  },
+  "include": ["templates", "deploy.ts"]
+}

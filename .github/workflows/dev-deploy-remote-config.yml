@@ -1,3 +1,6 @@
+# This workflow deploys the remote configs to Firebase when changes
+# to the remote configs are pushed to the main branch.
+
 name: "[DEV] Deploy Remote Configs"
 on:
   push:

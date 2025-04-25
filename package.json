@@ -4,6 +4,7 @@
   "workspaces": [
     "backends/functions",
     "backends/remote-configs",
+    "backends/services-configs/security-rules",
     "common/*",
     "webapp"
   ]

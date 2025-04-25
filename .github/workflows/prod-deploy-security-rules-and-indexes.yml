@@ -1,4 +1,6 @@
-name: "[PROD] Deploy Remote Configs"
+# This workflow deploys the security rules and indexes to Firebase on manual dispatch.
+
+name: "[PROD] Deploy Security Rules & Indexes"
 on:
   workflow_dispatch:
 
@@ -6,14 +8,14 @@ concurrency:
   group: "${{ github.workflow }}-${{ github.ref }}"
   cancel-in-progress: true
 
-env:
-  BUN_VERSION: 1.2.4
-  NODE_VERSION: 22.*
-  WORK_FLOW_FILE_NAME: prod-deploy-remote-config
-
 defaults:
   run:
-    working-directory: ./backends/remote-configs
+    working-directory: ./backends/services-configs/security-rules
+
+env:
+  BUN_VERSION: 1.2.4
+  FIREBASE_PROJECT_ID: freedmen-s-trucking
+  WORK_FLOW_FILE_NAME: prod-deploy-security-rules-and-indexes
 
 jobs:
   changes:
@@ -28,36 +30,25 @@ jobs:
           base: ${{ env.WORK_FLOW_FILE_NAME }}
           filters: |
             src:
-              - '.github/workflows/prod-deploy-remote-config.yml'
-              - 'backends/remote-configs/**'
+              - '.github/workflows/prod-deploy-security-rules-and-indexes.yml'
+              - 'backends/services-configs/security-rules/**'
+              - 'backends/services-configs/firestore.indexes.json'
 
-  lint-remote-config:
+  deploy-rules:
+    runs-on: ubuntu-latest
     needs: changes
     if: ${{ needs.changes.outputs.src == 'true' }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      # Install pre-requisites.
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: ${{ env.BUN_VERSION }}
-      - run: bun i --frozen-lockfile
-      - run: bun lint
-
-  deploy-remote-config:
-    needs: lint-remote-config
-    if: ${{ needs.lint-remote-config.result == 'success' }}
-    runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: ${{ env.BUN_VERSION }}
 
       - run: bun i --frozen-lockfile
+
+      # Download the latest firebase tools.
+      - run: bun add -g firebase-tools
 
       # Setup credentials for Firebase and Google Cloud tools.
       - id: "auth"
@@ -69,8 +60,15 @@ jobs:
         with:
           project_id: freedmen-s-trucking
 
-      # Deploy Firebase Remote Config settings.
-      - run: bun deploy.ts --environment=prod
+      # Deploy Firestore indexes.
+      - run: >
+          firebase deploy --force --project "${{ env.FIREBASE_PROJECT_ID }}" 
+          --only firestore:indexes 
+          -m "Deployment of firestore indexes to prod environment"
+
+      # Deploy Firestore security rules.
+      - name: Firestore deploy security rules.
+        run: bun deploy.ts
 
       # Update workflow base tag.
       - name: Update tag to current commit
