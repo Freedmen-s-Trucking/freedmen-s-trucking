@@ -1,0 +1,108 @@
+# This workflow deploys the cloud functions to Firebase on manual dispatch.
+
+name: "[PROD] Deploy Cloud Functions"
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.ref }}"
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: ./backends/functions
+
+env:
+  BUN_VERSION: 1.2.4
+  FIREBASE_PROJECT_ID: freedmen-s-trucking
+  WORK_FLOW_FILE_NAME: prod-deploy-cloud-functions
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      # True if changes are detected or tag does not exist.
+      changeDetected: ${{ steps.filter.outputs.src == 'true' || steps.tag_check.outputs.exists == 'false' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check if tag exists
+        id: tag_check
+        run: |
+          TAG_NAME="${{ env.WORK_FLOW_FILE_NAME }}"
+          if git ls-remote --tags origin "refs/tags/$TAG_NAME" | grep "$TAG_NAME" > /dev/null; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+      - uses: dorny/paths-filter@v3
+        id: filter
+        if: steps.tag_check.outputs.exists == 'true'
+        with:
+          base: ${{ env.WORK_FLOW_FILE_NAME }}
+          filters: |
+            src:
+              - '.github/workflows/prod-deploy-cloud-functions.yml'
+              - 'backends/functions/**'
+              - 'common/**'
+
+  deploy-functions:
+    runs-on: ubuntu-latest
+    needs: changes
+    if: ${{ needs.changes.outputs.changeDetected }}
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - run: bun i --frozen-lockfile
+
+      # Download the latest firebase tools.
+      - run: bun add -g firebase-tools
+
+      # Setup credentials for Firebase and Google Cloud tools.
+      - id: "auth"
+        uses: "google-github-actions/auth@v2"
+        with:
+          credentials_json: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_FREEDMEN_S_TRUCKING }}"
+
+      - uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.FIREBASE_PROJECT_ID }}
+
+      # Create .env file.
+      - run: |
+          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY_PROD }}" > .env
+          echo "STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY_PROD }}" >> .env
+          echo "STRIPE_WEBHOOK_SECRET_SELF_ACCOUNT=${{ secrets.STRIPE_WEBHOOK_SECRET_SELF_ACCOUNT_PROD }}" >> .env
+          echo "STRIPE_WEBHOOK_SECRET_CONNECTED_ACCOUNT=${{ secrets.STRIPE_WEBHOOK_SECRET_CONNECTED_ACCOUNT_PROD }}" >> .env
+
+      # Deploy Cloud Functions.
+      # The double --force is not a mistake — the second one applies to artifact policy setup.
+      - run: >
+          firebase deploy --force --project "${{ env.FIREBASE_PROJECT_ID }}" 
+          --only functions 
+          -m "Deployment of cloud functions to prod environment"
+          --force
+
+  update-tag:
+    needs: deploy-functions
+    if: ${{ needs.deploy-functions.result == 'success' }}
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      # Update workflow base tag.
+      - name: Update tag to current commit
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          git tag -f "$TAG_NAME"
+          git push origin -f "$TAG_NAME"
+        env:
+          TAG_NAME: ${{ env.WORK_FLOW_FILE_NAME }}

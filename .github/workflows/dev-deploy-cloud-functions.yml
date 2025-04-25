@@ -1,15 +1,14 @@
-# This workflow deploys the security rules and indexes to Firebase when changes
-# to the security rules are pushed to the main branch.
+# This workflow deploys the cloud functions to Firebase on manual dispatch.
 
-name: "[DEV] Deploy Security Rules & Indexes"
+name: "[DEV] Deploy Cloud Functions"
 on:
   push:
     branches:
       - main
     paths:
-      - backends/services-configs/security-rules/**
-      - backends/services-configs/firestore.indexes.json
-      - .github/workflows/dev-deploy-security-rules.yml
+      - backends/functions/**
+      - common/**
+      - .github/workflows/dev-deploy-cloud-functions.yml
 
 concurrency:
   group: "${{ github.workflow }}-${{ github.ref }}"
@@ -17,14 +16,14 @@ concurrency:
 
 defaults:
   run:
-    working-directory: ./backends/services-configs/security-rules
+    working-directory: ./backends/functions
 
 env:
   BUN_VERSION: 1.2.4
   FIREBASE_PROJECT_ID: freedman-trucking-dev
 
 jobs:
-  deploy-rules:
+  deploy-functions:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -48,12 +47,17 @@ jobs:
         with:
           project_id: ${{ env.FIREBASE_PROJECT_ID }}
 
-      # Deploy Firestore indexes.
+      # Create .env file.
+      - run: |
+          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY_DEV }}" > .env
+          echo "STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY_DEV }}" >> .env
+          echo "STRIPE_WEBHOOK_SECRET_SELF_ACCOUNT=${{ secrets.STRIPE_WEBHOOK_SECRET_SELF_ACCOUNT_DEV }}" >> .env
+          echo "STRIPE_WEBHOOK_SECRET_CONNECTED_ACCOUNT=${{ secrets.STRIPE_WEBHOOK_SECRET_CONNECTED_ACCOUNT_DEV }}" >> .env
+
+      # Deploy Cloud Functions.
+      # The double --force is not a mistake — the second one applies to artifact policy setup.
       - run: >
           firebase deploy --force --project "${{ env.FIREBASE_PROJECT_ID }}" 
-          --only firestore:indexes 
-          -m "Deployment of firestore indexes to dev environment"
-
-      # Deploy Firestore security rules.
-      - name: Firestore deploy security rules.
-        run: bun deploy.ts
+          --only functions 
+          -m "Deployment of cloud functions to dev environment"
+          --force
