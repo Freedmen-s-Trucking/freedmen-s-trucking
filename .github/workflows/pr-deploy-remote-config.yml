@@ -58,7 +58,7 @@ jobs:
         with:
           project_id: freedman-trucking-dev
       - name: Validate DEV remote config
-        run: npm run deploy -- --environment=dev --dry_run
+        run: bun deploy.ts --environment=dev --dry_run
 
       # PROD.
       - uses: google-github-actions/auth@v2
@@ -68,4 +68,4 @@ jobs:
         with:
           project_id: freedmen-s-trucking
       - name: Validate PROD remote config
-        run: npm run deploy -- --environment=prod --dry_run
+        run: bun deploy.ts --environment=prod --dry_run
