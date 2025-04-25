@@ -82,6 +82,15 @@ jobs:
       - name: Firestore deploy security rules.
         run: bun deploy.ts
 
+  create-tag:
+    needs: deploy-rules
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    if: ${{ needs.deploy-rules.result == 'success' }}
+    steps:
+      - uses: actions/checkout@v4
+
       # Update workflow base tag.
       - name: Update tag to current commit
         run: |
