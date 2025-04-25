@@ -1,0 +1,68 @@
+name: "[DEV] Deploy Remote Configs"
+on:
+  pull_request:
+    paths: 
+      - backend/remote-configs/**
+      - .github/workflows/pr-deploy-remote-config.yml
+env:
+  BUN_VERSION: 1.2.4
+  NODE_VERSION: 22.*
+
+defaults:
+  run:
+    working-directory: ./backend/remote-configs
+
+jobs:
+  lint-remote-config:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # Install pre-requisites.
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+      - run: bun i --frozen-lockfile
+      - run: bun lint
+
+  validate-remote-config:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: ./backend/remote-configs
+    steps:
+      - uses: actions/checkout@v4
+      # - uses: actions/setup-node@v4
+      #   with:
+      #     node-version: ${{ env.NODE_VERSION }}
+      #     cache: "npm"
+      #     cache-dependency-path: "**/package-lock.json"
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - run: bun i --frozen-lockfile
+
+      # Dry run remote config deployment to find template issues.
+      # DEV.
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_FREEDMAN_TRUCKING_DEV }}"
+      - uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: freedman-trucking-dev
+      - name: Validate DEV remote config
+        run: npm run deploy -- --environment=dev --dry_run
+
+      # PROD.
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_FREEDMEN_S_TRUCKING }}"
+      - uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: freedmen-s-trucking
+      - name: Validate PROD remote config
+        run: npm run deploy -- --environment=prod --dry_run
+

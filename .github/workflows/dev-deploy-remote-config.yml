@@ -1,0 +1,58 @@
+name: "[DEV] Deploy Remote Configs"
+on:
+  pull_request:
+    paths: 
+      - backend/remote-configs/**
+      - .github/workflows/dev-deploy-remote-config.yml
+  push:
+    branches:
+      - main
+    paths:
+      - backend/remote-configs/**
+      - .github/workflows/dev-deploy-remote-config.yml
+env:
+  BUN_VERSION: 1.2.4
+
+defaults:
+  run:
+    working-directory: ./backend/remote-configs
+
+jobs:
+  lint-remote-config:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # Install pre-requisites.
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+      - run: bun i --frozen-lockfile
+      - run: bun lint
+
+  deploy-remote-config:
+    needs: lint-remote-config
+    if: ${{ github.event_name == 'push' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - run: bun i --frozen-lockfile
+
+      # Setup credentials for Firebase and Google Cloud tools.
+      - id: "auth"
+        uses: "google-github-actions/auth@v2"
+        with:
+          credentials_json: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_FREEDMAN_TRUCKING_DEV }}"
+
+      - uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: freedman-trucking-dev
+
+      # Deploy Firebase Remote Config settings.
+      - run: npm run deploy -- --environment=dev

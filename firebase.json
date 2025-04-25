@@ -30,7 +30,7 @@
     ]
   },
   "remoteconfig": {
-    "template": "backends/remote-configs/src/prod_template.json"
+    "template": "backends/remote-configs/src/templates/dev.json"
   },
   "emulators": {
     "functions": {

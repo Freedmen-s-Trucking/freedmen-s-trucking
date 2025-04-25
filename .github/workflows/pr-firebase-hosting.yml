@@ -2,7 +2,12 @@
 # https://github.com/firebase/firebase-tools
 
 name: Deploy to Firebase Hosting on PR
-on: pull_request
+on: 
+  pull_request:
+    paths:
+      - webapp/**
+      - .github/workflows/pr-firebase-hosting.yml
+
 permissions:
   checks: write
   contents: read
@@ -14,19 +19,23 @@ defaults:
 
 jobs:
   build_and_preview:
+    timeout-minutes: 5
     if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
-      - run: bun i && bun run build
+      - run: bun i --frozen-lockfile && bun run build
         env:
-          VITE_STRIPE_CLIENT_SECRET: ${{ secrets.STRIPE_CLIENT_SECRET_DEV }}
+          VITE_AUTHENTICATE_DOT_COM_TOKEN: ${{ secrets.AUTHENTICATE_DOT_COM_TOKEN_DEV }}
           VITE_FIREBASE_CONFIG_JSON: ${{ secrets.FIREBASE_CONFIG_JSON_DEV }}
-          VITE_ENV: dev
+          VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY_DEV }}
+          VITE_STRIPE_CLIENT_SECRET: ${{ secrets.STRIPE_CLIENT_SECRET_DEV }}
+          VITE_PUBLIC_WEBAPP_URL: ${{ vars.PUBLIC_WEBAPP_URL_DEV }}
+          VITE_SERVER_API: ${{ vars.SERVER_API_DEV }}
+          VITE_APP_ENV: dev
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_FREEDMAN_TRUCKING_DEV }}
           projectId: freedman-trucking-dev
-        
