@@ -5,7 +5,7 @@ import {
   useStripe,
 } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
-import { STRIPE_CLIENT_SECRET, VITE_SERVER_API } from "~/utils/envs";
+import { STRIPE_CLIENT_SECRET, SERVER_API_ENDPOINT } from "~/utils/envs";
 import { useState } from "react";
 import { Modal } from "flowbite-react";
 import { useQuery } from "@tanstack/react-query";
@@ -64,7 +64,7 @@ const StripePayment: React.FC<{
 
 const scheduleDeliveryRequest = async (order: NewOrder) => {
   const request = up(fetch, () => ({
-    baseUrl: VITE_SERVER_API,
+    baseUrl: SERVER_API_ENDPOINT,
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${STRIPE_CLIENT_SECRET}`,

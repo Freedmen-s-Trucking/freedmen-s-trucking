@@ -24,7 +24,7 @@ jobs:
           VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY_PROD }}
           VITE_STRIPE_CLIENT_SECRET: ${{ secrets.STRIPE_CLIENT_SECRET_PROD }}
           VITE_PUBLIC_WEBAPP_URL: ${{ vars.PUBLIC_WEBAPP_URL_PROD }}
-          VITE_SERVER_API: ${{ vars.SERVER_API_PROD }}
+          VITE_SERVER_API_ENDPOINT: ${{ vars.SERVER_API_ENDPOINT_PROD }}
           VITE_APP_ENV: prod
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
