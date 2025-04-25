@@ -6,6 +6,7 @@ import { Label, Spinner, TextInput } from "flowbite-react";
 import { GoogleSignIn } from "./google-sign-in";
 import { IoCheckmark, IoClose } from "react-icons/io5";
 import { PrimaryButton, CustomPopover } from "~/components/atoms";
+import { getPasswordSecurityLevel } from "~/utils/functions";
 const PASSWORD_SECURITY_LEVELS = [
   {
     label: "weak",
@@ -24,51 +25,6 @@ const PASSWORD_SECURITY_LEVELS = [
     tailwind: "bg-green-500",
   },
 ];
-
-function getPasswordSecurityLevel(password: string) {
-  const lowerCaseRegExp = /[a-z]/;
-  const upperCaseRegExp = /[A-Z]/;
-  const numberRegExp = /[0-9]/;
-  const symbolRegExp = /[_\-!@#$%^&*(),.?":{}|<>/]/;
-  let score = 0;
-  const res = {
-    level: 0,
-    hasLower: false,
-    hasUpperCase: false,
-    hasSymbol: false,
-    hasNumber: false,
-  };
-
-  score += Math.floor(password.length / 4);
-  if (lowerCaseRegExp.test(password)) {
-    score += 1 + Math.floor(score / 2);
-    res.hasLower = true;
-  }
-  if (upperCaseRegExp.test(password)) {
-    score += 1 + Math.floor(score / 2);
-    res.hasUpperCase = true;
-  }
-  if (numberRegExp.test(password)) {
-    score += 1 + Math.floor(score / 2);
-    res.hasNumber = true;
-  }
-  if (symbolRegExp.test(password)) {
-    score += 1 + Math.floor(score / 2);
-    res.hasSymbol = true;
-  }
-
-  if (score < 8) {
-    res.level = 0;
-  } else if (score < 13) {
-    res.level = 1;
-  } else if (score < 20) {
-    res.level = 2;
-  } else if (score >= 20) {
-    res.level = 3;
-  }
-
-  return res;
-}
 
 const SignIn: React.FC<{
   onComplete: (userCredential: UserCredential) => void;

@@ -75,7 +75,7 @@ const RemoveCityBtn: React.FC<{
       {canDeleteCity && (
         <Modal
           size="sm"
-          className=" bg-black bg-opacity-70 [&>div>div]:bg-primary-50 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-end md:[&>div]:h-auto"
+          // className=" bg-black bg-opacity-70 [&>div>div]:bg-primary-50 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-end md:[&>div]:h-auto"
           show={!!canDeleteCity}
           onClose={() => setCanDeleteCity(false)}
         >
@@ -146,7 +146,7 @@ const AddCityBtn: React.FC<{ cities: PlaceLocation[] }> = ({ cities }) => {
       {canAddCity && (
         <Modal
           size="sm"
-          className=" bg-black bg-opacity-70 [&>div>div]:bg-primary-50 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-end md:[&>div]:h-auto"
+          // className=" bg-black bg-opacity-70 [&>div>div]:bg-primary-50 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-end md:[&>div]:h-auto"
           show={!!canAddCity}
           onClose={() => {
             setCanAddCity(false);

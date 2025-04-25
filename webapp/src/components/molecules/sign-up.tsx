@@ -32,7 +32,7 @@ import {
 } from "~/utils/constants";
 import { formatDate, subYears } from "date-fns";
 import { Timestamp } from "firebase/firestore";
-import { fileToBase64 } from "~/utils/functions";
+import { fileToBase64, getPasswordSecurityLevel } from "~/utils/functions";
 import { CustomPopover } from "../atoms/popover";
 
 const PASSWORD_SECURITY_LEVELS = [
@@ -76,51 +76,6 @@ function getFirebaseErrorMessage(error: FirebaseError) {
   return null;
 }
 
-function getPasswordSecurityLevel(password: string) {
-  const lowerCaseRegExp = /[a-z]/;
-  const upperCaseRegExp = /[A-Z]/;
-  const numberRegExp = /[0-9]/;
-  const symbolRegExp = /[_\-!@#$%^&*(),.?":{}|<>/]/;
-  let score = 0;
-  const res = {
-    level: 0,
-    hasLower: false,
-    hasUpperCase: false,
-    hasSymbol: false,
-    hasNumber: false,
-  };
-
-  score += Math.floor(password.length / 4);
-  if (lowerCaseRegExp.test(password)) {
-    score += 1 + Math.floor(score / 2);
-    res.hasLower = true;
-  }
-  if (upperCaseRegExp.test(password)) {
-    score += 1 + Math.floor(score / 2);
-    res.hasUpperCase = true;
-  }
-  if (numberRegExp.test(password)) {
-    score += 1 + Math.floor(score / 2);
-    res.hasNumber = true;
-  }
-  if (symbolRegExp.test(password)) {
-    score += 1 + Math.floor(score / 2);
-    res.hasSymbol = true;
-  }
-
-  if (score < 8) {
-    res.level = 0;
-  } else if (score < 13) {
-    res.level = 1;
-  } else if (score < 20) {
-    res.level = 2;
-  } else if (score >= 20) {
-    res.level = 3;
-  }
-
-  return res;
-}
-
 const SignUpUser: React.FC<{
   onComplete: (userCredential: UserCredential) => void;
 }> = ({ onComplete }) => {
@@ -136,6 +91,11 @@ const SignUpUser: React.FC<{
     hasUpperCase: false,
     hasSymbol: false,
     hasNumber: false,
+    lowerRequired: true,
+    upperRequired: true,
+    symbolRequired: true,
+    numberRequired: true,
+    remainingLength: 0,
   });
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -144,13 +104,15 @@ const SignUpUser: React.FC<{
       return;
     }
     if (
-      !(
-        passwordSecurityLevel.hasLower &&
-        passwordSecurityLevel.hasNumber &&
-        passwordSecurityLevel.hasUpperCase &&
-        passwordSecurityLevel.hasSymbol &&
-        password.length >= 8
-      )
+      (!passwordSecurityLevel.hasLower &&
+        passwordSecurityLevel.lowerRequired) ||
+      (!passwordSecurityLevel.hasNumber &&
+        passwordSecurityLevel.numberRequired) ||
+      (!passwordSecurityLevel.hasUpperCase &&
+        passwordSecurityLevel.upperRequired) ||
+      (!passwordSecurityLevel.hasSymbol &&
+        passwordSecurityLevel.symbolRequired) ||
+      passwordSecurityLevel.remainingLength > 0
     ) {
       setError("Error in password validation");
       return;
@@ -247,9 +209,11 @@ const SignUpUser: React.FC<{
             className="absolute z-auto inline-block w-max max-w-[100vw] rounded-lg border border-gray-200 bg-primary-100 shadow-sm outline-none dark:border-gray-600 dark:bg-secondary-900 [&>div>div:first-child]:border-none [&>div>div:first-child]:bg-primary-100 [&>div>div:last-child]:-mt-[2px]"
             content={
               <div className="space-y-2 p-3">
-                {password.length < 8 && (
+                {passwordSecurityLevel.remainingLength > 0 && (
                   <h3 className="font-semibold text-red-500">
-                    Must have at least 8 characters
+                    Must have at least{" "}
+                    {password.length + passwordSecurityLevel.remainingLength}{" "}
+                    characters
                   </h3>
                 )}
                 <div className="grid grid-cols-4 gap-2">
@@ -266,19 +230,31 @@ const SignUpUser: React.FC<{
                     {(passwordSecurityLevel.hasLower &&
                       passwordSecurityLevel.hasUpperCase && (
                         <IoCheckmark className="text-2xl text-green-400" />
-                      )) || <IoClose className="text-2xl text-red-400" />}
+                      )) || (
+                      <IoClose
+                        className={`text-2xl ${passwordSecurityLevel.lowerRequired && passwordSecurityLevel.upperRequired ? "text-red-400" : "text-gray-300"}`}
+                      />
+                    )}
                     Upper & lower case letters
                   </li>
                   <li className="mb-1 flex items-center">
                     {(passwordSecurityLevel.hasNumber && (
                       <IoCheckmark className="text-2xl text-green-400" />
-                    )) || <IoClose className="text-2xl text-red-400" />}
+                    )) || (
+                      <IoClose
+                        className={`text-2xl ${passwordSecurityLevel.numberRequired ? "text-red-400" : "text-gray-300"}`}
+                      />
+                    )}
                     A numeric character (0-9)
                   </li>
                   <li className="mb-1 flex items-center">
                     {(passwordSecurityLevel.hasSymbol && (
                       <IoCheckmark className="text-2xl text-green-400" />
-                    )) || <IoClose className="text-2xl text-red-400" />}
+                    )) || (
+                      <IoClose
+                        className={`text-2xl ${passwordSecurityLevel.symbolRequired ? "text-red-400" : "text-gray-300"}`}
+                      />
+                    )}
                     A symbol (#$&)
                   </li>
                   <li className="flex items-center">
