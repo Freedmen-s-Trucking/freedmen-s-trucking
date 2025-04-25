@@ -1,7 +1,7 @@
 {
   "name": "remote_config",
   "version": "1.0.0",
-  "description": "Remote configuration for Place environments.",
+  "description": "Remote configuration for Freedmen's Trucking environments.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {

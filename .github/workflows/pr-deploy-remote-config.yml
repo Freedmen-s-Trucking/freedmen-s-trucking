@@ -31,7 +31,7 @@ jobs:
 
   validate-remote-config:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     defaults:
       run:
         working-directory: ./backends/remote-configs

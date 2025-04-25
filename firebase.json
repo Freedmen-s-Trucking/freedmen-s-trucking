@@ -30,7 +30,7 @@
     ]
   },
   "remoteconfig": {
-    "template": "backends/remote-configs/src/templates/dev.json"
+    "template": "backends/remote-configs/templates/dev.json"
   },
   "emulators": {
     "functions": {
@@ -67,10 +67,10 @@
     }
   },
   "firestore": {
-    "rules": "backends/services-configs/firestore.rules",
+    "rules": "backends/services-configs/security-rules/rules/firestore.rules",
     "indexes": "backends/services-configs/firestore.indexes.json"
   },
   "storage": {
-    "rules": "backends/services-configs/storage.rules"
+    "rules": "backends/services-configs/security-rules/rules/storage.rules"
   }
 }
