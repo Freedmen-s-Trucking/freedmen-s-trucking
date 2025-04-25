@@ -34,11 +34,6 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      # - uses: actions/setup-node@v4
-      #   with:
-      #     node-version: ${{ env.NODE_VERSION }}
-      #     cache: "npm"
-      #     cache-dependency-path: "backends/remote_config/package-lock.json"
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -50,11 +45,11 @@ jobs:
       - id: "auth"
         uses: "google-github-actions/auth@v2"
         with:
-          credentials_json: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_FREEDMAN_TRUCKING_DEV }}"
+          credentials_json: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_FREEDMEN_S_TRUCKING }}"
 
       - uses: google-github-actions/setup-gcloud@v2
         with:
-          project_id: freedman-trucking-dev
+          project_id: freedmen-s-trucking
 
       # Deploy Firebase Remote Config settings.
-      - run: npm run deploy -- --environment=dev
+      - run: bun deploy.ts --environment=prod
