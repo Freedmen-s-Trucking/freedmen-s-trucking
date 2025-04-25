@@ -2,14 +2,13 @@
 
 name: "[DEV] Deploy Cloud Functions"
 on:
-  pull_request:
   push:
     branches:
       - main
     paths:
       - backends/functions/**
       - common/**
-      - .gkthub/workflows/dev-deploy-cloud-functions.yml
+      - .github/workflows/dev-deploy-cloud-functions.yml
 
 concurrency:
   group: "${{ github.workflow }}-${{ github.ref }}"
