@@ -39,7 +39,7 @@ import { fileToBase64, getDriverVerificationStatus } from "~/utils/functions";
 import { CiImageOff } from "react-icons/ci";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
-import { PUBLIC_WEBAPP_URL, VITE_SERVER_API } from "~/utils/envs";
+import { PUBLIC_WEBAPP_URL, SERVER_API_ENDPOINT } from "~/utils/envs";
 import { useRouterState } from "@tanstack/react-router";
 
 const getVerificationBadge = (
@@ -441,7 +441,7 @@ export const DriverProfile: React.FC = () => {
           throw new Error("Failed to get ID token");
         }
         const request = up(fetch, async () => ({
-          baseUrl: VITE_SERVER_API,
+          baseUrl: SERVER_API_ENDPOINT,
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${idToken}`,

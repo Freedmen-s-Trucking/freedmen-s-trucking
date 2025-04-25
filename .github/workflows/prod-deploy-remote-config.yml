@@ -1,4 +1,4 @@
-name: "[DEV] Deploy Remote Configs"
+name: "[PROD] Deploy Remote Configs"
 on:
   workflow_dispatch:
 
