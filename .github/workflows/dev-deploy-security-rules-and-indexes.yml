@@ -7,13 +7,13 @@ on:
     branches:
       - main
     paths:
-      - backends/services-config/security-rules/**
-      - backends/services-config/firestore.indexes.json
+      - backends/services-configs/security-rules/**
+      - backends/services-configs/firestore.indexes.json
       - .github/workflows/dev-deploy-security-rules.yml
   pull_request:
     paths:
-      - backends/services-config/security-rules/**
-      - backends/services-config/firestore.indexes.json
+      - backends/services-configs/security-rules/**
+      - backends/services-configs/firestore.indexes.json
       - .github/workflows/pr-validate-rules.yml
 
 concurrency:
@@ -22,7 +22,7 @@ concurrency:
 
 defaults:
   run:
-    working-directory: ./backends/services-config/security-rules
+    working-directory: ./backends/services-configs/security-rules
 
 env:
   BUN_VERSION: 1.2.4

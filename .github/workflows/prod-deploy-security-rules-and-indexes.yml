@@ -10,7 +10,7 @@ concurrency:
 
 defaults:
   run:
-    working-directory: ./backends/services-config/security-rules
+    working-directory: ./backends/services-configs/security-rules
 
 env:
   BUN_VERSION: 1.2.4
@@ -31,8 +31,8 @@ jobs:
           filters: |
             src:
               - '.github/workflows/prod-deploy-security-rules-and-indexes.yml'
-              - 'backends/services-config/security-rules/**'
-              - 'backends/services-config/firestore.indexes.json'
+              - 'backends/services-configs/security-rules/**'
+              - 'backends/services-configs/firestore.indexes.json'
 
   deploy-rules:
     runs-on: ubuntu-latest
