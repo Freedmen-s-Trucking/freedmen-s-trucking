@@ -1,9 +1,5 @@
-# Freedmen's
+[![Last deployment (DEV:on-merge)](https://github.com/Freedmen-s-Trucking/freedmen-s-trucking/actions/workflows/firebase-hosting-dev.yml/badge.svg)](https://github.com/Freedmen-s-Trucking/freedmen-s-trucking/actions/workflows/firebase-hosting-dev.yml) [![Last deployment (PROD:manual)](https://github.com/Freedmen-s-Trucking/freedmen-s-trucking/actions/workflows/firebase-hosting-prod.yml/badge.svg)](https://github.com/Freedmen-s-Trucking/freedmen-s-trucking/actions/workflows/firebase-hosting-prod.yml)
+
+# Freedmen's Trucking
 
 Reliable freight solutions with full insurance and real-time tracking
-
-> Hey Tad, This weeks proposals are as follows:Final Tasks to Finish MVP
-> Finish Stripe payouts for drivers
-> Add proof of delivery (photo, time, GPS)
-> Block drivers missing ID, license, or vehicle
-> Deploy everything to production (live version)

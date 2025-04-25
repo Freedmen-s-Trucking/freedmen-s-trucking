@@ -3,6 +3,7 @@
   "private": true,
   "workspaces": [
     "backends/functions",
+    "backends/remote-configs",
     "common/*",
     "webapp"
   ]

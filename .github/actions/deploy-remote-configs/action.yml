@@ -1,0 +1,30 @@
+name: Deploy Remote Configs
+description: Deploy remote configs to Firebase
+inputs:
+  configPath:
+    description: Path to the remote config file
+    required: true
+  projectId:
+    description: Firebase project ID
+    required: true
+  channelId:
+    description: Firebase channel ID
+    required: true
+  repoToken:
+    description: GitHub token
+    required: true
+  firebaseServiceAccount:
+    description: Firebase service account
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Deploy Remote Configs
+      uses: FirebaseExtended/action-hosting-deploy@v0
+      with:
+        repoToken: ${{ inputs.repoToken }}
+        firebaseServiceAccount: ${{ inputs.firebaseServiceAccount }}
+        channelId: ${{ inputs.channelId }}
+        projectId: ${{ inputs.projectId }}
+        configPath: ${{ inputs.configPath }}

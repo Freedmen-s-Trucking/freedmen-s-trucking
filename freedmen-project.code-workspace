@@ -22,7 +22,7 @@
     "files.readonlyInclude": {
       "**/node_modules/**": true,
       "**/route-tree.gen.ts": true,
-      // "**/*.lock": true,
+      "**/*.lock": true,
     },
   },
   "extensions": {
