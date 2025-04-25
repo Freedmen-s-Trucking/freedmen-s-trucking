@@ -12,6 +12,7 @@ import {
 } from "flowbite-react";
 import { modalTheme, tabTheme } from "./constants";
 
+
 export function checkFalsyAndThrow(
   paramsToCheck: Record<string, unknown>,
   traceRef?: string,
