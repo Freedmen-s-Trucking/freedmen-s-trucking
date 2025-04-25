@@ -1,0 +1,76 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Verify if the authenticated user is admin
+    function isAdmin() {
+        // return request.auth != null && exits(/databases/$(database)/documents/admins/$(request.auth.uid)); 
+       
+    		let authUser = get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+        return request.auth != null && "isAdmin" in authUser && authUser.isAdmin; 
+    }
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isNotAnonymous() {
+        return request.auth != null && exists(/databases/$(database)/documents/users/$(request.auth.uid)); 
+    }
+    function isResourceOwner() {
+        return request.auth != null 
+        && resource != null 
+        && (resource.id == request.auth.uid 
+        || ("ownerId" in resource.data && resource.data.ownerId == request.auth.uid)
+        ); 
+    }
+    function isDriverOfOrder() {
+      let uid = request.auth.uid;
+      return uid != null &&  resource != null && "assignedDriverIds" in resource.data && uid in resource.data.assignedDriverIds;
+    }
+    function canUpdateOrder() {
+      let uid = request.auth.uid;
+      let allowedPath = 'task-' + uid;
+
+      // Ensure only the driver's assignedTasks field is being updated
+      return isDriverOfOrder() && request.resource.data.diff(resource.data).affectedKeys().hasOnly([allowedPath]);
+    }
+    match /admin/{content=**} {
+      allow read, create: if isAdmin();
+      allow update, delete: if isAdmin() || isResourceOwner();
+    }
+
+    match /drivers/{uid} {
+      allow read, create: if isNotAnonymous(); // todo: Must create own document with same driver id.
+      allow update, delete: if isResourceOwner() || isAdmin();
+    }
+
+    match /orders/{id} {
+      allow read: if isNotAnonymous();
+      allow update: if canUpdateOrder();
+    }
+    
+    match /payments/{content=**} {
+      allow read: if isAdmin();
+    }
+    
+    match /platformOverviews/{content=**} {
+      allow read: if isAdmin();
+    }
+
+    match /platformSettings/{content=**} {
+      allow read: if isNotAnonymous();
+      allow create, update: if isAdmin();
+    }
+
+    match /users/{uid} {
+      allow read, create: if isAuthenticated();
+      allow update, delete: if isResourceOwner() || isAdmin();
+    }
+
+    // Deny read/write access to all other documents
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

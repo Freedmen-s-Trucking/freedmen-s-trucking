@@ -9,13 +9,31 @@ concurrency:
 env:
   BUN_VERSION: 1.2.4
   NODE_VERSION: 22.*
+  WORK_FLOW_FILE_NAME: prod-deploy-remote-config
 
 defaults:
   run:
     working-directory: ./backends/remote-configs
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      src: ${{ steps.filter.outputs.src }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          base: ${{ env.WORK_FLOW_FILE_NAME }}
+          filters: |
+            src:
+              - '.github/workflows/prod-deploy-remote-config.yml'
+              - 'backends/remote-configs/**'
+
   lint-remote-config:
+    needs: changes
+    if: ${{ needs.changes.outputs.src == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -28,8 +46,8 @@ jobs:
       - run: bun lint
 
   deploy-remote-config:
-    needs:
-      - lint-remote-config
+    needs: lint-remote-config
+    if: ${{ needs.lint-remote-config.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -53,3 +71,14 @@ jobs:
 
       # Deploy Firebase Remote Config settings.
       - run: bun deploy.ts --environment=prod
+
+      # Update workflow base tag.
+      - name: Update tag to current commit
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          git tag -f "$TAG_NAME"
+          git push origin -f "$TAG_NAME"
+        env:
+          TAG_NAME: ${{ env.WORK_FLOW_FILE_NAME }}

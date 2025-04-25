@@ -1,0 +1,32 @@
+name: "[PR] Validate Security Rules"
+on:
+  pull_request:
+    paths:
+      - backends/services-config/**
+      - .github/workflows/pr-validate-rules.yml
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.ref }}"
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: ./backends/services-config/security-rules
+
+env:
+  BUN_VERSION: 1.2.4
+
+jobs:
+  validate-rules:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - run: bun i --frozen-lockfile
+
+      - name: Firestore rules tests and coverage
+        run: bun test

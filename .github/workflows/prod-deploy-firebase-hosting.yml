@@ -1,4 +1,4 @@
-name: "[PROD] Deploy to Firebase Hosting"
+name: "[PROD] Deploy Firebase Hosting"
 on:
   workflow_dispatch:
 
@@ -6,12 +6,33 @@ concurrency:
   group: "${{ github.workflow }}-${{ github.ref }}"
   cancel-in-progress: true
 
+env:
+  WORK_FLOW_FILE_NAME: prod-deploy-firebase-hosting
+
 defaults:
   run:
     working-directory: webapp
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      src: ${{ steps.filter.outputs.src }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          base: ${{ env.WORK_FLOW_FILE_NAME }}
+          filters: |
+            src:
+              - '.github/workflows/prod-deploy-firebase-hosting.yml'
+              - 'webapp/**'
+              - 'common/**'
+
   build_and_deploy_prod:
+    needs: changes
+    if: ${{ needs.changes.outputs.src == 'true' }}
     timeout-minutes: 5
     runs-on: ubuntu-latest
     steps:
@@ -32,3 +53,14 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_FREEDMEN_S_TRUCKING }}
           channelId: live
           projectId: freedmen-s-trucking
+
+      # Update workflow base tag.
+      - name: Update tag to current commit
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          git tag -f "$TAG_NAME"
+          git push origin -f "$TAG_NAME"
+        env:
+          TAG_NAME: ${{ env.WORK_FLOW_FILE_NAME }}

@@ -1,0 +1,57 @@
+# This workflow deploys the security rules and indexes to Firebase when changes
+# to the security rules are pushed to the main branch.
+
+name: "[DEV] Deploy Security Rules & Indexes"
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - backends/services-config/security-rules/**
+      - backends/services-config/firestore.indexes.json
+      - .github/workflows/dev-deploy-security-rules.yml
+  pull_request:
+    paths:
+      - backends/services-config/security-rules/**
+      - backends/services-config/firestore.indexes.json
+      - .github/workflows/pr-validate-rules.yml
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.ref }}"
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: ./backends/services-config/security-rules
+
+env:
+  BUN_VERSION: 1.2.4
+  FIREBASE_PROJECT_ID: freedman-trucking-dev
+
+jobs:
+  deploy-rules:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - run: bun i --frozen-lockfile
+
+      # Download the latest firebase tools.
+      - run: bun add -g firebase-tools
+
+      # Setup credentials for Firebase and Google Cloud tools.
+      - run: echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT_FREEDMAN_TRUCKING_DEV }}" | base64 --decode > "${{ env.GCP_CREDENTIALS_FILE_PATH }}"
+
+      # Deploy Firestore indexes.
+      - run: >
+          firebase deploy --force --project "${{ env.FIREBASE_PROJECT_ID }}" 
+          --only firestore:indexes 
+          -m "Deployment of firestore indexes to dev environment"
+
+      # Deploy Firestore security rules.
+      - name: Firestore deploy security rules.
+        run: bun deploy.ts

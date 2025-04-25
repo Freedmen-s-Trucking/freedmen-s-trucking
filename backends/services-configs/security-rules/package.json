@@ -1,0 +1,35 @@
+{
+  "name": "security-rules",
+  "version": "1.0.0",
+  "description": "Security rules for Freedmen's Trucking environments.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "firebase emulators:exec --only firestore,storage \"vitest\"",
+    "lint": "eslint --max-warnings=0 --ext .js,.ts .",
+    "format": "prettier --write ."
+  },
+  "author": "",
+  "type": "module",
+  "private": true,
+  "license": "ISC",
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "4.0.1",
+    "@types/minimist": "^1.2.5",
+    "@types/node": "^22.15.2",
+    "@typescript-eslint/eslint-plugin": "5.12.0",
+    "@typescript-eslint/parser": "5.12.0",
+    "eslint": "8.9.0",
+    "eslint-config-google": "0.14.0",
+    "eslint-config-prettier": "9.1.0",
+    "eslint-plugin-import": "2.25.4",
+    "eslint-plugin-prettier": "5.2.6",
+    "ts-node": "10.9.2",
+    "tslib": "^2.8.1",
+    "vitest": "3.1.2"
+  },
+  "dependencies": {
+    "firebase-admin": "12.6.0",
+    "minimist": "1.2.8"
+  }
+}

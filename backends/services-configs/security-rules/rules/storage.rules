@@ -1,0 +1,22 @@
+rules_version = '2';
+
+// Craft rules based on data in your Firestore database
+// allow write: if firestore.get(
+//    /databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin;
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Allow read/write access to a document keyed by the user's UID
+    match /users/{uid}/{sub=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == uid;
+    }
+    match /drivers-certifications/{uid}/{sub=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == uid;
+    }
+    match /{allPaths=**} {
+      allow read, write: if false;
+      // allow read, write: if request.time < timestamp.date(2025, 4, 22);
+    }
+  }
+}
