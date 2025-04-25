@@ -18,13 +18,17 @@ const rawStorageRules = fs.readFileSync(
   `${__dirname}/rules/storage.rules`,
   "utf8",
 );
-const storageReleaseTask = admin
-  .securityRules()
-  .releaseStorageRulesetFromSource(rawStorageRules);
+
+const storageBuckets = ["users", "drivers-certifications"];
+const storageReleaseTasks = storageBuckets.map((bucket) =>
+  admin
+    .securityRules()
+    .releaseStorageRulesetFromSource(rawStorageRules, bucket),
+);
 
 // Wait for both releases to complete
 try {
-  await Promise.all([firestoreReleaseTask, storageReleaseTask]);
+  await Promise.all([firestoreReleaseTask, ...storageReleaseTasks]);
   console.log("Security rules deployed successfully");
   process.exit(0);
 } catch (error) {
