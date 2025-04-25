@@ -68,7 +68,8 @@ const AuthProvider: React.FC<{
   const auth = useMemo(() => {
     const _auth = getAuth();
     if (isDevMode) {
-      connectAuthEmulator(_auth, "http://127.0.0.1:9099");
+      const location = new URL(window.location.href);
+      connectAuthEmulator(_auth, `http://${location.hostname}:9099`);
     }
     return _auth;
   }, []);

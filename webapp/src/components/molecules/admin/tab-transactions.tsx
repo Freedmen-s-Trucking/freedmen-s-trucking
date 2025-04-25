@@ -251,7 +251,7 @@ const Transactions = () => {
         show={showModal}
         onClose={() => setShowModal(false)}
         size="5xl"
-        className=" bg-black bg-opacity-30 [&>div>div]:bg-primary-50 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-end md:[&>div]:h-auto"
+        // className=" bg-black bg-opacity-30 [&>div>div]:bg-primary-50 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-end md:[&>div]:h-auto"
       >
         <Modal.Header>Transaction Details</Modal.Header>
         <Modal.Body className="max-h-[70vh] overflow-y-auto p-4">

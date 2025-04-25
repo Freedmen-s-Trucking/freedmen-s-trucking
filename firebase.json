@@ -34,15 +34,19 @@
   },
   "emulators": {
     "functions": {
+      "host": "0.0.0.0",
       "port": 5001
     },
     "firestore": {
+      "host": "0.0.0.0",
       "port": 8080
     },
     "hosting": {
+      "host": "0.0.0.0",
       "port": 5000
     },
     "storage": {
+      "host": "0.0.0.0",
       "port": 9199
     },
     "ui": {
@@ -50,12 +54,15 @@
     },
     "singleProjectMode": true,
     "auth": {
+      "host": "0.0.0.0",
       "port": 9099
     },
     "pubsub": {
+      "host": "0.0.0.0",
       "port": 8085
     },
     "eventarc": {
+      "host": "0.0.0.0",
       "port": 9299
     }
   },

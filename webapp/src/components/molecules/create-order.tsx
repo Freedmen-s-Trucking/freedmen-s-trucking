@@ -84,12 +84,7 @@ export const CreateOrder: React.FC<{
   };
   if (showInModal) {
     return (
-      <Modal
-        show={showModal}
-        onClose={onCloseModal}
-        size={"lg"}
-        className="mb-4 bg-black bg-opacity-30 [&>div>div]:mb-8 [&>div>div]:bg-primary-50 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-center md:[&>div]:h-auto"
-      >
+      <Modal show={showModal} onClose={onCloseModal} size={"lg"}>
         <Modal.Header>
           <span className="text-lg font-medium">Schedule Delivery</span>
         </Modal.Header>

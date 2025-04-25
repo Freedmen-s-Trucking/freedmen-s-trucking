@@ -10,6 +10,8 @@ import { AppUser } from "~/stores/controllers/auth-ctrl";
 import { RouteProviders } from "~/provider/providers";
 import { useEffect } from "react";
 import { useAuth } from "~/hooks/use-auth";
+import { Flowbite } from "flowbite-react";
+import { getFlowbiteTheme } from "~/utils/functions";
 
 const Component: React.FC = () => {
   const { user } = useAuth();
@@ -28,7 +30,9 @@ const Component: React.FC = () => {
   return (
     <>
       <RouteProviders>
-        <Outlet />
+        <Flowbite theme={{ mode: "light", theme: getFlowbiteTheme() }}>
+          <Outlet />
+        </Flowbite>
       </RouteProviders>
       <TanStackRouterDevtools />
     </>

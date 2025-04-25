@@ -110,7 +110,7 @@ const ProfileDropdown: React.FC = () => {
         onClose={onCloseModal}
         size="3xl"
         position="center"
-        className="[&>div>div]:bg-white/95 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-end md:[&>div]:h-auto"
+        // className="[&>div>div]:bg-white/95 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-end md:[&>div]:h-auto"
       >
         <Modal.Header className="h-12 p-3 text-center">
           {authAction === "login" ? "Login" : "Sign Up"}

@@ -5,6 +5,12 @@ import {
   VerificationStatus,
 } from "@freedmen-s-trucking/types";
 import { Timestamp } from "firebase/firestore";
+import {
+  FlowbiteModalTheme,
+  FlowbiteTabsTheme,
+  getTheme,
+} from "flowbite-react";
+import { modalTheme, tabTheme } from "./constants";
 
 export function checkFalsyAndThrow(
   paramsToCheck: Record<string, unknown>,
@@ -156,4 +162,114 @@ export function generateUUID() {
     "-" +
     Date.now().toString().substring(1, 12)
   );
+}
+
+function isObject(item: unknown): item is Record<string, unknown> {
+  return (
+    item !== null && typeof item === "object" && item.constructor === Object
+  );
+}
+
+function cloneDeep<T = unknown>(source: T): T {
+  if (!isObject(source)) {
+    return source;
+  }
+  const output = source;
+  for (const key in source) {
+    output[key as keyof T] = cloneDeep(source[key as keyof T]);
+  }
+  return output;
+}
+
+// type DeepPartial<T> = {
+//   [P in keyof T]?: T[P] extends object
+//     ? // eslint-disable-next-line
+//       T[P] extends Function
+//       ? T[P] // Don't recurse into functions
+//       : DeepPartial<T[P]>
+//     : T[P];
+// };
+
+function mergeDeep<T = unknown, S = unknown>(target: T, source: S): T & S {
+  if (!isObject(target) || !isObject(source)) {
+    return { ...target, ...source };
+  }
+  if (isObject(source) && Object.keys(source).length === 0) {
+    return cloneDeep({ ...target, ...source });
+  }
+  const output = { ...target, ...source };
+  if (isObject(source) && isObject(target)) {
+    for (const key in source) {
+      if (isObject(source[key]) && key in target && isObject(target[key])) {
+        output[key as keyof (T & S)] = mergeDeep(
+          target[key],
+          source[key],
+        ) as (T & Record<string, unknown> & S)[keyof (T & S)];
+      } else {
+        output[key as keyof (T & S)] = (
+          isObject(source[key]) ? cloneDeep(source[key]) : source[key]
+        ) as (T & Record<string, unknown> & S)[keyof (T & S)];
+      }
+    }
+  }
+  return output;
+}
+
+export const getFlowbiteTheme = () => {
+  const defaultTheme = getTheme();
+  return {
+    tabs: mergeDeep(defaultTheme.tabs, tabTheme) as FlowbiteTabsTheme,
+    modal: mergeDeep(defaultTheme.modal, modalTheme) as FlowbiteModalTheme,
+  };
+};
+
+export function getPasswordSecurityLevel(password: string) {
+  const lowerCaseRegExp = /[a-z]/;
+  const upperCaseRegExp = /[A-Z]/;
+  const numberRegExp = /[0-9]/;
+  const symbolRegExp = /[_\-!@#$%^&*(),.?":{}|<>/]/;
+  const minimumLength = 8;
+  let score = 0;
+  const res = {
+    level: 0,
+    hasLower: false,
+    lowerRequired: true,
+    hasUpperCase: false,
+    upperRequired: true,
+    hasSymbol: false,
+    symbolRequired: true,
+    hasNumber: false,
+    numberRequired: false,
+    remainingLength: Math.max(minimumLength - password.length, 0),
+  };
+
+  score += Math.floor(password.length / 4);
+  if (lowerCaseRegExp.test(password)) {
+    score += 1 + Math.floor(score / 2);
+    res.hasLower = true;
+  }
+  if (upperCaseRegExp.test(password)) {
+    score += 1 + Math.floor(score / 2);
+    res.hasUpperCase = true;
+  }
+  if (numberRegExp.test(password)) {
+    score += 1 + Math.floor(score / 2);
+    res.hasNumber = true;
+  }
+  if (symbolRegExp.test(password)) {
+    score += 1 + Math.floor(score / 2);
+    res.hasSymbol = true;
+  }
+
+  if (score < minimumLength) {
+    res.level = 0;
+  } else if (score < 13) {
+    res.level = 1;
+  } else if (score < 20) {
+    res.level = 2;
+  } else if (score >= 20) {
+    res.level = 3;
+  }
+
+  return res;
 }
