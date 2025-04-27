@@ -34,13 +34,14 @@ import {
   TextInput,
 } from "~/components/atoms";
 import { HiX } from "react-icons/hi";
-import { ResponseError, up } from "up-fetch";
+import { ResponseError } from "up-fetch";
 import { fileToBase64, getDriverVerificationStatus } from "~/utils/functions";
 import { CiImageOff } from "react-icons/ci";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
-import { PUBLIC_WEBAPP_URL, SERVER_API_ENDPOINT } from "~/utils/envs";
+import { PUBLIC_WEBAPP_URL } from "~/utils/envs";
 import { useRouterState } from "@tanstack/react-router";
+import { useServerRequest } from "~/hooks/use-server-request";
 
 const getVerificationBadge = (
   status: keyof typeof driverVerificationBadges,
@@ -63,7 +64,7 @@ const getVerificationBadge = (
 
 export const DriverProfile: React.FC = () => {
   const { fetchImage, uploadCertificate } = useStorageOperations();
-  const { user, getIDToken } = useAuth();
+  const { user } = useAuth();
   const driverInfo = user.driverInfo;
   const dispatch = useAppDispatch();
   const queryClient = useQueryClient();
@@ -432,40 +433,32 @@ export const DriverProfile: React.FC = () => {
     },
   });
 
+  const serverRequest = useServerRequest();
   const { mutate: setupDriverPayment, isPending: setupDriverPaymentIsPending } =
     useMutation({
       mutationFn: async () => {
         console.log("Setting up driver payment");
-        const idToken = await getIDToken();
-        if (!idToken) {
-          throw new Error("Failed to get ID token");
-        }
-        const request = up(fetch, async () => ({
-          baseUrl: SERVER_API_ENDPOINT,
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${idToken}`,
-          },
-        }));
 
-        const response = await request("/v1/stripe/setup-connected-account", {
-          method: "POST",
-          schema: type({
-            response: {
-              object: "string",
-              created: "number.epoch",
-              expires_at: "number.epoch",
-              url: "string.url",
-            },
-          }),
-          body: {
-            stripeConnectAccountId: driverInfo?.stripeConnectAccountId || null,
-            email: user.info.email,
-            uid: user.info.uid,
-            returnUrl: `${PUBLIC_WEBAPP_URL}/app/driver/dashboard`,
-            refreshUrl: `${PUBLIC_WEBAPP_URL}/app/driver/dashboard#refreshPayment`,
-          } satisfies ApiResSetupConnectedAccount,
-        });
+        const response = await serverRequest(
+          "/v1/stripe/setup-connected-account",
+          {
+            method: "POST",
+            schema: type({
+              response: {
+                object: "string",
+                created: "number.epoch",
+                expires_at: "number.epoch",
+                url: "string.url",
+              },
+            }),
+            body: {
+              stripeConnectAccountId:
+                driverInfo?.stripeConnectAccountId || null,
+              returnUrl: `${PUBLIC_WEBAPP_URL}/app/driver/dashboard`,
+              refreshUrl: `${PUBLIC_WEBAPP_URL}/app/driver/dashboard#refreshPayment`,
+            } satisfies ApiResSetupConnectedAccount,
+          },
+        );
 
         return response;
       },

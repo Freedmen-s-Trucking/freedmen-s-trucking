@@ -3,8 +3,8 @@ import { type } from "arktype";
 import {
   driverEntity,
   newOrderEntity,
+  OrderEntityFields,
   OrderPriority,
-  userEntity,
 } from "./entities.js";
 import { coordinateType, productWithQuantityType } from "./types.js";
 
@@ -22,7 +22,7 @@ export const apiResScheduleDeliveryIntent = type({
 });
 
 export const apiReqScheduleDeliveryIntent = type({
-  metadata: newOrderEntity,
+  metadata: newOrderEntity.omit(OrderEntityFields.ownerId),
 });
 
 export type ApiResScheduleDeliveryIntent =
@@ -31,9 +31,8 @@ export type ApiResScheduleDeliveryIntent =
 export type ApiReqScheduleDeliveryIntent =
   typeof apiReqScheduleDeliveryIntent.infer;
 
-export const apiResSetupConnectedAccount = userEntity
-  .pick("uid", "email")
-  .and(driverEntity.pick("stripeConnectAccountId"))
+export const apiResSetupConnectedAccount = driverEntity
+  .pick("stripeConnectAccountId")
   .and({
     returnUrl: "string.url",
     refreshUrl: "string.url",

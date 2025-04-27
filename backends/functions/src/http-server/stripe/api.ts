@@ -30,11 +30,12 @@ import { Hono } from 'hono';
 import { onetimeFindRightDriversForOrder } from '~src/utils/order.js';
 import { createPaymentIntent, generateConnectedAccountSetupLink } from './payment';
 import { handleStripeWebhookEvent } from './webhook.js';
+import { Variables } from '../../utils/types';
 
-const router = new Hono();
+const router = new Hono<{ Variables: Variables }>();
 
 router.post('/create-payment-intent', async (c) => {
-  const response = await createPaymentIntent(await c.req.json());
+  const response = await createPaymentIntent(await c.req.json(), c.get('user'));
   if (response instanceof Error) {
     return c.json({ error: response.message }, 400);
   }
@@ -46,7 +47,7 @@ router.post('/setup-connected-account', async (c) => {
   if (driver instanceof type.errors) {
     return c.json({ error: driver.summary }, 400);
   }
-  const response = await generateConnectedAccountSetupLink(driver);
+  const response = await generateConnectedAccountSetupLink(driver, c.get('user'));
   if (response instanceof Error) {
     return c.json({ error: response.message }, 400);
   }

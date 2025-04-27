@@ -12,7 +12,7 @@ export const useServerRequest = () => {
       headers: {
         accept: "application/json",
         "content-type": "application/json",
-        authorization: `Bearer ${await getIDToken()}` as const,
+        authorization: `Bearer ads${await getIDToken()}` as const,
       },
     }));
   }, [getIDToken]);

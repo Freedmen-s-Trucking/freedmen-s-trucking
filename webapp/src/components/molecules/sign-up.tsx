@@ -123,6 +123,7 @@ const SignUpUser: React.FC<{
       setError(null);
       onComplete(res);
     } catch (error: unknown) {
+      setIsLoading(false);
       const err = error as Record<string, unknown> | null | undefined;
       console.debug({ err });
       if (!(error instanceof FirebaseError)) {
@@ -141,8 +142,6 @@ const SignUpUser: React.FC<{
         setError(errMsg);
         return;
       }
-    } finally {
-      setIsLoading(false);
     }
   };
   const onGoogleSignInError = (error: unknown) => {
@@ -271,7 +270,7 @@ const SignUpUser: React.FC<{
               onChange={onPasswordChanged}
               value={password}
               maxLength={32}
-              autoComplete="new-password"
+              autoComplete="current-password"
               id="password1"
               type="password"
               required
@@ -286,11 +285,11 @@ const SignUpUser: React.FC<{
             onChange={onConfirmPasswordChanged}
             value={confirmPassword}
             maxLength={32}
-            autoComplete="current-password"
+            autoComplete="new-password"
             id="password2"
             type="password"
             required
-            color={password === confirmPassword ? "gray" : "failure"}
+            // color={password === confirmPassword ? "gray" : "failure"}
           />
         </div>
         {error && (

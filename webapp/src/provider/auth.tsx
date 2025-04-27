@@ -136,7 +136,7 @@ const AuthProvider: React.FC<{
           try {
             driverInfo = await getDriver(dbUser.uid);
           } catch (error) {
-            console.error("Error getting user:", error);
+            console.warn("Unable to get the corresponding driver:", error);
           }
         }
         dispatch(

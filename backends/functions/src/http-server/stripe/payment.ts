@@ -1,7 +1,6 @@
 import type Stripe from 'stripe';
 import {
   type,
-  apiReqScheduleDeliveryIntent,
   ApiReqScheduleDeliveryIntent,
   ApiResSetupConnectedAccount,
   DriverEntity,
@@ -9,43 +8,48 @@ import {
   OrderEntity,
   PaymentEntity,
   EntityWithID,
+  newOrderEntity,
+  OrderEntityFields,
 } from '@freedmen-s-trucking/types';
 import stripe from './config';
 import { serializeToStripeMeta } from '~src/utils/serialize';
 import { CollectionReference, DocumentReference, getFirestore } from 'firebase-admin/firestore';
+import { DecodedIdToken } from 'firebase-admin/auth';
 
 type CreatePaymentIntentResponse = Stripe.Response<Stripe.PaymentIntent> | Error;
 
 export async function createPaymentIntent(
-  args: ApiReqScheduleDeliveryIntent | unknown,
+  args: ApiReqScheduleDeliveryIntent | null,
+  authUser: DecodedIdToken,
 ): Promise<CreatePaymentIntentResponse> {
-  const validatedData = apiReqScheduleDeliveryIntent(args);
+  const validatedData = newOrderEntity({ ...(args?.metadata || {}), [OrderEntityFields.ownerId]: authUser.uid });
   if (validatedData instanceof type.errors) {
     return new Error(validatedData.summary);
   }
   const paymentIntent = await stripe.paymentIntents.create({
-    amount: Math.ceil(validatedData.metadata.priceInUSD * 100),
+    amount: Math.ceil(validatedData.priceInUSD * 100),
     currency: 'usd',
-    metadata: serializeToStripeMeta(validatedData.metadata),
+    metadata: serializeToStripeMeta(validatedData),
   });
 
   return paymentIntent;
 }
 
-export async function createStripeConnectedAccount(
+async function createStripeConnectedAccount(
   driver: ApiResSetupConnectedAccount,
+  authUser: DecodedIdToken,
 ): Promise<Stripe.Response<Stripe.Account> | Error> {
   const account = await stripe.accounts.create({
     country: 'US',
-    email: driver.email || undefined,
+    email: authUser.email || undefined,
     capabilities: {
       transfers: {
         requested: true,
       },
     },
     metadata: {
-      driverId: driver.uid,
-      email: driver.email,
+      driverId: authUser.uid,
+      email: authUser.email || null,
     },
     controller: {
       losses: {
@@ -65,7 +69,7 @@ export async function createStripeConnectedAccount(
     DriverEntity,
     DriverEntity
   >;
-  await driverCollection.doc(driver.uid).update({
+  await driverCollection.doc(authUser.uid).update({
     stripeConnectAccountId: account.id,
   });
   return account;
@@ -73,9 +77,10 @@ export async function createStripeConnectedAccount(
 
 export async function generateConnectedAccountSetupLink(
   driver: ApiResSetupConnectedAccount,
+  authUser: DecodedIdToken,
 ): Promise<Stripe.Response<Stripe.AccountLink> | Error> {
   if (!driver.stripeConnectAccountId) {
-    const connectAccount = await createStripeConnectedAccount(driver);
+    const connectAccount = await createStripeConnectedAccount(driver, authUser);
     if (connectAccount instanceof Error) {
       return connectAccount;
     }

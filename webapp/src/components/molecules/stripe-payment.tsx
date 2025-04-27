@@ -5,16 +5,16 @@ import {
   useStripe,
 } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
-import { STRIPE_CLIENT_SECRET, SERVER_API_ENDPOINT } from "~/utils/envs";
+import { STRIPE_CLIENT_SECRET } from "~/utils/envs";
 import { useState } from "react";
 import { Modal } from "flowbite-react";
 import { useQuery } from "@tanstack/react-query";
 import { PrimaryButton } from "~/components/atoms";
 import {
+  ApiReqScheduleDeliveryIntent,
   apiResScheduleDeliveryIntent,
-  NewOrder,
-} from "../../../../common/types/src";
-import { up } from "up-fetch";
+} from "@freedmen-s-trucking/types";
+import { useServerRequest } from "~/hooks/use-server-request";
 
 const stripePromise = loadStripe(STRIPE_CLIENT_SECRET!);
 
@@ -34,7 +34,7 @@ const appearance = {
 const StripePayment: React.FC<{
   showInModal: boolean;
   price: number;
-  order: NewOrder;
+  order: ApiReqScheduleDeliveryIntent["metadata"];
   onComplete: () => void;
 }> = ({ showInModal, price, order, onComplete }) => {
   const [showModal, setShowModal] = useState(showInModal);
@@ -62,27 +62,11 @@ const StripePayment: React.FC<{
   return <PaymentProvider price={price} order={order} />;
 };
 
-const scheduleDeliveryRequest = async (order: NewOrder) => {
-  const request = up(fetch, () => ({
-    baseUrl: SERVER_API_ENDPOINT,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${STRIPE_CLIENT_SECRET}`,
-    },
-  }));
-
-  const response = await request("/v1/stripe/create-payment-intent", {
-    method: "POST",
-    schema: apiResScheduleDeliveryIntent,
-    body: { metadata: order },
-  });
-  return response;
-};
-
-const PaymentProvider: React.FC<{ price: number; order: NewOrder }> = ({
-  price,
-  order,
-}) => {
+const PaymentProvider: React.FC<{
+  price: number;
+  order: ApiReqScheduleDeliveryIntent["metadata"];
+}> = ({ price, order }) => {
+  const serverRequest = useServerRequest();
   const {
     data: clientSecret,
     isLoading,
@@ -90,7 +74,12 @@ const PaymentProvider: React.FC<{ price: number; order: NewOrder }> = ({
   } = useQuery({
     queryKey: ["payment-intent", price],
     select: (data) => data?.clientSecret,
-    queryFn: () => scheduleDeliveryRequest(order),
+    queryFn: () =>
+      serverRequest("/v1/stripe/create-payment-intent", {
+        method: "POST",
+        schema: apiResScheduleDeliveryIntent,
+        body: { metadata: order } satisfies ApiReqScheduleDeliveryIntent,
+      }),
   });
 
   if (isLoading) {
@@ -114,41 +103,6 @@ const PaymentProvider: React.FC<{ price: number; order: NewOrder }> = ({
     </Elements>
   );
 };
-
-// const StripePayment: React.FC = () => {
-//     const stripe = useStripe();
-//     const elements = useElements();
-
-//     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-//         event.preventDefault();
-
-//         if (!stripe || !elements) {
-//             // Stripe.js has not yet loaded.
-//             // Make sure to disable form submission until Stripe.js has loaded.
-//             return;
-//         }
-
-//         const { error, paymentMethod } = await stripe.createPaymentMethod({
-//             type: "card",
-//             card: elements.getElement(CardElement) as HTMLInputElement,
-//         });
-
-//         if (error) {
-//             console.log("[paymentMethod] error", error);
-//         } else {
-//             console.log("[paymentMethod] success", paymentMethod);
-//         }
-//     };
-
-//     return (
-//         <form onSubmit={handleSubmit}>
-//             <CardElement />
-//             <button type="submit" disabled={!stripe}>
-//                 Pay
-//             </button>
-//         </form>
-//     );
-// };
 
 const Payment: React.FC = () => {
   const stripe = useStripe();
