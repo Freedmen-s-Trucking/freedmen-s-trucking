@@ -238,16 +238,6 @@ const SignUpUser: React.FC<{
                     Upper & lower case letters
                   </li>
                   <li className="mb-1 flex items-center">
-                    {(passwordSecurityLevel.hasNumber && (
-                      <IoCheckmark className="text-2xl text-green-400" />
-                    )) || (
-                      <IoClose
-                        className={`text-2xl ${passwordSecurityLevel.numberRequired ? "text-red-400" : "text-gray-300"}`}
-                      />
-                    )}
-                    A numeric character (0-9)
-                  </li>
-                  <li className="mb-1 flex items-center">
                     {(passwordSecurityLevel.hasSymbol && (
                       <IoCheckmark className="text-2xl text-green-400" />
                     )) || (
@@ -256,6 +246,16 @@ const SignUpUser: React.FC<{
                       />
                     )}
                     A symbol (#$&)
+                  </li>
+                  <li className="mb-1 flex items-center">
+                    {(passwordSecurityLevel.hasNumber && (
+                      <IoCheckmark className="text-2xl text-green-400" />
+                    )) || (
+                      <IoClose
+                        className={`text-2xl ${passwordSecurityLevel.numberRequired ? "text-red-400" : "text-gray-300"}`}
+                      />
+                    )}
+                    A numeric character (0-9)
                   </li>
                   <li className="flex items-center">
                     {(password.length >= 12 && (

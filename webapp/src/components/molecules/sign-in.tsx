@@ -42,17 +42,24 @@ const SignIn: React.FC<{
     hasUpperCase: false,
     hasSymbol: false,
     hasNumber: false,
+    lowerRequired: true,
+    upperRequired: true,
+    symbolRequired: true,
+    numberRequired: false,
+    remainingLength: 0,
   });
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (
-      !(
-        passwordSecurityLevel.hasLower &&
-        passwordSecurityLevel.hasNumber &&
-        passwordSecurityLevel.hasUpperCase &&
-        passwordSecurityLevel.hasSymbol &&
-        password.length >= 8
-      )
+      (!passwordSecurityLevel.hasLower &&
+        passwordSecurityLevel.lowerRequired) ||
+      (!passwordSecurityLevel.hasNumber &&
+        passwordSecurityLevel.numberRequired) ||
+      (!passwordSecurityLevel.hasUpperCase &&
+        passwordSecurityLevel.upperRequired) ||
+      (!passwordSecurityLevel.hasSymbol &&
+        passwordSecurityLevel.symbolRequired) ||
+      passwordSecurityLevel.remainingLength > 0
     ) {
       setError("Error in password validation");
       return;
@@ -166,9 +173,11 @@ const SignIn: React.FC<{
             hardClose
             content={
               <div className="space-y-2 p-3">
-                {password.length < 8 && (
+                {passwordSecurityLevel.remainingLength > 0 && (
                   <h3 className="font-semibold text-red-500">
-                    Must have at least 8 characters
+                    Must have at least{" "}
+                    {password.length + passwordSecurityLevel.remainingLength}{" "}
+                    characters
                   </h3>
                 )}
                 <div className="grid grid-cols-4 gap-2">
@@ -185,20 +194,32 @@ const SignIn: React.FC<{
                     {(passwordSecurityLevel.hasLower &&
                       passwordSecurityLevel.hasUpperCase && (
                         <IoCheckmark className="text-2xl text-green-400" />
-                      )) || <IoClose className="text-2xl text-red-400" />}
+                      )) || (
+                      <IoClose
+                        className={`text-2xl ${passwordSecurityLevel.lowerRequired && passwordSecurityLevel.upperRequired ? "text-red-400" : "text-gray-300"}`}
+                      />
+                    )}
                     Upper & lower case letters
-                  </li>
-                  <li className="mb-1 flex items-center">
-                    {(passwordSecurityLevel.hasNumber && (
-                      <IoCheckmark className="text-2xl text-green-400" />
-                    )) || <IoClose className="text-2xl text-red-400" />}
-                    A numeric character (0-9)
                   </li>
                   <li className="mb-1 flex items-center">
                     {(passwordSecurityLevel.hasSymbol && (
                       <IoCheckmark className="text-2xl text-green-400" />
-                    )) || <IoClose className="text-2xl text-red-400" />}
+                    )) || (
+                      <IoClose
+                        className={`text-2xl ${passwordSecurityLevel.symbolRequired ? "text-red-400" : "text-gray-300"}`}
+                      />
+                    )}
                     A symbol (#$&)
+                  </li>
+                  <li className="mb-1 flex items-center">
+                    {(passwordSecurityLevel.hasNumber && (
+                      <IoCheckmark className="text-2xl text-green-400" />
+                    )) || (
+                      <IoClose
+                        className={`text-2xl ${passwordSecurityLevel.numberRequired ? "text-red-400" : "text-gray-300"}`}
+                      />
+                    )}
+                    A numeric character (0-9)
                   </li>
                   <li className="flex items-center">
                     {(password.length >= 12 && (
