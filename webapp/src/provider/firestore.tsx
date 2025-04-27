@@ -16,7 +16,7 @@ const FireStoreProvider: React.FC<{
   useEffect(() => {
     if (isDevMode) {
       const location = new URL(window.location.href);
-      connectFirestoreEmulator(fireStore, `http://${location.hostname}`, 8080);
+      connectFirestoreEmulator(fireStore, location.hostname, 8080);
     }
   }, [fireStore]);
 
