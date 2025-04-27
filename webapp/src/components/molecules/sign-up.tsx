@@ -94,7 +94,7 @@ const SignUpUser: React.FC<{
     lowerRequired: true,
     upperRequired: true,
     symbolRequired: true,
-    numberRequired: true,
+    numberRequired: false,
     remainingLength: 0,
   });
   const handleSubmit = async (e: React.FormEvent) => {

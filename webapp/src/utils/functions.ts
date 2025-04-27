@@ -12,7 +12,6 @@ import {
 } from "flowbite-react";
 import { modalTheme, tabTheme } from "./constants";
 
-
 export function checkFalsyAndThrow(
   paramsToCheck: Record<string, unknown>,
   traceRef?: string,
@@ -229,7 +228,7 @@ export function getPasswordSecurityLevel(password: string) {
   const upperCaseRegExp = /[A-Z]/;
   const numberRegExp = /[0-9]/;
   const symbolRegExp = /[_\-!@#$%^&*(),.?":{}|<>/]/;
-  const minimumLength = 8;
+  const minimumLength = 6;
   let score = 0;
   const res = {
     level: 0,
