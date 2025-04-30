@@ -58,6 +58,7 @@ import { Route as AppAgentsDocumentsImport } from './routes/app/agents/documents
 import { Route as AppAgentsDeliveryDetailsImport } from './routes/app/agents/delivery-details'
 import { Route as AppAgentsDeliveryCompleteImport } from './routes/app/agents/delivery-complete'
 import { Route as AppAgentsCompleteImport } from './routes/app/agents/complete'
+import { Route as AppAgentsAvailableRequestsImport } from './routes/app/agents/available-requests'
 import { Route as AppAgentsAgentSplashScreenImport } from './routes/app/agents/agent-splash-screen'
 import { Route as AppAgentsAgentOtpImport } from './routes/app/agents/agent-otp'
 import { Route as AppAdminDashboardImport } from './routes/app/admin/dashboard'
@@ -347,6 +348,14 @@ const AppAgentsCompleteRoute = AppAgentsCompleteImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const AppAgentsAvailableRequestsRoute = AppAgentsAvailableRequestsImport.update(
+  {
+    id: '/app/agents/available-requests',
+    path: '/app/agents/available-requests',
+    getParentRoute: () => rootRoute,
+  } as any,
+)
+
 const AppAgentsAgentSplashScreenRoute = AppAgentsAgentSplashScreenImport.update(
   {
     id: '/app/agents/agent-splash-screen',
@@ -446,6 +455,13 @@ declare module '@tanstack/react-router' {
       path: '/app/agents/agent-splash-screen'
       fullPath: '/app/agents/agent-splash-screen'
       preLoaderRoute: typeof AppAgentsAgentSplashScreenImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/agents/available-requests': {
+      id: '/app/agents/available-requests'
+      path: '/app/agents/available-requests'
+      fullPath: '/app/agents/available-requests'
+      preLoaderRoute: typeof AppAgentsAvailableRequestsImport
       parentRoute: typeof rootRoute
     }
     '/app/agents/complete': {
@@ -766,6 +782,7 @@ export interface FileRoutesByFullPath {
   '/app/admin/dashboard': typeof AppAdminDashboardRoute
   '/app/agents/agent-otp': typeof AppAgentsAgentOtpRoute
   '/app/agents/agent-splash-screen': typeof AppAgentsAgentSplashScreenRoute
+  '/app/agents/available-requests': typeof AppAgentsAvailableRequestsRoute
   '/app/agents/complete': typeof AppAgentsCompleteRoute
   '/app/agents/delivery-complete': typeof AppAgentsDeliveryCompleteRoute
   '/app/agents/delivery-details': typeof AppAgentsDeliveryDetailsRoute
@@ -820,6 +837,7 @@ export interface FileRoutesByTo {
   '/app/admin/dashboard': typeof AppAdminDashboardRoute
   '/app/agents/agent-otp': typeof AppAgentsAgentOtpRoute
   '/app/agents/agent-splash-screen': typeof AppAgentsAgentSplashScreenRoute
+  '/app/agents/available-requests': typeof AppAgentsAvailableRequestsRoute
   '/app/agents/complete': typeof AppAgentsCompleteRoute
   '/app/agents/delivery-complete': typeof AppAgentsDeliveryCompleteRoute
   '/app/agents/delivery-details': typeof AppAgentsDeliveryDetailsRoute
@@ -875,6 +893,7 @@ export interface FileRoutesById {
   '/app/admin/dashboard': typeof AppAdminDashboardRoute
   '/app/agents/agent-otp': typeof AppAgentsAgentOtpRoute
   '/app/agents/agent-splash-screen': typeof AppAgentsAgentSplashScreenRoute
+  '/app/agents/available-requests': typeof AppAgentsAvailableRequestsRoute
   '/app/agents/complete': typeof AppAgentsCompleteRoute
   '/app/agents/delivery-complete': typeof AppAgentsDeliveryCompleteRoute
   '/app/agents/delivery-details': typeof AppAgentsDeliveryDetailsRoute
@@ -931,6 +950,7 @@ export interface FileRouteTypes {
     | '/app/admin/dashboard'
     | '/app/agents/agent-otp'
     | '/app/agents/agent-splash-screen'
+    | '/app/agents/available-requests'
     | '/app/agents/complete'
     | '/app/agents/delivery-complete'
     | '/app/agents/delivery-details'
@@ -984,6 +1004,7 @@ export interface FileRouteTypes {
     | '/app/admin/dashboard'
     | '/app/agents/agent-otp'
     | '/app/agents/agent-splash-screen'
+    | '/app/agents/available-requests'
     | '/app/agents/complete'
     | '/app/agents/delivery-complete'
     | '/app/agents/delivery-details'
@@ -1037,6 +1058,7 @@ export interface FileRouteTypes {
     | '/app/admin/dashboard'
     | '/app/agents/agent-otp'
     | '/app/agents/agent-splash-screen'
+    | '/app/agents/available-requests'
     | '/app/agents/complete'
     | '/app/agents/delivery-complete'
     | '/app/agents/delivery-details'
@@ -1092,6 +1114,7 @@ export interface RootRouteChildren {
   AppAdminDashboardRoute: typeof AppAdminDashboardRoute
   AppAgentsAgentOtpRoute: typeof AppAgentsAgentOtpRoute
   AppAgentsAgentSplashScreenRoute: typeof AppAgentsAgentSplashScreenRoute
+  AppAgentsAvailableRequestsRoute: typeof AppAgentsAvailableRequestsRoute
   AppAgentsCompleteRoute: typeof AppAgentsCompleteRoute
   AppAgentsDeliveryCompleteRoute: typeof AppAgentsDeliveryCompleteRoute
   AppAgentsDeliveryDetailsRoute: typeof AppAgentsDeliveryDetailsRoute
@@ -1145,6 +1168,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppAdminDashboardRoute: AppAdminDashboardRoute,
   AppAgentsAgentOtpRoute: AppAgentsAgentOtpRoute,
   AppAgentsAgentSplashScreenRoute: AppAgentsAgentSplashScreenRoute,
+  AppAgentsAvailableRequestsRoute: AppAgentsAvailableRequestsRoute,
   AppAgentsCompleteRoute: AppAgentsCompleteRoute,
   AppAgentsDeliveryCompleteRoute: AppAgentsDeliveryCompleteRoute,
   AppAgentsDeliveryDetailsRoute: AppAgentsDeliveryDetailsRoute,
@@ -1207,6 +1231,7 @@ export const routeTree = rootRoute
         "/app/admin/dashboard",
         "/app/agents/agent-otp",
         "/app/agents/agent-splash-screen",
+        "/app/agents/available-requests",
         "/app/agents/complete",
         "/app/agents/delivery-complete",
         "/app/agents/delivery-details",
@@ -1278,6 +1303,9 @@ export const routeTree = rootRoute
     },
     "/app/agents/agent-splash-screen": {
       "filePath": "app/agents/agent-splash-screen.tsx"
+    },
+    "/app/agents/available-requests": {
+      "filePath": "app/agents/available-requests.tsx"
     },
     "/app/agents/complete": {
       "filePath": "app/agents/complete.tsx"

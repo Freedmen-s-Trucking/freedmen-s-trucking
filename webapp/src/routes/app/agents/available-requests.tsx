@@ -23,6 +23,7 @@ function AvailableRequestsScreen() {
   const navigate = useNavigate();
 
   const handleAccept = (requestId: string) => {
+    console.log(requestId)
     // Navigate to delivery details or start delivery process
     navigate({ to: "/app/agents/delivery-details" });
   };

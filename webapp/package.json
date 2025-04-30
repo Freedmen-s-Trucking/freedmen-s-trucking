@@ -15,6 +15,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.11",
+    "@radix-ui/react-popover": "^1.1.11",
+    "@radix-ui/react-slot": "^1.2.0",
     "@reduxjs/toolkit": "^2.6.1",
     "@stripe/react-stripe-js": "^3.5.1",
     "@stripe/stripe-js": "^6.1.0",
@@ -23,17 +26,25 @@
     "@vis.gl/react-google-maps": "^1.5.2",
     "arktype": "^2.1.10",
     "axios": "^1.8.4",
+    "chart.js": "^4.4.9",
+    "class-variance-authority": "^0.7.1",
     "date-fns": "^4.1.0",
     "firebase": "^11.4.0",
     "flowbite-react": "0.10.2",
+    "leaflet": "^1.9.4",
+    "lucide-react": "^0.503.0",
     "motion": "^12.6.2",
     "react": "^18.2.0",
+    "react-chartjs-2": "^5.3.0",
+    "react-day-picker": "^9.6.7",
     "react-dom": "^18.2.0",
     "react-geolocated": "^4.3.0",
     "react-icons": "^5.5.0",
+    "react-leaflet": "^5.0.0",
     "react-redux": "^9.2.0",
     "redux-persist": "^6.0.0",
-    "up-fetch": "^2.0.1"
+    "up-fetch": "^2.0.1",
+    "vaul": "^1.1.2"
   },
   "devDependencies": {
     "@tanstack/eslint-plugin-query": "5.68.0",

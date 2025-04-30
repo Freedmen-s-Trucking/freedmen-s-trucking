@@ -31,7 +31,9 @@ const Component: React.FC = () => {
     <>
       <RouteProviders>
         <Flowbite theme={{ mode: "light", theme: getFlowbiteTheme() }}>
-          <Outlet />
+          <div>
+            <Outlet />
+          </div>
         </Flowbite>
       </RouteProviders>
       <TanStackRouterDevtools />
