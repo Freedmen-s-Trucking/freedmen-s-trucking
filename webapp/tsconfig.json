@@ -1,30 +1,25 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
-    "skipLibCheck": true,
-
-    /* Bundler mode */
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx",
-
-    /* Linting */
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
       "~/*": ["./src/*"],
+      "@/*": ["./src/*"],
+      "@stores/*": ["./src/stores/*"],
+      "@freedman-trucking/*": ["../common/*"],
+      "@components/*": ["./src/components/*"],
+      "@lib/*": ["./src/lib/*"],
+      "@hooks/*": ["./src/hooks/*"],
+
       "@freedmen-s-trucking/types": ["../common/types"]
-    }
+    },
+    "jsx": "react-jsx",
+    "strictNullChecks": true,
+    "esModuleInterop": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "node", 
+    "skipLibCheck": true,
+    "strict": true
   },
-  "include": ["src", "test"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": ["src", "test"]
 }

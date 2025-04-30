@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { UserEntity } from "@freedmen-s-trucking/types";
+import { UserEntity } from "../../../../common/types/src";
 import home2LogoBlured from "~/assets/images/home-2-blur.webp";
 import home2Logo from "~/assets/images/home-2.webp";
 import Hero from "~/components/molecules/hero";

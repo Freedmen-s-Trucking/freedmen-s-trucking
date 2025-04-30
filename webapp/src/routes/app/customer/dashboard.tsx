@@ -23,7 +23,7 @@ import { useStorageOperations } from "~/hooks/use-storage";
 import { useQuery } from "@tanstack/react-query";
 import { useDbOperations } from "~/hooks/use-firestore";
 import { setUser } from "~/stores/controllers/auth-ctrl";
-import { OrderStatus } from "@freedmen-s-trucking/types";
+import { OrderStatus } from "../../../../../common/types/src";
 import { useAppDispatch } from "~/stores/hooks";
 import { TbLayoutDashboard } from "react-icons/tb";
 import { PiPlus } from "react-icons/pi";

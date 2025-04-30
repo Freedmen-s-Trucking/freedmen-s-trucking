@@ -5,14 +5,19 @@ import { FIREBASE_CONFIG_JSON } from "~/utils/envs";
 const FirebaseCtx = createContext<FirebaseApp | null>(null);
 
 const _initializeFirebaseApp = () => {
-  try {
-    const config = JSON.parse(FIREBASE_CONFIG_JSON);
-    return initializeApp(config);
-  } catch (e) {
-    console.error("failed to parse firebase app", e);
-    console.info(import.meta.env);
-    return initializeApp();
+  if (!FIREBASE_CONFIG_JSON) {
+    throw new Error("VITE_FIREBASE_CONFIG_JSON is undefined. Please check your .env file.");
   }
+
+  let config;
+  try {
+    config = JSON.parse(FIREBASE_CONFIG_JSON);
+  } catch (e) {
+    console.error("❌ Failed to parse VITE_FIREBASE_CONFIG_JSON", e);
+    throw new Error("Invalid JSON in VITE_FIREBASE_CONFIG_JSON");
+  }
+
+  return initializeApp(config);
 };
 
 const FirebaseProvider: React.FC<{

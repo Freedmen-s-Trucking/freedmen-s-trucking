@@ -60,6 +60,14 @@ export default {
           800: "#901400",
           900: "#870000",
         },
+        mobile: {
+          background: "#F7E9D0",
+          text: "#3B2E20",
+          button: {
+            DEFAULT: "#3B2E20",
+            text: "#FFFFFF"
+          }
+        }
       },
     },
   },

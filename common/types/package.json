@@ -2,14 +2,20 @@
   "name": "@freedmen-s-trucking/types",
   "version": "1.0.0",
   "description": "Shared entities between webapp and backend function",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
   "scripts": {
     "build": "tsc",
     "pack": "npm run build && npm pack",
     "watch": "tsc -w"
   },
-  "types": "src/index.ts",
-  "main": "dist/index.js",
-  "type": "module",
   "dependencies": {
     "arktype": "^2.1.10"
   }

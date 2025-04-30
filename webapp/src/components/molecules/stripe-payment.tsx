@@ -13,7 +13,7 @@ import { PrimaryButton } from "~/components/atoms";
 import {
   apiResScheduleDeliveryIntent,
   NewOrder,
-} from "@freedmen-s-trucking/types";
+} from "../../../../common/types/src";
 import { up } from "up-fetch";
 
 const stripePromise = loadStripe(STRIPE_CLIENT_SECRET!);

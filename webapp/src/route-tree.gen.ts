@@ -18,9 +18,50 @@ import { Route as PreviewServicesImport } from './routes/preview/services'
 import { Route as PreviewScheduleDeliveryImport } from './routes/preview/schedule-delivery'
 import { Route as PreviewContactImport } from './routes/preview/contact'
 import { Route as PreviewAboutImport } from './routes/preview/about'
+import { Route as AppUserVerifyImport } from './routes/app/user/verify'
+import { Route as AppUserSplashScreenImport } from './routes/app/user/splash-screen'
+import { Route as AppUserSignupImport } from './routes/app/user/signup'
+import { Route as AppUserSigninImport } from './routes/app/user/signin'
+import { Route as AppUserScheduleDeliveryImport } from './routes/app/user/schedule-delivery'
+import { Route as AppUserProfileImport } from './routes/app/user/profile'
+import { Route as AppUserOnboardingImport } from './routes/app/user/onboarding'
+import { Route as AppUserInstantDeliveryImport } from './routes/app/user/instant-delivery'
+import { Route as AppUserHomeImport } from './routes/app/user/home'
+import { Route as AppUserDeliveryReviewImport } from './routes/app/user/delivery-review'
+import { Route as AppUserDeliveryInProgressImport } from './routes/app/user/delivery-in-progress'
+import { Route as AppUserDeliveryHistoryImport } from './routes/app/user/delivery-history'
+import { Route as AppUserDeliveryDetailsImport } from './routes/app/user/delivery-details'
+import { Route as AppUserCourierTrackingImport } from './routes/app/user/courier-tracking'
+import { Route as AppUserConfirmDetailsImport } from './routes/app/user/confirm-details'
+import { Route as AppUserArriveLocationImport } from './routes/app/user/arrive-location'
 import { Route as AppDriverDashboardImport } from './routes/app/driver/dashboard'
 import { Route as AppCustomerDashboardImport } from './routes/app/customer/dashboard'
+import { Route as AppAgentsWelcomeImport } from './routes/app/agents/welcome'
+import { Route as AppAgentsVehiclesImport } from './routes/app/agents/vehicles'
+import { Route as AppAgentsVehicleDetailsImport } from './routes/app/agents/vehicle-details'
+import { Route as AppAgentsStartDeliveryImport } from './routes/app/agents/start-delivery'
+import { Route as AppAgentsSigninImport } from './routes/app/agents/signin'
+import { Route as AppAgentsRequestMapImport } from './routes/app/agents/request-map'
+import { Route as AppAgentsRequestDetailsImport } from './routes/app/agents/request-details'
+import { Route as AppAgentsRegisterFormImport } from './routes/app/agents/register-form'
+import { Route as AppAgentsRegisterImport } from './routes/app/agents/register'
+import { Route as AppAgentsProfileImport } from './routes/app/agents/profile'
+import { Route as AppAgentsIdFrontImport } from './routes/app/agents/id-front'
+import { Route as AppAgentsHomeVerificationImport } from './routes/app/agents/home-verification'
+import { Route as AppAgentsHomeImport } from './routes/app/agents/home'
+import { Route as AppAgentsEnroutePickupImport } from './routes/app/agents/enroute-pickup'
+import { Route as AppAgentsEarningsDetailsImport } from './routes/app/agents/earnings-details'
+import { Route as AppAgentsEarningsImport } from './routes/app/agents/earnings'
+import { Route as AppAgentsDropOffProcessImport } from './routes/app/agents/drop-off-process'
+import { Route as AppAgentsDropOffPhotoImport } from './routes/app/agents/drop-off-photo'
+import { Route as AppAgentsDocumentsImport } from './routes/app/agents/documents'
+import { Route as AppAgentsDeliveryDetailsImport } from './routes/app/agents/delivery-details'
+import { Route as AppAgentsDeliveryCompleteImport } from './routes/app/agents/delivery-complete'
+import { Route as AppAgentsCompleteImport } from './routes/app/agents/complete'
+import { Route as AppAgentsAgentSplashScreenImport } from './routes/app/agents/agent-splash-screen'
+import { Route as AppAgentsAgentOtpImport } from './routes/app/agents/agent-otp'
 import { Route as AppAdminDashboardImport } from './routes/app/admin/dashboard'
+import { Route as AppUserDeliveryDetailsDeliveryIdImport } from './routes/app/user/delivery-details.$deliveryId'
 
 // Create/Update Routes
 
@@ -66,6 +107,102 @@ const PreviewAboutRoute = PreviewAboutImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const AppUserVerifyRoute = AppUserVerifyImport.update({
+  id: '/app/user/verify',
+  path: '/app/user/verify',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppUserSplashScreenRoute = AppUserSplashScreenImport.update({
+  id: '/app/user/splash-screen',
+  path: '/app/user/splash-screen',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppUserSignupRoute = AppUserSignupImport.update({
+  id: '/app/user/signup',
+  path: '/app/user/signup',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppUserSigninRoute = AppUserSigninImport.update({
+  id: '/app/user/signin',
+  path: '/app/user/signin',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppUserScheduleDeliveryRoute = AppUserScheduleDeliveryImport.update({
+  id: '/app/user/schedule-delivery',
+  path: '/app/user/schedule-delivery',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppUserProfileRoute = AppUserProfileImport.update({
+  id: '/app/user/profile',
+  path: '/app/user/profile',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppUserOnboardingRoute = AppUserOnboardingImport.update({
+  id: '/app/user/onboarding',
+  path: '/app/user/onboarding',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppUserInstantDeliveryRoute = AppUserInstantDeliveryImport.update({
+  id: '/app/user/instant-delivery',
+  path: '/app/user/instant-delivery',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppUserHomeRoute = AppUserHomeImport.update({
+  id: '/app/user/home',
+  path: '/app/user/home',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppUserDeliveryReviewRoute = AppUserDeliveryReviewImport.update({
+  id: '/app/user/delivery-review',
+  path: '/app/user/delivery-review',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppUserDeliveryInProgressRoute = AppUserDeliveryInProgressImport.update({
+  id: '/app/user/delivery-in-progress',
+  path: '/app/user/delivery-in-progress',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppUserDeliveryHistoryRoute = AppUserDeliveryHistoryImport.update({
+  id: '/app/user/delivery-history',
+  path: '/app/user/delivery-history',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppUserDeliveryDetailsRoute = AppUserDeliveryDetailsImport.update({
+  id: '/app/user/delivery-details',
+  path: '/app/user/delivery-details',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppUserCourierTrackingRoute = AppUserCourierTrackingImport.update({
+  id: '/app/user/courier-tracking',
+  path: '/app/user/courier-tracking',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppUserConfirmDetailsRoute = AppUserConfirmDetailsImport.update({
+  id: '/app/user/confirm-details',
+  path: '/app/user/confirm-details',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppUserArriveLocationRoute = AppUserArriveLocationImport.update({
+  id: '/app/user/arrive-location',
+  path: '/app/user/arrive-location',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const AppDriverDashboardRoute = AppDriverDashboardImport.update({
   id: '/app/driver/dashboard',
   path: '/app/driver/dashboard',
@@ -78,11 +215,164 @@ const AppCustomerDashboardRoute = AppCustomerDashboardImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const AppAgentsWelcomeRoute = AppAgentsWelcomeImport.update({
+  id: '/app/agents/welcome',
+  path: '/app/agents/welcome',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppAgentsVehiclesRoute = AppAgentsVehiclesImport.update({
+  id: '/app/agents/vehicles',
+  path: '/app/agents/vehicles',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppAgentsVehicleDetailsRoute = AppAgentsVehicleDetailsImport.update({
+  id: '/app/agents/vehicle-details',
+  path: '/app/agents/vehicle-details',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppAgentsStartDeliveryRoute = AppAgentsStartDeliveryImport.update({
+  id: '/app/agents/start-delivery',
+  path: '/app/agents/start-delivery',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppAgentsSigninRoute = AppAgentsSigninImport.update({
+  id: '/app/agents/signin',
+  path: '/app/agents/signin',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppAgentsRequestMapRoute = AppAgentsRequestMapImport.update({
+  id: '/app/agents/request-map',
+  path: '/app/agents/request-map',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppAgentsRequestDetailsRoute = AppAgentsRequestDetailsImport.update({
+  id: '/app/agents/request-details',
+  path: '/app/agents/request-details',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppAgentsRegisterFormRoute = AppAgentsRegisterFormImport.update({
+  id: '/app/agents/register-form',
+  path: '/app/agents/register-form',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppAgentsRegisterRoute = AppAgentsRegisterImport.update({
+  id: '/app/agents/register',
+  path: '/app/agents/register',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppAgentsProfileRoute = AppAgentsProfileImport.update({
+  id: '/app/agents/profile',
+  path: '/app/agents/profile',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppAgentsIdFrontRoute = AppAgentsIdFrontImport.update({
+  id: '/app/agents/id-front',
+  path: '/app/agents/id-front',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppAgentsHomeVerificationRoute = AppAgentsHomeVerificationImport.update({
+  id: '/app/agents/home-verification',
+  path: '/app/agents/home-verification',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppAgentsHomeRoute = AppAgentsHomeImport.update({
+  id: '/app/agents/home',
+  path: '/app/agents/home',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppAgentsEnroutePickupRoute = AppAgentsEnroutePickupImport.update({
+  id: '/app/agents/enroute-pickup',
+  path: '/app/agents/enroute-pickup',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppAgentsEarningsDetailsRoute = AppAgentsEarningsDetailsImport.update({
+  id: '/app/agents/earnings-details',
+  path: '/app/agents/earnings-details',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppAgentsEarningsRoute = AppAgentsEarningsImport.update({
+  id: '/app/agents/earnings',
+  path: '/app/agents/earnings',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppAgentsDropOffProcessRoute = AppAgentsDropOffProcessImport.update({
+  id: '/app/agents/drop-off-process',
+  path: '/app/agents/drop-off-process',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppAgentsDropOffPhotoRoute = AppAgentsDropOffPhotoImport.update({
+  id: '/app/agents/drop-off-photo',
+  path: '/app/agents/drop-off-photo',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppAgentsDocumentsRoute = AppAgentsDocumentsImport.update({
+  id: '/app/agents/documents',
+  path: '/app/agents/documents',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppAgentsDeliveryDetailsRoute = AppAgentsDeliveryDetailsImport.update({
+  id: '/app/agents/delivery-details',
+  path: '/app/agents/delivery-details',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppAgentsDeliveryCompleteRoute = AppAgentsDeliveryCompleteImport.update({
+  id: '/app/agents/delivery-complete',
+  path: '/app/agents/delivery-complete',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppAgentsCompleteRoute = AppAgentsCompleteImport.update({
+  id: '/app/agents/complete',
+  path: '/app/agents/complete',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppAgentsAgentSplashScreenRoute = AppAgentsAgentSplashScreenImport.update(
+  {
+    id: '/app/agents/agent-splash-screen',
+    path: '/app/agents/agent-splash-screen',
+    getParentRoute: () => rootRoute,
+  } as any,
+)
+
+const AppAgentsAgentOtpRoute = AppAgentsAgentOtpImport.update({
+  id: '/app/agents/agent-otp',
+  path: '/app/agents/agent-otp',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const AppAdminDashboardRoute = AppAdminDashboardImport.update({
   id: '/app/admin/dashboard',
   path: '/app/admin/dashboard',
   getParentRoute: () => rootRoute,
 } as any)
+
+const AppUserDeliveryDetailsDeliveryIdRoute =
+  AppUserDeliveryDetailsDeliveryIdImport.update({
+    id: '/$deliveryId',
+    path: '/$deliveryId',
+    getParentRoute: () => AppUserDeliveryDetailsRoute,
+  } as any)
 
 // Populate the FileRoutesByPath interface
 
@@ -144,6 +434,174 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminDashboardImport
       parentRoute: typeof rootRoute
     }
+    '/app/agents/agent-otp': {
+      id: '/app/agents/agent-otp'
+      path: '/app/agents/agent-otp'
+      fullPath: '/app/agents/agent-otp'
+      preLoaderRoute: typeof AppAgentsAgentOtpImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/agents/agent-splash-screen': {
+      id: '/app/agents/agent-splash-screen'
+      path: '/app/agents/agent-splash-screen'
+      fullPath: '/app/agents/agent-splash-screen'
+      preLoaderRoute: typeof AppAgentsAgentSplashScreenImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/agents/complete': {
+      id: '/app/agents/complete'
+      path: '/app/agents/complete'
+      fullPath: '/app/agents/complete'
+      preLoaderRoute: typeof AppAgentsCompleteImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/agents/delivery-complete': {
+      id: '/app/agents/delivery-complete'
+      path: '/app/agents/delivery-complete'
+      fullPath: '/app/agents/delivery-complete'
+      preLoaderRoute: typeof AppAgentsDeliveryCompleteImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/agents/delivery-details': {
+      id: '/app/agents/delivery-details'
+      path: '/app/agents/delivery-details'
+      fullPath: '/app/agents/delivery-details'
+      preLoaderRoute: typeof AppAgentsDeliveryDetailsImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/agents/documents': {
+      id: '/app/agents/documents'
+      path: '/app/agents/documents'
+      fullPath: '/app/agents/documents'
+      preLoaderRoute: typeof AppAgentsDocumentsImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/agents/drop-off-photo': {
+      id: '/app/agents/drop-off-photo'
+      path: '/app/agents/drop-off-photo'
+      fullPath: '/app/agents/drop-off-photo'
+      preLoaderRoute: typeof AppAgentsDropOffPhotoImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/agents/drop-off-process': {
+      id: '/app/agents/drop-off-process'
+      path: '/app/agents/drop-off-process'
+      fullPath: '/app/agents/drop-off-process'
+      preLoaderRoute: typeof AppAgentsDropOffProcessImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/agents/earnings': {
+      id: '/app/agents/earnings'
+      path: '/app/agents/earnings'
+      fullPath: '/app/agents/earnings'
+      preLoaderRoute: typeof AppAgentsEarningsImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/agents/earnings-details': {
+      id: '/app/agents/earnings-details'
+      path: '/app/agents/earnings-details'
+      fullPath: '/app/agents/earnings-details'
+      preLoaderRoute: typeof AppAgentsEarningsDetailsImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/agents/enroute-pickup': {
+      id: '/app/agents/enroute-pickup'
+      path: '/app/agents/enroute-pickup'
+      fullPath: '/app/agents/enroute-pickup'
+      preLoaderRoute: typeof AppAgentsEnroutePickupImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/agents/home': {
+      id: '/app/agents/home'
+      path: '/app/agents/home'
+      fullPath: '/app/agents/home'
+      preLoaderRoute: typeof AppAgentsHomeImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/agents/home-verification': {
+      id: '/app/agents/home-verification'
+      path: '/app/agents/home-verification'
+      fullPath: '/app/agents/home-verification'
+      preLoaderRoute: typeof AppAgentsHomeVerificationImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/agents/id-front': {
+      id: '/app/agents/id-front'
+      path: '/app/agents/id-front'
+      fullPath: '/app/agents/id-front'
+      preLoaderRoute: typeof AppAgentsIdFrontImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/agents/profile': {
+      id: '/app/agents/profile'
+      path: '/app/agents/profile'
+      fullPath: '/app/agents/profile'
+      preLoaderRoute: typeof AppAgentsProfileImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/agents/register': {
+      id: '/app/agents/register'
+      path: '/app/agents/register'
+      fullPath: '/app/agents/register'
+      preLoaderRoute: typeof AppAgentsRegisterImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/agents/register-form': {
+      id: '/app/agents/register-form'
+      path: '/app/agents/register-form'
+      fullPath: '/app/agents/register-form'
+      preLoaderRoute: typeof AppAgentsRegisterFormImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/agents/request-details': {
+      id: '/app/agents/request-details'
+      path: '/app/agents/request-details'
+      fullPath: '/app/agents/request-details'
+      preLoaderRoute: typeof AppAgentsRequestDetailsImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/agents/request-map': {
+      id: '/app/agents/request-map'
+      path: '/app/agents/request-map'
+      fullPath: '/app/agents/request-map'
+      preLoaderRoute: typeof AppAgentsRequestMapImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/agents/signin': {
+      id: '/app/agents/signin'
+      path: '/app/agents/signin'
+      fullPath: '/app/agents/signin'
+      preLoaderRoute: typeof AppAgentsSigninImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/agents/start-delivery': {
+      id: '/app/agents/start-delivery'
+      path: '/app/agents/start-delivery'
+      fullPath: '/app/agents/start-delivery'
+      preLoaderRoute: typeof AppAgentsStartDeliveryImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/agents/vehicle-details': {
+      id: '/app/agents/vehicle-details'
+      path: '/app/agents/vehicle-details'
+      fullPath: '/app/agents/vehicle-details'
+      preLoaderRoute: typeof AppAgentsVehicleDetailsImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/agents/vehicles': {
+      id: '/app/agents/vehicles'
+      path: '/app/agents/vehicles'
+      fullPath: '/app/agents/vehicles'
+      preLoaderRoute: typeof AppAgentsVehiclesImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/agents/welcome': {
+      id: '/app/agents/welcome'
+      path: '/app/agents/welcome'
+      fullPath: '/app/agents/welcome'
+      preLoaderRoute: typeof AppAgentsWelcomeImport
+      parentRoute: typeof rootRoute
+    }
     '/app/customer/dashboard': {
       id: '/app/customer/dashboard'
       path: '/app/customer/dashboard'
@@ -158,10 +616,144 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDriverDashboardImport
       parentRoute: typeof rootRoute
     }
+    '/app/user/arrive-location': {
+      id: '/app/user/arrive-location'
+      path: '/app/user/arrive-location'
+      fullPath: '/app/user/arrive-location'
+      preLoaderRoute: typeof AppUserArriveLocationImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/user/confirm-details': {
+      id: '/app/user/confirm-details'
+      path: '/app/user/confirm-details'
+      fullPath: '/app/user/confirm-details'
+      preLoaderRoute: typeof AppUserConfirmDetailsImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/user/courier-tracking': {
+      id: '/app/user/courier-tracking'
+      path: '/app/user/courier-tracking'
+      fullPath: '/app/user/courier-tracking'
+      preLoaderRoute: typeof AppUserCourierTrackingImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/user/delivery-details': {
+      id: '/app/user/delivery-details'
+      path: '/app/user/delivery-details'
+      fullPath: '/app/user/delivery-details'
+      preLoaderRoute: typeof AppUserDeliveryDetailsImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/user/delivery-history': {
+      id: '/app/user/delivery-history'
+      path: '/app/user/delivery-history'
+      fullPath: '/app/user/delivery-history'
+      preLoaderRoute: typeof AppUserDeliveryHistoryImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/user/delivery-in-progress': {
+      id: '/app/user/delivery-in-progress'
+      path: '/app/user/delivery-in-progress'
+      fullPath: '/app/user/delivery-in-progress'
+      preLoaderRoute: typeof AppUserDeliveryInProgressImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/user/delivery-review': {
+      id: '/app/user/delivery-review'
+      path: '/app/user/delivery-review'
+      fullPath: '/app/user/delivery-review'
+      preLoaderRoute: typeof AppUserDeliveryReviewImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/user/home': {
+      id: '/app/user/home'
+      path: '/app/user/home'
+      fullPath: '/app/user/home'
+      preLoaderRoute: typeof AppUserHomeImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/user/instant-delivery': {
+      id: '/app/user/instant-delivery'
+      path: '/app/user/instant-delivery'
+      fullPath: '/app/user/instant-delivery'
+      preLoaderRoute: typeof AppUserInstantDeliveryImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/user/onboarding': {
+      id: '/app/user/onboarding'
+      path: '/app/user/onboarding'
+      fullPath: '/app/user/onboarding'
+      preLoaderRoute: typeof AppUserOnboardingImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/user/profile': {
+      id: '/app/user/profile'
+      path: '/app/user/profile'
+      fullPath: '/app/user/profile'
+      preLoaderRoute: typeof AppUserProfileImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/user/schedule-delivery': {
+      id: '/app/user/schedule-delivery'
+      path: '/app/user/schedule-delivery'
+      fullPath: '/app/user/schedule-delivery'
+      preLoaderRoute: typeof AppUserScheduleDeliveryImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/user/signin': {
+      id: '/app/user/signin'
+      path: '/app/user/signin'
+      fullPath: '/app/user/signin'
+      preLoaderRoute: typeof AppUserSigninImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/user/signup': {
+      id: '/app/user/signup'
+      path: '/app/user/signup'
+      fullPath: '/app/user/signup'
+      preLoaderRoute: typeof AppUserSignupImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/user/splash-screen': {
+      id: '/app/user/splash-screen'
+      path: '/app/user/splash-screen'
+      fullPath: '/app/user/splash-screen'
+      preLoaderRoute: typeof AppUserSplashScreenImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/user/verify': {
+      id: '/app/user/verify'
+      path: '/app/user/verify'
+      fullPath: '/app/user/verify'
+      preLoaderRoute: typeof AppUserVerifyImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/user/delivery-details/$deliveryId': {
+      id: '/app/user/delivery-details/$deliveryId'
+      path: '/$deliveryId'
+      fullPath: '/app/user/delivery-details/$deliveryId'
+      preLoaderRoute: typeof AppUserDeliveryDetailsDeliveryIdImport
+      parentRoute: typeof AppUserDeliveryDetailsImport
+    }
   }
 }
 
 // Create and export the route tree
+
+interface AppUserDeliveryDetailsRouteChildren {
+  AppUserDeliveryDetailsDeliveryIdRoute: typeof AppUserDeliveryDetailsDeliveryIdRoute
+}
+
+const AppUserDeliveryDetailsRouteChildren: AppUserDeliveryDetailsRouteChildren =
+  {
+    AppUserDeliveryDetailsDeliveryIdRoute:
+      AppUserDeliveryDetailsDeliveryIdRoute,
+  }
+
+const AppUserDeliveryDetailsRouteWithChildren =
+  AppUserDeliveryDetailsRoute._addFileChildren(
+    AppUserDeliveryDetailsRouteChildren,
+  )
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -172,8 +764,49 @@ export interface FileRoutesByFullPath {
   '/preview/tracking': typeof PreviewTrackingRoute
   '/preview': typeof PreviewIndexRoute
   '/app/admin/dashboard': typeof AppAdminDashboardRoute
+  '/app/agents/agent-otp': typeof AppAgentsAgentOtpRoute
+  '/app/agents/agent-splash-screen': typeof AppAgentsAgentSplashScreenRoute
+  '/app/agents/complete': typeof AppAgentsCompleteRoute
+  '/app/agents/delivery-complete': typeof AppAgentsDeliveryCompleteRoute
+  '/app/agents/delivery-details': typeof AppAgentsDeliveryDetailsRoute
+  '/app/agents/documents': typeof AppAgentsDocumentsRoute
+  '/app/agents/drop-off-photo': typeof AppAgentsDropOffPhotoRoute
+  '/app/agents/drop-off-process': typeof AppAgentsDropOffProcessRoute
+  '/app/agents/earnings': typeof AppAgentsEarningsRoute
+  '/app/agents/earnings-details': typeof AppAgentsEarningsDetailsRoute
+  '/app/agents/enroute-pickup': typeof AppAgentsEnroutePickupRoute
+  '/app/agents/home': typeof AppAgentsHomeRoute
+  '/app/agents/home-verification': typeof AppAgentsHomeVerificationRoute
+  '/app/agents/id-front': typeof AppAgentsIdFrontRoute
+  '/app/agents/profile': typeof AppAgentsProfileRoute
+  '/app/agents/register': typeof AppAgentsRegisterRoute
+  '/app/agents/register-form': typeof AppAgentsRegisterFormRoute
+  '/app/agents/request-details': typeof AppAgentsRequestDetailsRoute
+  '/app/agents/request-map': typeof AppAgentsRequestMapRoute
+  '/app/agents/signin': typeof AppAgentsSigninRoute
+  '/app/agents/start-delivery': typeof AppAgentsStartDeliveryRoute
+  '/app/agents/vehicle-details': typeof AppAgentsVehicleDetailsRoute
+  '/app/agents/vehicles': typeof AppAgentsVehiclesRoute
+  '/app/agents/welcome': typeof AppAgentsWelcomeRoute
   '/app/customer/dashboard': typeof AppCustomerDashboardRoute
   '/app/driver/dashboard': typeof AppDriverDashboardRoute
+  '/app/user/arrive-location': typeof AppUserArriveLocationRoute
+  '/app/user/confirm-details': typeof AppUserConfirmDetailsRoute
+  '/app/user/courier-tracking': typeof AppUserCourierTrackingRoute
+  '/app/user/delivery-details': typeof AppUserDeliveryDetailsRouteWithChildren
+  '/app/user/delivery-history': typeof AppUserDeliveryHistoryRoute
+  '/app/user/delivery-in-progress': typeof AppUserDeliveryInProgressRoute
+  '/app/user/delivery-review': typeof AppUserDeliveryReviewRoute
+  '/app/user/home': typeof AppUserHomeRoute
+  '/app/user/instant-delivery': typeof AppUserInstantDeliveryRoute
+  '/app/user/onboarding': typeof AppUserOnboardingRoute
+  '/app/user/profile': typeof AppUserProfileRoute
+  '/app/user/schedule-delivery': typeof AppUserScheduleDeliveryRoute
+  '/app/user/signin': typeof AppUserSigninRoute
+  '/app/user/signup': typeof AppUserSignupRoute
+  '/app/user/splash-screen': typeof AppUserSplashScreenRoute
+  '/app/user/verify': typeof AppUserVerifyRoute
+  '/app/user/delivery-details/$deliveryId': typeof AppUserDeliveryDetailsDeliveryIdRoute
 }
 
 export interface FileRoutesByTo {
@@ -185,8 +818,49 @@ export interface FileRoutesByTo {
   '/preview/tracking': typeof PreviewTrackingRoute
   '/preview': typeof PreviewIndexRoute
   '/app/admin/dashboard': typeof AppAdminDashboardRoute
+  '/app/agents/agent-otp': typeof AppAgentsAgentOtpRoute
+  '/app/agents/agent-splash-screen': typeof AppAgentsAgentSplashScreenRoute
+  '/app/agents/complete': typeof AppAgentsCompleteRoute
+  '/app/agents/delivery-complete': typeof AppAgentsDeliveryCompleteRoute
+  '/app/agents/delivery-details': typeof AppAgentsDeliveryDetailsRoute
+  '/app/agents/documents': typeof AppAgentsDocumentsRoute
+  '/app/agents/drop-off-photo': typeof AppAgentsDropOffPhotoRoute
+  '/app/agents/drop-off-process': typeof AppAgentsDropOffProcessRoute
+  '/app/agents/earnings': typeof AppAgentsEarningsRoute
+  '/app/agents/earnings-details': typeof AppAgentsEarningsDetailsRoute
+  '/app/agents/enroute-pickup': typeof AppAgentsEnroutePickupRoute
+  '/app/agents/home': typeof AppAgentsHomeRoute
+  '/app/agents/home-verification': typeof AppAgentsHomeVerificationRoute
+  '/app/agents/id-front': typeof AppAgentsIdFrontRoute
+  '/app/agents/profile': typeof AppAgentsProfileRoute
+  '/app/agents/register': typeof AppAgentsRegisterRoute
+  '/app/agents/register-form': typeof AppAgentsRegisterFormRoute
+  '/app/agents/request-details': typeof AppAgentsRequestDetailsRoute
+  '/app/agents/request-map': typeof AppAgentsRequestMapRoute
+  '/app/agents/signin': typeof AppAgentsSigninRoute
+  '/app/agents/start-delivery': typeof AppAgentsStartDeliveryRoute
+  '/app/agents/vehicle-details': typeof AppAgentsVehicleDetailsRoute
+  '/app/agents/vehicles': typeof AppAgentsVehiclesRoute
+  '/app/agents/welcome': typeof AppAgentsWelcomeRoute
   '/app/customer/dashboard': typeof AppCustomerDashboardRoute
   '/app/driver/dashboard': typeof AppDriverDashboardRoute
+  '/app/user/arrive-location': typeof AppUserArriveLocationRoute
+  '/app/user/confirm-details': typeof AppUserConfirmDetailsRoute
+  '/app/user/courier-tracking': typeof AppUserCourierTrackingRoute
+  '/app/user/delivery-details': typeof AppUserDeliveryDetailsRouteWithChildren
+  '/app/user/delivery-history': typeof AppUserDeliveryHistoryRoute
+  '/app/user/delivery-in-progress': typeof AppUserDeliveryInProgressRoute
+  '/app/user/delivery-review': typeof AppUserDeliveryReviewRoute
+  '/app/user/home': typeof AppUserHomeRoute
+  '/app/user/instant-delivery': typeof AppUserInstantDeliveryRoute
+  '/app/user/onboarding': typeof AppUserOnboardingRoute
+  '/app/user/profile': typeof AppUserProfileRoute
+  '/app/user/schedule-delivery': typeof AppUserScheduleDeliveryRoute
+  '/app/user/signin': typeof AppUserSigninRoute
+  '/app/user/signup': typeof AppUserSignupRoute
+  '/app/user/splash-screen': typeof AppUserSplashScreenRoute
+  '/app/user/verify': typeof AppUserVerifyRoute
+  '/app/user/delivery-details/$deliveryId': typeof AppUserDeliveryDetailsDeliveryIdRoute
 }
 
 export interface FileRoutesById {
@@ -199,8 +873,49 @@ export interface FileRoutesById {
   '/preview/tracking': typeof PreviewTrackingRoute
   '/preview/': typeof PreviewIndexRoute
   '/app/admin/dashboard': typeof AppAdminDashboardRoute
+  '/app/agents/agent-otp': typeof AppAgentsAgentOtpRoute
+  '/app/agents/agent-splash-screen': typeof AppAgentsAgentSplashScreenRoute
+  '/app/agents/complete': typeof AppAgentsCompleteRoute
+  '/app/agents/delivery-complete': typeof AppAgentsDeliveryCompleteRoute
+  '/app/agents/delivery-details': typeof AppAgentsDeliveryDetailsRoute
+  '/app/agents/documents': typeof AppAgentsDocumentsRoute
+  '/app/agents/drop-off-photo': typeof AppAgentsDropOffPhotoRoute
+  '/app/agents/drop-off-process': typeof AppAgentsDropOffProcessRoute
+  '/app/agents/earnings': typeof AppAgentsEarningsRoute
+  '/app/agents/earnings-details': typeof AppAgentsEarningsDetailsRoute
+  '/app/agents/enroute-pickup': typeof AppAgentsEnroutePickupRoute
+  '/app/agents/home': typeof AppAgentsHomeRoute
+  '/app/agents/home-verification': typeof AppAgentsHomeVerificationRoute
+  '/app/agents/id-front': typeof AppAgentsIdFrontRoute
+  '/app/agents/profile': typeof AppAgentsProfileRoute
+  '/app/agents/register': typeof AppAgentsRegisterRoute
+  '/app/agents/register-form': typeof AppAgentsRegisterFormRoute
+  '/app/agents/request-details': typeof AppAgentsRequestDetailsRoute
+  '/app/agents/request-map': typeof AppAgentsRequestMapRoute
+  '/app/agents/signin': typeof AppAgentsSigninRoute
+  '/app/agents/start-delivery': typeof AppAgentsStartDeliveryRoute
+  '/app/agents/vehicle-details': typeof AppAgentsVehicleDetailsRoute
+  '/app/agents/vehicles': typeof AppAgentsVehiclesRoute
+  '/app/agents/welcome': typeof AppAgentsWelcomeRoute
   '/app/customer/dashboard': typeof AppCustomerDashboardRoute
   '/app/driver/dashboard': typeof AppDriverDashboardRoute
+  '/app/user/arrive-location': typeof AppUserArriveLocationRoute
+  '/app/user/confirm-details': typeof AppUserConfirmDetailsRoute
+  '/app/user/courier-tracking': typeof AppUserCourierTrackingRoute
+  '/app/user/delivery-details': typeof AppUserDeliveryDetailsRouteWithChildren
+  '/app/user/delivery-history': typeof AppUserDeliveryHistoryRoute
+  '/app/user/delivery-in-progress': typeof AppUserDeliveryInProgressRoute
+  '/app/user/delivery-review': typeof AppUserDeliveryReviewRoute
+  '/app/user/home': typeof AppUserHomeRoute
+  '/app/user/instant-delivery': typeof AppUserInstantDeliveryRoute
+  '/app/user/onboarding': typeof AppUserOnboardingRoute
+  '/app/user/profile': typeof AppUserProfileRoute
+  '/app/user/schedule-delivery': typeof AppUserScheduleDeliveryRoute
+  '/app/user/signin': typeof AppUserSigninRoute
+  '/app/user/signup': typeof AppUserSignupRoute
+  '/app/user/splash-screen': typeof AppUserSplashScreenRoute
+  '/app/user/verify': typeof AppUserVerifyRoute
+  '/app/user/delivery-details/$deliveryId': typeof AppUserDeliveryDetailsDeliveryIdRoute
 }
 
 export interface FileRouteTypes {
@@ -214,8 +929,49 @@ export interface FileRouteTypes {
     | '/preview/tracking'
     | '/preview'
     | '/app/admin/dashboard'
+    | '/app/agents/agent-otp'
+    | '/app/agents/agent-splash-screen'
+    | '/app/agents/complete'
+    | '/app/agents/delivery-complete'
+    | '/app/agents/delivery-details'
+    | '/app/agents/documents'
+    | '/app/agents/drop-off-photo'
+    | '/app/agents/drop-off-process'
+    | '/app/agents/earnings'
+    | '/app/agents/earnings-details'
+    | '/app/agents/enroute-pickup'
+    | '/app/agents/home'
+    | '/app/agents/home-verification'
+    | '/app/agents/id-front'
+    | '/app/agents/profile'
+    | '/app/agents/register'
+    | '/app/agents/register-form'
+    | '/app/agents/request-details'
+    | '/app/agents/request-map'
+    | '/app/agents/signin'
+    | '/app/agents/start-delivery'
+    | '/app/agents/vehicle-details'
+    | '/app/agents/vehicles'
+    | '/app/agents/welcome'
     | '/app/customer/dashboard'
     | '/app/driver/dashboard'
+    | '/app/user/arrive-location'
+    | '/app/user/confirm-details'
+    | '/app/user/courier-tracking'
+    | '/app/user/delivery-details'
+    | '/app/user/delivery-history'
+    | '/app/user/delivery-in-progress'
+    | '/app/user/delivery-review'
+    | '/app/user/home'
+    | '/app/user/instant-delivery'
+    | '/app/user/onboarding'
+    | '/app/user/profile'
+    | '/app/user/schedule-delivery'
+    | '/app/user/signin'
+    | '/app/user/signup'
+    | '/app/user/splash-screen'
+    | '/app/user/verify'
+    | '/app/user/delivery-details/$deliveryId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -226,8 +982,49 @@ export interface FileRouteTypes {
     | '/preview/tracking'
     | '/preview'
     | '/app/admin/dashboard'
+    | '/app/agents/agent-otp'
+    | '/app/agents/agent-splash-screen'
+    | '/app/agents/complete'
+    | '/app/agents/delivery-complete'
+    | '/app/agents/delivery-details'
+    | '/app/agents/documents'
+    | '/app/agents/drop-off-photo'
+    | '/app/agents/drop-off-process'
+    | '/app/agents/earnings'
+    | '/app/agents/earnings-details'
+    | '/app/agents/enroute-pickup'
+    | '/app/agents/home'
+    | '/app/agents/home-verification'
+    | '/app/agents/id-front'
+    | '/app/agents/profile'
+    | '/app/agents/register'
+    | '/app/agents/register-form'
+    | '/app/agents/request-details'
+    | '/app/agents/request-map'
+    | '/app/agents/signin'
+    | '/app/agents/start-delivery'
+    | '/app/agents/vehicle-details'
+    | '/app/agents/vehicles'
+    | '/app/agents/welcome'
     | '/app/customer/dashboard'
     | '/app/driver/dashboard'
+    | '/app/user/arrive-location'
+    | '/app/user/confirm-details'
+    | '/app/user/courier-tracking'
+    | '/app/user/delivery-details'
+    | '/app/user/delivery-history'
+    | '/app/user/delivery-in-progress'
+    | '/app/user/delivery-review'
+    | '/app/user/home'
+    | '/app/user/instant-delivery'
+    | '/app/user/onboarding'
+    | '/app/user/profile'
+    | '/app/user/schedule-delivery'
+    | '/app/user/signin'
+    | '/app/user/signup'
+    | '/app/user/splash-screen'
+    | '/app/user/verify'
+    | '/app/user/delivery-details/$deliveryId'
   id:
     | '__root__'
     | '/'
@@ -238,8 +1035,49 @@ export interface FileRouteTypes {
     | '/preview/tracking'
     | '/preview/'
     | '/app/admin/dashboard'
+    | '/app/agents/agent-otp'
+    | '/app/agents/agent-splash-screen'
+    | '/app/agents/complete'
+    | '/app/agents/delivery-complete'
+    | '/app/agents/delivery-details'
+    | '/app/agents/documents'
+    | '/app/agents/drop-off-photo'
+    | '/app/agents/drop-off-process'
+    | '/app/agents/earnings'
+    | '/app/agents/earnings-details'
+    | '/app/agents/enroute-pickup'
+    | '/app/agents/home'
+    | '/app/agents/home-verification'
+    | '/app/agents/id-front'
+    | '/app/agents/profile'
+    | '/app/agents/register'
+    | '/app/agents/register-form'
+    | '/app/agents/request-details'
+    | '/app/agents/request-map'
+    | '/app/agents/signin'
+    | '/app/agents/start-delivery'
+    | '/app/agents/vehicle-details'
+    | '/app/agents/vehicles'
+    | '/app/agents/welcome'
     | '/app/customer/dashboard'
     | '/app/driver/dashboard'
+    | '/app/user/arrive-location'
+    | '/app/user/confirm-details'
+    | '/app/user/courier-tracking'
+    | '/app/user/delivery-details'
+    | '/app/user/delivery-history'
+    | '/app/user/delivery-in-progress'
+    | '/app/user/delivery-review'
+    | '/app/user/home'
+    | '/app/user/instant-delivery'
+    | '/app/user/onboarding'
+    | '/app/user/profile'
+    | '/app/user/schedule-delivery'
+    | '/app/user/signin'
+    | '/app/user/signup'
+    | '/app/user/splash-screen'
+    | '/app/user/verify'
+    | '/app/user/delivery-details/$deliveryId'
   fileRoutesById: FileRoutesById
 }
 
@@ -252,8 +1090,48 @@ export interface RootRouteChildren {
   PreviewTrackingRoute: typeof PreviewTrackingRoute
   PreviewIndexRoute: typeof PreviewIndexRoute
   AppAdminDashboardRoute: typeof AppAdminDashboardRoute
+  AppAgentsAgentOtpRoute: typeof AppAgentsAgentOtpRoute
+  AppAgentsAgentSplashScreenRoute: typeof AppAgentsAgentSplashScreenRoute
+  AppAgentsCompleteRoute: typeof AppAgentsCompleteRoute
+  AppAgentsDeliveryCompleteRoute: typeof AppAgentsDeliveryCompleteRoute
+  AppAgentsDeliveryDetailsRoute: typeof AppAgentsDeliveryDetailsRoute
+  AppAgentsDocumentsRoute: typeof AppAgentsDocumentsRoute
+  AppAgentsDropOffPhotoRoute: typeof AppAgentsDropOffPhotoRoute
+  AppAgentsDropOffProcessRoute: typeof AppAgentsDropOffProcessRoute
+  AppAgentsEarningsRoute: typeof AppAgentsEarningsRoute
+  AppAgentsEarningsDetailsRoute: typeof AppAgentsEarningsDetailsRoute
+  AppAgentsEnroutePickupRoute: typeof AppAgentsEnroutePickupRoute
+  AppAgentsHomeRoute: typeof AppAgentsHomeRoute
+  AppAgentsHomeVerificationRoute: typeof AppAgentsHomeVerificationRoute
+  AppAgentsIdFrontRoute: typeof AppAgentsIdFrontRoute
+  AppAgentsProfileRoute: typeof AppAgentsProfileRoute
+  AppAgentsRegisterRoute: typeof AppAgentsRegisterRoute
+  AppAgentsRegisterFormRoute: typeof AppAgentsRegisterFormRoute
+  AppAgentsRequestDetailsRoute: typeof AppAgentsRequestDetailsRoute
+  AppAgentsRequestMapRoute: typeof AppAgentsRequestMapRoute
+  AppAgentsSigninRoute: typeof AppAgentsSigninRoute
+  AppAgentsStartDeliveryRoute: typeof AppAgentsStartDeliveryRoute
+  AppAgentsVehicleDetailsRoute: typeof AppAgentsVehicleDetailsRoute
+  AppAgentsVehiclesRoute: typeof AppAgentsVehiclesRoute
+  AppAgentsWelcomeRoute: typeof AppAgentsWelcomeRoute
   AppCustomerDashboardRoute: typeof AppCustomerDashboardRoute
   AppDriverDashboardRoute: typeof AppDriverDashboardRoute
+  AppUserArriveLocationRoute: typeof AppUserArriveLocationRoute
+  AppUserConfirmDetailsRoute: typeof AppUserConfirmDetailsRoute
+  AppUserCourierTrackingRoute: typeof AppUserCourierTrackingRoute
+  AppUserDeliveryDetailsRoute: typeof AppUserDeliveryDetailsRouteWithChildren
+  AppUserDeliveryHistoryRoute: typeof AppUserDeliveryHistoryRoute
+  AppUserDeliveryInProgressRoute: typeof AppUserDeliveryInProgressRoute
+  AppUserDeliveryReviewRoute: typeof AppUserDeliveryReviewRoute
+  AppUserHomeRoute: typeof AppUserHomeRoute
+  AppUserInstantDeliveryRoute: typeof AppUserInstantDeliveryRoute
+  AppUserOnboardingRoute: typeof AppUserOnboardingRoute
+  AppUserProfileRoute: typeof AppUserProfileRoute
+  AppUserScheduleDeliveryRoute: typeof AppUserScheduleDeliveryRoute
+  AppUserSigninRoute: typeof AppUserSigninRoute
+  AppUserSignupRoute: typeof AppUserSignupRoute
+  AppUserSplashScreenRoute: typeof AppUserSplashScreenRoute
+  AppUserVerifyRoute: typeof AppUserVerifyRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -265,8 +1143,48 @@ const rootRouteChildren: RootRouteChildren = {
   PreviewTrackingRoute: PreviewTrackingRoute,
   PreviewIndexRoute: PreviewIndexRoute,
   AppAdminDashboardRoute: AppAdminDashboardRoute,
+  AppAgentsAgentOtpRoute: AppAgentsAgentOtpRoute,
+  AppAgentsAgentSplashScreenRoute: AppAgentsAgentSplashScreenRoute,
+  AppAgentsCompleteRoute: AppAgentsCompleteRoute,
+  AppAgentsDeliveryCompleteRoute: AppAgentsDeliveryCompleteRoute,
+  AppAgentsDeliveryDetailsRoute: AppAgentsDeliveryDetailsRoute,
+  AppAgentsDocumentsRoute: AppAgentsDocumentsRoute,
+  AppAgentsDropOffPhotoRoute: AppAgentsDropOffPhotoRoute,
+  AppAgentsDropOffProcessRoute: AppAgentsDropOffProcessRoute,
+  AppAgentsEarningsRoute: AppAgentsEarningsRoute,
+  AppAgentsEarningsDetailsRoute: AppAgentsEarningsDetailsRoute,
+  AppAgentsEnroutePickupRoute: AppAgentsEnroutePickupRoute,
+  AppAgentsHomeRoute: AppAgentsHomeRoute,
+  AppAgentsHomeVerificationRoute: AppAgentsHomeVerificationRoute,
+  AppAgentsIdFrontRoute: AppAgentsIdFrontRoute,
+  AppAgentsProfileRoute: AppAgentsProfileRoute,
+  AppAgentsRegisterRoute: AppAgentsRegisterRoute,
+  AppAgentsRegisterFormRoute: AppAgentsRegisterFormRoute,
+  AppAgentsRequestDetailsRoute: AppAgentsRequestDetailsRoute,
+  AppAgentsRequestMapRoute: AppAgentsRequestMapRoute,
+  AppAgentsSigninRoute: AppAgentsSigninRoute,
+  AppAgentsStartDeliveryRoute: AppAgentsStartDeliveryRoute,
+  AppAgentsVehicleDetailsRoute: AppAgentsVehicleDetailsRoute,
+  AppAgentsVehiclesRoute: AppAgentsVehiclesRoute,
+  AppAgentsWelcomeRoute: AppAgentsWelcomeRoute,
   AppCustomerDashboardRoute: AppCustomerDashboardRoute,
   AppDriverDashboardRoute: AppDriverDashboardRoute,
+  AppUserArriveLocationRoute: AppUserArriveLocationRoute,
+  AppUserConfirmDetailsRoute: AppUserConfirmDetailsRoute,
+  AppUserCourierTrackingRoute: AppUserCourierTrackingRoute,
+  AppUserDeliveryDetailsRoute: AppUserDeliveryDetailsRouteWithChildren,
+  AppUserDeliveryHistoryRoute: AppUserDeliveryHistoryRoute,
+  AppUserDeliveryInProgressRoute: AppUserDeliveryInProgressRoute,
+  AppUserDeliveryReviewRoute: AppUserDeliveryReviewRoute,
+  AppUserHomeRoute: AppUserHomeRoute,
+  AppUserInstantDeliveryRoute: AppUserInstantDeliveryRoute,
+  AppUserOnboardingRoute: AppUserOnboardingRoute,
+  AppUserProfileRoute: AppUserProfileRoute,
+  AppUserScheduleDeliveryRoute: AppUserScheduleDeliveryRoute,
+  AppUserSigninRoute: AppUserSigninRoute,
+  AppUserSignupRoute: AppUserSignupRoute,
+  AppUserSplashScreenRoute: AppUserSplashScreenRoute,
+  AppUserVerifyRoute: AppUserVerifyRoute,
 }
 
 export const routeTree = rootRoute
@@ -287,8 +1205,48 @@ export const routeTree = rootRoute
         "/preview/tracking",
         "/preview/",
         "/app/admin/dashboard",
+        "/app/agents/agent-otp",
+        "/app/agents/agent-splash-screen",
+        "/app/agents/complete",
+        "/app/agents/delivery-complete",
+        "/app/agents/delivery-details",
+        "/app/agents/documents",
+        "/app/agents/drop-off-photo",
+        "/app/agents/drop-off-process",
+        "/app/agents/earnings",
+        "/app/agents/earnings-details",
+        "/app/agents/enroute-pickup",
+        "/app/agents/home",
+        "/app/agents/home-verification",
+        "/app/agents/id-front",
+        "/app/agents/profile",
+        "/app/agents/register",
+        "/app/agents/register-form",
+        "/app/agents/request-details",
+        "/app/agents/request-map",
+        "/app/agents/signin",
+        "/app/agents/start-delivery",
+        "/app/agents/vehicle-details",
+        "/app/agents/vehicles",
+        "/app/agents/welcome",
         "/app/customer/dashboard",
-        "/app/driver/dashboard"
+        "/app/driver/dashboard",
+        "/app/user/arrive-location",
+        "/app/user/confirm-details",
+        "/app/user/courier-tracking",
+        "/app/user/delivery-details",
+        "/app/user/delivery-history",
+        "/app/user/delivery-in-progress",
+        "/app/user/delivery-review",
+        "/app/user/home",
+        "/app/user/instant-delivery",
+        "/app/user/onboarding",
+        "/app/user/profile",
+        "/app/user/schedule-delivery",
+        "/app/user/signin",
+        "/app/user/signup",
+        "/app/user/splash-screen",
+        "/app/user/verify"
       ]
     },
     "/": {
@@ -315,11 +1273,138 @@ export const routeTree = rootRoute
     "/app/admin/dashboard": {
       "filePath": "app/admin/dashboard.tsx"
     },
+    "/app/agents/agent-otp": {
+      "filePath": "app/agents/agent-otp.tsx"
+    },
+    "/app/agents/agent-splash-screen": {
+      "filePath": "app/agents/agent-splash-screen.tsx"
+    },
+    "/app/agents/complete": {
+      "filePath": "app/agents/complete.tsx"
+    },
+    "/app/agents/delivery-complete": {
+      "filePath": "app/agents/delivery-complete.tsx"
+    },
+    "/app/agents/delivery-details": {
+      "filePath": "app/agents/delivery-details.tsx"
+    },
+    "/app/agents/documents": {
+      "filePath": "app/agents/documents.tsx"
+    },
+    "/app/agents/drop-off-photo": {
+      "filePath": "app/agents/drop-off-photo.tsx"
+    },
+    "/app/agents/drop-off-process": {
+      "filePath": "app/agents/drop-off-process.tsx"
+    },
+    "/app/agents/earnings": {
+      "filePath": "app/agents/earnings.tsx"
+    },
+    "/app/agents/earnings-details": {
+      "filePath": "app/agents/earnings-details.tsx"
+    },
+    "/app/agents/enroute-pickup": {
+      "filePath": "app/agents/enroute-pickup.tsx"
+    },
+    "/app/agents/home": {
+      "filePath": "app/agents/home.tsx"
+    },
+    "/app/agents/home-verification": {
+      "filePath": "app/agents/home-verification.tsx"
+    },
+    "/app/agents/id-front": {
+      "filePath": "app/agents/id-front.tsx"
+    },
+    "/app/agents/profile": {
+      "filePath": "app/agents/profile.tsx"
+    },
+    "/app/agents/register": {
+      "filePath": "app/agents/register.tsx"
+    },
+    "/app/agents/register-form": {
+      "filePath": "app/agents/register-form.tsx"
+    },
+    "/app/agents/request-details": {
+      "filePath": "app/agents/request-details.tsx"
+    },
+    "/app/agents/request-map": {
+      "filePath": "app/agents/request-map.tsx"
+    },
+    "/app/agents/signin": {
+      "filePath": "app/agents/signin.tsx"
+    },
+    "/app/agents/start-delivery": {
+      "filePath": "app/agents/start-delivery.tsx"
+    },
+    "/app/agents/vehicle-details": {
+      "filePath": "app/agents/vehicle-details.tsx"
+    },
+    "/app/agents/vehicles": {
+      "filePath": "app/agents/vehicles.tsx"
+    },
+    "/app/agents/welcome": {
+      "filePath": "app/agents/welcome.tsx"
+    },
     "/app/customer/dashboard": {
       "filePath": "app/customer/dashboard.tsx"
     },
     "/app/driver/dashboard": {
       "filePath": "app/driver/dashboard.tsx"
+    },
+    "/app/user/arrive-location": {
+      "filePath": "app/user/arrive-location.tsx"
+    },
+    "/app/user/confirm-details": {
+      "filePath": "app/user/confirm-details.tsx"
+    },
+    "/app/user/courier-tracking": {
+      "filePath": "app/user/courier-tracking.tsx"
+    },
+    "/app/user/delivery-details": {
+      "filePath": "app/user/delivery-details.tsx",
+      "children": [
+        "/app/user/delivery-details/$deliveryId"
+      ]
+    },
+    "/app/user/delivery-history": {
+      "filePath": "app/user/delivery-history.tsx"
+    },
+    "/app/user/delivery-in-progress": {
+      "filePath": "app/user/delivery-in-progress.tsx"
+    },
+    "/app/user/delivery-review": {
+      "filePath": "app/user/delivery-review.tsx"
+    },
+    "/app/user/home": {
+      "filePath": "app/user/home.tsx"
+    },
+    "/app/user/instant-delivery": {
+      "filePath": "app/user/instant-delivery.tsx"
+    },
+    "/app/user/onboarding": {
+      "filePath": "app/user/onboarding.tsx"
+    },
+    "/app/user/profile": {
+      "filePath": "app/user/profile.tsx"
+    },
+    "/app/user/schedule-delivery": {
+      "filePath": "app/user/schedule-delivery.tsx"
+    },
+    "/app/user/signin": {
+      "filePath": "app/user/signin.tsx"
+    },
+    "/app/user/signup": {
+      "filePath": "app/user/signup.tsx"
+    },
+    "/app/user/splash-screen": {
+      "filePath": "app/user/splash-screen.tsx"
+    },
+    "/app/user/verify": {
+      "filePath": "app/user/verify.tsx"
+    },
+    "/app/user/delivery-details/$deliveryId": {
+      "filePath": "app/user/delivery-details.$deliveryId.tsx",
+      "parent": "/app/user/delivery-details"
     }
   }
 }
