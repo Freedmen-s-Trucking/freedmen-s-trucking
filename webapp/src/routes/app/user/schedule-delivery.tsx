@@ -16,8 +16,6 @@ import { Circle, MapPin } from "lucide-react";
 import { Car, Bike, Truck } from 'lucide-react';
 import { DatePickerDemo } from "../../../components/ui/schedule-date-picker";
 
-
-
 interface Position {
   lat: number;
   lng: number;
@@ -50,7 +48,7 @@ function ScheduleDeliveryScreen() {
         <DeliveryMap
           center={pickupLocation}
           markers={[pickupLocation, ...(deliveryLocation ? [deliveryLocation] : [])]}
-          onMapClick={handleMapClick}
+          onLocationSelect={handleMapClick}
         />
       </div>
 
@@ -135,6 +133,9 @@ function ScheduleDeliveryScreen() {
   );
 }
 
-export const Route = createFileRoute("/app/user/schedule-delivery")({
+export const Route = createFileRoute('/app/user/schedule-delivery')({
   component: ScheduleDeliveryScreen,
+  loader: () => ({
+    title: 'Schedule Delivery'
+  })
 }); 

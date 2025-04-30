@@ -53,7 +53,7 @@ function InstantDeliveryScreen() {
         <DeliveryMap
           center={pickupLocation}
           markers={[pickupLocation, ...(deliveryLocation ? [deliveryLocation] : [])]}
-          onMapClick={handleMapClick}
+          onLocationSelect={handleMapClick}
         />
       </div>
 

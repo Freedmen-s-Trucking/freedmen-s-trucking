@@ -10,19 +10,13 @@
         "firebase-debug.*.log",
         "*.local"
       ],
-      "predeploy": [
-        "npm --prefix \"$RESOURCE_DIR\" run build"
-      ]
+      "predeploy": ["npm --prefix \"$RESOURCE_DIR\" run build"]
     }
   ],
   "hosting": {
     "target": "webapp",
     "public": "webapp/dist",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
       {
         "source": "/api/v1/**",
@@ -65,7 +59,7 @@
     },
     "pubsub": {
       "host": "0.0.0.0",
-      "port": 8086
+      "port": 8087
     },
     "eventarc": {
       "host": "0.0.0.0",

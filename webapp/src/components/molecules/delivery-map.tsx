@@ -1,63 +1,53 @@
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { useEffect } from 'react';
-
-interface Position {
-  lat: number;
-  lng: number;
-}
 
 interface DeliveryMapProps {
-  center: Position;
-  markers?: Position[];
-  onMapClick?: (position: Position) => void;
+  center: { lat: number; lng: number };
+  markers?: { lat: number; lng: number }[];
+  onLocationSelect?: (location: { lat: number; lng: number }) => void;
 }
 
-function MapEvents({ onClick }: { onClick?: (position: Position) => void }) {
+// Fix Leaflet's default icon issue
+const defaultIcon = L.icon({
+  iconUrl: '/marker-icon.png',
+  shadowUrl: '/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+L.Marker.prototype.options.icon = defaultIcon;
+
+function LocationMarker({ onLocationSelect }: { onLocationSelect?: (location: { lat: number; lng: number }) => void }) {
   useMapEvents({
     click: (e) => {
-      if (onClick) {
-        onClick({ lat: e.latlng.lat, lng: e.latlng.lng });
+      if (onLocationSelect) {
+        onLocationSelect({ lat: e.latlng.lat, lng: e.latlng.lng });
       }
     },
   });
+
   return null;
 }
 
-export const DeliveryMap: React.FC<DeliveryMapProps> = ({
-  center,
-  markers = [],
-  onMapClick,
-}) => {
-  useEffect(() => {
-    // Fix Leaflet default marker icon issue
-    delete L.Icon.Default.prototype._getIconUrl;
-    L.Icon.Default.mergeOptions({
-      iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-      iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-    });
-  }, []);
-
+export function DeliveryMap({ center, markers = [], onLocationSelect }: DeliveryMapProps) {
   return (
     <MapContainer
       center={[center.lat, center.lng]}
       zoom={13}
-      style={{ width: '100%', height: '100%' }}
-      className="z-0"
+      style={{ width: '100%', height: '400px' }}
+      className="rounded-lg"
     >
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
-      {markers.map((position, index) => (
-        <Marker
-          key={index}
-          position={[position.lat, position.lng]}
-        />
+      {markers.map((pos, idx) => (
+        <Marker key={idx} position={[pos.lat, pos.lng]} icon={defaultIcon} />
       ))}
-      <MapEvents onClick={onMapClick} />
+      {onLocationSelect && <LocationMarker onLocationSelect={onLocationSelect} />}
     </MapContainer>
   );
-}; 
+} 
