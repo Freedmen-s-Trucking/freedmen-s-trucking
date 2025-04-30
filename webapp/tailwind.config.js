@@ -70,7 +70,7 @@ export default {
           background: "#F7E9D0",
           text: "#3B2E20",
           button: {
-            DEFAULT: "#3B2E20",
+            DEFAULT: "#3B2E20", 
             text: "#FFFFFF"
           }
         }
