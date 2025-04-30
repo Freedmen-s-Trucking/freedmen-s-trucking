@@ -12,6 +12,12 @@ export default {
       screens: {
         xs: "380px",
       },
+      fontFamily: {
+        mobile: ['Georgia', 'serif'],
+      },
+      borderRadius: {
+        mobile: '7px', // middle value between 6-8px
+      },
       height: {
         "screen-dynamic": "100dvh",
       },
