@@ -1,69 +1,3 @@
-// import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
-// import L from "leaflet";
-// import { useEffect } from "react";
-// import "leaflet/dist/leaflet.css";
-
-// interface Position {
-//   lat: number;
-//   lng: number;
-// }
-
-// interface DeliveryMapProps {
-//   center: Position;
-//   markers?: Position[];
-//   onMapClick?: (position: Position) => void;
-// }
-
-// // Handle map clicks
-// function MapEvents({ onClick }: { onClick?: (position: Position) => void }) {
-//   useMapEvents({
-//     click: (e) => {
-//       onClick?.({ lat: e.latlng.lat, lng: e.latlng.lng });
-//     },
-//   });
-//   return null;
-// }
-
-// export const DeliveryMap: React.FC<DeliveryMapProps> = ({
-//   center,
-//   markers = [],
-//   onMapClick,
-// }) => {
-//   useEffect(() => {
-//     L.Icon.Default.mergeOptions({
-//       iconRetinaUrl:
-//         "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
-//       iconUrl:
-//         "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
-//       shadowUrl:
-//         "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-//     });
-//   }, []);
-
-//   return (
-//     <MapContainer
-//       center={[center.lat, center.lng]}
-//       zoom={13}
-//       scrollWheelZoom={true}
-//       style={{ width: "100%", height: "100%" }}
-//       className="z-0 rounded-lg"
-//     >
-//       {/* ✅ This is essential — without it, the map context is broken */}
-//       <TileLayer
-//         attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
-//         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-//       />
-
-//       {markers.map((pos, idx) => (
-//         <Marker key={idx} position={[pos.lat, pos.lng]} />
-//       ))}
-
-//       {onMapClick && <MapEvents onClick={onMapClick} />}
-//     </MapContainer>
-//   );
-// };
-
-
 
 export function DeliveryMap() {
   return (
@@ -81,3 +15,4 @@ export function DeliveryMap() {
     </div>
   );
 }
+
