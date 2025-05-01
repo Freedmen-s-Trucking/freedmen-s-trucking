@@ -51,12 +51,12 @@ function HomeScreen() {
           </div>
         </Link>
 
-        <Link to="/app/user/schedule-delivery"
+        <Link to="/app/user/instant-delivery"
           className="block p-5 bg-mobile-background rounded-xl border border-mobile-text">
           <div className="flex flex-col justify-start items-start ">
             <Clock className="w-[24px] h-[24px]  stroke-mobile-text mb-2" />
             
-              <h3 className="text-[16px] font-semibold mb-1">Schedule Delivery</h3>
+              <h3 className="text-[16px] font-semibold mb-1">Instant Delivery</h3>
               <p className="text-mobile-text text-[12px]">Courier comes to pick up on your specified date and time</p>
             
           </div>

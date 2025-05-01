@@ -21,21 +21,21 @@ import { Car, Bike, Truck } from 'lucide-react';
 //   label?: string;
 // }
 
-interface Position {
-  lat: number;
-  lng: number;
-}
+// interface Position {
+//   lat: number;
+//   lng: number;
+// }
 
 function InstantDeliveryScreen() {
-  const [pickupLocation] = useState<Position>({ lat: 6.4550, lng: 3.3841 }); // Lagos coordinates
-  const [deliveryLocation, setDeliveryLocation] = useState<Position | null>(null);
+  // const [pickupLocation] = useState<Position>({ lat: 6.4550, lng: 3.3841 }); // Lagos coordinates
+  // const [deliveryLocation, setDeliveryLocation] = useState<Position | null>(null);
   const [isOpen, setIsOpen] = useState(true);
 
-  const handleMapClick = (position: Position) => {
-    if (!deliveryLocation) {
-      setDeliveryLocation(position);
-    }
-  };
+  // const handleMapClick = (position: Position) => {
+  //   if (!deliveryLocation) {
+  //     setDeliveryLocation(position);
+  //   }
+  // };
 
   return (
     <div className="flex flex-col min-h-screen font-mobile bg-mobile-background ">
@@ -51,9 +51,9 @@ function InstantDeliveryScreen() {
         </Link>
         
         <DeliveryMap
-          center={pickupLocation}
-          markers={[pickupLocation, ...(deliveryLocation ? [deliveryLocation] : [])]}
-          onLocationSelect={handleMapClick}
+          // center={pickupLocation}
+          // markers={[pickupLocation, ...(deliveryLocation ? [deliveryLocation] : [])]}
+          // onLocationSelect={handleMapClick}
         />
       </div>
 
