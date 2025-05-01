@@ -171,12 +171,6 @@ import { Car, Bike, Truck } from 'lucide-react';
 import { DatePickerDemo } from "../../../components/ui/schedule-date-picker";
 
 
-
-// interface Position {
-//   lat: number;
-//   lng: number;
-// }
-
 function ScheduleDeliveryScreen() {
   // const [pickupLocation] = useState<Position>({ lat: 6.4550, lng: 3.3841 }); // Lagos coordinates
   // const [deliveryLocation, setDeliveryLocation] = useState<Position | null>(null);
@@ -212,13 +206,10 @@ function ScheduleDeliveryScreen() {
         </Link>
         
         
-        {isClient && (
-  <DeliveryMap
-    // center={pickupLocation}
-    // markers={[pickupLocation, ...(deliveryLocation ? [deliveryLocation] : [])]}
-    // onMapClick={handleMapClick}
-  />
-)}
+       
+  <DeliveryMap />
+
+
       </div>
 
 
@@ -304,6 +295,9 @@ function ScheduleDeliveryScreen() {
   );
 }
 
-export const Route = createFileRoute("/app/user/schedule-delivery")({
+export const Route = createFileRoute('/app/user/schedule-delivery')({
   component: ScheduleDeliveryScreen,
+  loader: () => ({
+    title: 'Schedule Delivery'
+  })
 }); 

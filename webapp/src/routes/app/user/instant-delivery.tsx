@@ -50,11 +50,7 @@ function InstantDeliveryScreen() {
           <IoArrowBack className="w-6 h-6" />
         </Link>
         
-        <DeliveryMap
-          // center={pickupLocation}
-          // markers={[pickupLocation, ...(deliveryLocation ? [deliveryLocation] : [])]}
-          // onLocationSelect={handleMapClick}
-        />
+        <DeliveryMap/>
       </div>
 
       {/* Drawer */}
