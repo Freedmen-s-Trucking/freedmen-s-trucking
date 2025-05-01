@@ -29,11 +29,11 @@ function CourierTrackingScreen() {
       {/* Map */}
       <div className="h-screen w-full">
         <DeliveryMap
-          center={{ lat: 37.7749, lng: -122.4194 }} // San Francisco coordinates
-          markers={[
-            { lat: 37.7749, lng: -122.4194 }, // Courier location
-            { lat: 37.7833, lng: -122.4167 }  // Destination
-          ]}
+          // center={{ lat: 37.7749, lng: -122.4194 }} // San Francisco coordinates
+          // markers={[
+          //   { lat: 37.7749, lng: -122.4194 }, // Courier location
+          //   { lat: 37.7833, lng: -122.4167 }  // Destination
+          // ]}
         />
       </div>
 

@@ -16,7 +16,7 @@ import {
 
 function ConfirmDetailsScreen() {
   const [isOpen, setIsOpen] = useState(true);
-  const [pickupLocation] = useState({ lat: 6.4550, lng: 3.3841 }); // Lagos coordinates
+  // const [pickupLocation] = useState({ lat: 6.4550, lng: 3.3841 }); // Lagos coordinates
 
   return (
     <div className="flex flex-col min-h-screen font-mobile bg-mobile-background">
@@ -29,11 +29,11 @@ function ConfirmDetailsScreen() {
         </Link>
         
         <DeliveryMap
-          center={pickupLocation}
-          markers={[
-            { lat: 6.4550, lng: 3.3841 },
-            { lat: 6.4580, lng: 3.3891 }
-          ]}
+          // center={pickupLocation}
+          // markers={[
+          //   { lat: 6.4550, lng: 3.3841 },
+          //   { lat: 6.4580, lng: 3.3891 }
+          // ]}
         />
       </div>
 

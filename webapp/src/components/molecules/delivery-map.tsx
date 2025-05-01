@@ -1,53 +1,18 @@
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 
-interface DeliveryMapProps {
-  center: { lat: number; lng: number };
-  markers?: { lat: number; lng: number }[];
-  onLocationSelect?: (location: { lat: number; lng: number }) => void;
-}
-
-// Fix Leaflet's default icon issue
-const defaultIcon = L.icon({
-  iconUrl: '/marker-icon.png',
-  shadowUrl: '/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
-
-L.Marker.prototype.options.icon = defaultIcon;
-
-function LocationMarker({ onLocationSelect }: { onLocationSelect?: (location: { lat: number; lng: number }) => void }) {
-  useMapEvents({
-    click: (e) => {
-      if (onLocationSelect) {
-        onLocationSelect({ lat: e.latlng.lat, lng: e.latlng.lng });
-      }
-    },
-  });
-
-  return null;
-}
-
-export function DeliveryMap({ center, markers = [], onLocationSelect }: DeliveryMapProps) {
+export function DeliveryMap() {
   return (
-    <MapContainer
-      center={[center.lat, center.lng]}
-      zoom={13}
-      style={{ width: '100%', height: '400px' }}
-      className="rounded-lg"
-    >
-      <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    <div className="w-full h-full">
+      <iframe
+        src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d13604.42753828443!2d74.27661825!3d31.5212242!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2s!4v1746096679043!5m2!1sen!2s"
+        width="100%"
+        height="100%"
+        style={{ border: 0 }}
+        allowFullScreen
+        loading="lazy"
+        referrerPolicy="no-referrer-when-downgrade"
+        title="Google Map"
       />
-      {markers.map((pos, idx) => (
-        <Marker key={idx} position={[pos.lat, pos.lng]} icon={defaultIcon} />
-      ))}
-      {onLocationSelect && <LocationMarker onLocationSelect={onLocationSelect} />}
-    </MapContainer>
+    </div>
   );
-} 
+}
+

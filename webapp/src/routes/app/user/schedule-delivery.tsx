@@ -1,9 +1,162 @@
+// import { createFileRoute, Link } from "@tanstack/react-router";
+// import { IoArrowBack } from "react-icons/io5";
+// import { DeliveryMap } from "../../../components/molecules/delivery-map";
+// import { useState } from "react";
+// import { MobileButton } from "../../../components/mobile/mobileButton";
+// import {
+//   Drawer,
+//   DrawerContent,
+//   DrawerDescription,
+//   DrawerHeader,
+//   DrawerTitle,
+//   DrawerTrigger,
+// } from "../../../components/ui/drawer";
+// import { Circle, MapPin, Car, Bike, Truck } from "lucide-react";
+// import { DatePickerDemo } from "../../../components/ui/schedule-date-picker";
+
+// interface Position {
+//   lat: number;
+//   lng: number;
+// }
+
+// function ScheduleDeliveryScreen() {
+//   const [pickupLocation] = useState<Position>({ lat: 6.455, lng: 3.3841 });
+//   const [deliveryLocation, setDeliveryLocation] = useState<Position | null>(null);
+//   const [isOpen, setIsOpen] = useState(true);
+
+//   const handleMapClick = (position: Position) => {
+//     if (!deliveryLocation) {
+//       setDeliveryLocation(position);
+//     }
+//   };
+
+//   return (
+//     <div className="flex flex-col min-h-screen font-mobile bg-mobile-background">
+//       {/* Map Section */}
+//       <div className="relative h-screen bg-gray-100">
+//         {/* Back Button */}
+//         <Link to="/app/user/home">
+//           {({ isActive }) => (
+//             <a
+//               href={isActive ? undefined : "/app/user/home"}
+//               className="absolute top-12 left-4 z-10 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg"
+//             >
+//               <IoArrowBack className="w-6 h-6" />
+//             </a>
+//           )}
+//         </Link>
+
+//         <DeliveryMap
+//           center={pickupLocation}
+//           markers={[pickupLocation, ...(deliveryLocation ? [deliveryLocation] : [])]}
+//           // onLocationSelect={handleMapClick}
+//         />
+//       </div>
+
+//       {/* Drawer */}
+//       <Drawer open={isOpen} onOpenChange={setIsOpen}>
+//         <DrawerTrigger asChild>
+//           <div className="fixed bottom-8 w-[90%] left-1/2 transform -translate-x-1/2">
+//             <MobileButton isPrimary={true} text="Enter Details" onClick={() => setIsOpen(true)} />
+//           </div>
+//         </DrawerTrigger>
+
+//         <DrawerContent className="fixed bottom-0 left-0 right-0 h-[85vh] bg-mobile-background text-mobile-text border-mobile-text border-t-2 font-mobile">
+//           <div className="h-full overflow-y-auto pb-32">
+//             <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-2 mb-4" />
+//             <DrawerHeader className="font-mobile">
+//               <DrawerTitle className="text-[20px] font-mobile">Schedule Delivery</DrawerTitle>
+//               <DrawerDescription className="m-0 font-mobile">Pickup location</DrawerDescription>
+//             </DrawerHeader>
+
+//             <div className="px-6 space-y-6 font-mobile mb-4">
+//               {/* Pickup Location */}
+//               <div>
+//                 <div className="p-4 bg-[#F2E7D8] rounded-2xl flex items-center gap-3 font-mobile">
+//                   <MapPin className="w-5 h-5 stroke-red-600" />
+//                   <input
+//                     type="text"
+//                     defaultValue="32 Samwell Sq, Chevron"
+//                     className="w-full bg-transparent outline-none border-none ring-0 font-mobile focus:outline-none text-mobile-text text-[14px]"
+//                   />
+//                 </div>
+//               </div>
+
+//               {/* Delivery Location */}
+//               <div>
+//                 <label className="block text-mobile-text mb-2 font-mobile text-[13px]">Delivery Location</label>
+//                 <div className="p-4 bg-[#F2E7D8] rounded-2xl flex items-center gap-3 font-mobile">
+//                   <Circle className="w-5 h-5 stroke-green-600" />
+//                   <input
+//                     type="text"
+//                     defaultValue="21b, Karimu Kotun Street, Victoria Island"
+//                     className="w-full bg-transparent font-mobile focus:outline-none outline-none border-none ring-0 text-mobile-text text-[14px]"
+//                   />
+//                 </div>
+//               </div>
+
+//               {/* Date Picker */}
+//               <div>
+//                 <label className="block text-mobile-text mb-2 font-mobile text-[13px]">Delivery Date</label>
+//                 {typeof DatePickerDemo === "function" ? (
+//                   <DatePickerDemo />
+//                 ) : (
+//                   <div className="p-4 bg-[#F2E7D8] rounded-2xl">
+//                     <input
+//                       type="date"
+//                       className="w-full bg-transparent font-mobile focus:outline-none outline-none border-none ring-0 text-mobile-text text-[14px]"
+//                     />
+//                   </div>
+//                 )}
+//               </div>
+
+//               {/* Vehicle Type */}
+//               <div>
+//                 <label className="block text-mobile-text mb-3 font-mobile text-[13px]">Vehicle Type</label>
+//                 <div className="grid grid-cols-3 gap-4">
+//                   <button className="p-4 bg-stone-500 rounded-xl flex flex-col items-center gap-2 font-mobile">
+//                     <Bike className="w-5 h-5 stroke-mobile-text" />
+//                     <span className="text-sm font-mobile">Bike</span>
+//                   </button>
+//                   <button className="p-4 bg-stone-500 rounded-xl flex flex-col items-center gap-2 font-mobile">
+//                     <Car className="w-5 h-5 stroke-mobile-text" />
+//                     <span className="text-sm font-mobile">Car</span>
+//                   </button>
+//                   <button className="p-4 bg-stone-500 rounded-xl flex flex-col items-center gap-2 font-mobile">
+//                     <Truck className="w-6 h-6 stroke-mobile-text" />
+//                     <span className="text-sm font-mobile">Van</span>
+//                   </button>
+//                 </div>
+//               </div>
+//             </div>
+//           </div>
+
+//           {/* Fixed Next button */}
+//           <div className="fixed bottom-0 left-0 right-0 p-6 bg-mobile-background border-t border-gray-200">
+//             <MobileButton isPrimary={true} text="Next" link="/app/user/delivery-details" />
+//           </div>
+//         </DrawerContent>
+//       </Drawer>
+//     </div>
+//   );
+// }
+
+// export const Route = createFileRoute("/app/user/schedule-delivery")({
+//   component: ScheduleDeliveryScreen,
+//   loader: () => ({
+//     title: "Schedule Delivery",
+//   }),
+// });
+
+
+
 import { createFileRoute } from "@tanstack/react-router";
 import { IoArrowBack } from "react-icons/io5";
 import { Link } from "@tanstack/react-router";
 import { DeliveryMap } from "../../../components/molecules/delivery-map";
 import { useState } from "react";
 import { MobileButton } from "../../../components/mobile/mobileButton";
+
 import {
   Drawer,
   DrawerContent,
@@ -16,21 +169,22 @@ import { Circle, MapPin } from "lucide-react";
 import { Car, Bike, Truck } from 'lucide-react';
 import { DatePickerDemo } from "../../../components/ui/schedule-date-picker";
 
-interface Position {
-  lat: number;
-  lng: number;
-}
 
 function ScheduleDeliveryScreen() {
-  const [pickupLocation] = useState<Position>({ lat: 6.4550, lng: 3.3841 }); // Lagos coordinates
-  const [deliveryLocation, setDeliveryLocation] = useState<Position | null>(null);
+  // const [pickupLocation] = useState<Position>({ lat: 6.4550, lng: 3.3841 }); // Lagos coordinates
+  // const [deliveryLocation, setDeliveryLocation] = useState<Position | null>(null);
   const [isOpen, setIsOpen] = useState(true);
 
-  const handleMapClick = (position: Position) => {
-    if (!deliveryLocation) {
-      setDeliveryLocation(position);
-    }
-  };
+  // const handleMapClick = (position: Position) => {
+  //   if (!deliveryLocation) {
+  //     setDeliveryLocation(position);
+  //   }
+  // };
+
+
+
+
+ 
 
   return (
     <div className="flex flex-col min-h-screen font-mobile bg-mobile-background  ">
@@ -45,12 +199,14 @@ function ScheduleDeliveryScreen() {
           <IoArrowBack className="w-6 h-6" />
         </Link>
         
-        <DeliveryMap
-          center={pickupLocation}
-          markers={[pickupLocation, ...(deliveryLocation ? [deliveryLocation] : [])]}
-          onLocationSelect={handleMapClick}
-        />
+        
+       
+  <DeliveryMap />
+
+
       </div>
+
+
 
       {/* Drawer */}
       <Drawer open={isOpen} onOpenChange={setIsOpen} >
