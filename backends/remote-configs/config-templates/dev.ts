@@ -13,7 +13,7 @@ export default {
     },
     order_form_type: {
       defaultValue: {
-        value: "multiple",
+        value: "ai-assisted",
       },
       description:
         "String used to determine the type of order form to display." +
