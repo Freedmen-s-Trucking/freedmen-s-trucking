@@ -1,8 +1,8 @@
 import admin from "firebase-admin";
 import {RemoteConfigTemplate} from "firebase-admin/remote-config";
 import minimist from "minimist";
-import prodRC from "./templates/prod";
-import devRC from "./templates/dev";
+import prodRC from "./config-templates/prod";
+import devRC from "./config-templates/dev";
 
 const argv = minimist(process.argv.slice(2), {
   string: "environment",

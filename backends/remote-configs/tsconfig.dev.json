@@ -1,3 +1,8 @@
 {
-  "include": ["templates", "deploy.ts", ".eslintrc.js", "prettier.config.js"]
+  "include": [
+    "config-templates",
+    "deploy.ts",
+    ".eslintrc.js",
+    "prettier.config.js"
+  ]
 }

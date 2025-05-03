@@ -49,7 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: changes
     if: ${{ needs.changes.outputs.changeDetected }}
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
