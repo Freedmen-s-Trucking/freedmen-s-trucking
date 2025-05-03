@@ -1,4 +1,11 @@
+import {
+  ApiResSetupConnectedAccount,
+  DriverEntity,
+  type,
+  VehicleType,
+} from "@freedmen-s-trucking/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouterState } from "@tanstack/react-router";
 import {
   Avatar,
   Badge,
@@ -8,40 +15,32 @@ import {
   Tooltip,
 } from "flowbite-react";
 import { Card } from "flowbite-react/components/Card";
+import { motion } from "motion/react";
+import { useEffect, useRef, useState } from "react";
+import { CiImageOff } from "react-icons/ci";
+import { HiX } from "react-icons/hi";
 import { MdRestartAlt } from "react-icons/md";
-import { AppImage } from "~/components/atoms";
-import { useAuth } from "~/hooks/use-auth";
-import { useDbOperations } from "~/hooks/use-firestore";
-import { useStorageOperations } from "~/hooks/use-storage";
-import { useAppDispatch } from "~/stores/hooks";
-import { setUser, updateDriverInfo } from "~/stores/controllers/auth-ctrl";
+import { ResponseError } from "up-fetch";
 import {
-  ApiResSetupConnectedAccount,
-  DriverEntity,
-  type,
-  VehicleType,
-} from "@freedmen-s-trucking/types";
-import {
-  authenticateApiRequest,
-  driverVerificationBadges,
-  isAuthenticateMockApi,
-  vehicleTypes,
-} from "~/utils/constants";
-import {
+  AppImage,
   BodyText,
   Heading3,
   SecondaryButton,
   TextInput,
 } from "~/components/atoms";
-import { HiX } from "react-icons/hi";
-import { ResponseError } from "up-fetch";
-import { fileToBase64, getDriverVerificationStatus } from "~/utils/functions";
-import { CiImageOff } from "react-icons/ci";
-import { useEffect, useRef, useState } from "react";
-import { motion } from "motion/react";
-import { PUBLIC_WEBAPP_URL } from "~/utils/envs";
-import { useRouterState } from "@tanstack/react-router";
+import { useAuth } from "~/hooks/use-auth";
+import { useDbOperations } from "~/hooks/use-firestore";
 import { useServerRequest } from "~/hooks/use-server-request";
+import { useStorageOperations } from "~/hooks/use-storage";
+import { setUser, updateDriverInfo } from "~/stores/controllers/auth-ctrl";
+import { useAppDispatch } from "~/stores/hooks";
+import {
+  driverVerificationBadges,
+  isAuthenticateMockApi,
+  vehicleTypes,
+} from "~/utils/constants";
+import { PUBLIC_WEBAPP_URL } from "~/utils/envs";
+import { fileToBase64, getDriverVerificationStatus } from "~/utils/functions";
 
 const getVerificationBadge = (
   status: keyof typeof driverVerificationBadges,
@@ -174,7 +173,7 @@ export const DriverProfile: React.FC = () => {
     },
     retryDelay: 30_000, // This mus not exceed 30s from the doc: https://tanstack.com/query/latest/docs/framework/react/guides/query-retries#retry-delay
     mutationFn: async () => {
-      const res = await authenticateApiRequest("/identity/verify", {
+      const res = await serverRequest("/identity/verify", {
         method: "POST",
         body: {
           userAccessCode: driverInfo?.authenticateAccessCode,
@@ -230,24 +229,21 @@ export const DriverProfile: React.FC = () => {
     },
     retryDelay: 30_000, // This mus not exceed 30s from the doc: https://tanstack.com/query/latest/docs/framework/react/guides/query-retries#retry-delay
     queryFn: async () => {
-      const res = await authenticateApiRequest(
-        "/identity/document/scan/status",
-        {
-          method: "POST",
-          body: {
-            userAccessCode: isAuthenticateMockApi
-              ? "100385a1-4308-49db-889f-9a898fa88c21"
-              : driverInfo?.authenticateAccessCode,
-          },
-          schema: type({
-            success: "boolean",
-            result:
-              "'complete' | 'parsing_failed' | 'unknown_state' | 'unknown_error' | 'under_review'",
-            numAttemptsLeft: "number",
-            description: "string",
-          }),
+      const res = await serverRequest("/identity/document/scan/status", {
+        method: "POST",
+        body: {
+          userAccessCode: isAuthenticateMockApi
+            ? "100385a1-4308-49db-889f-9a898fa88c21"
+            : driverInfo?.authenticateAccessCode,
         },
-      );
+        schema: type({
+          success: "boolean",
+          result:
+            "'complete' | 'parsing_failed' | 'unknown_state' | 'unknown_error' | 'under_review'",
+          numAttemptsLeft: "number",
+          description: "string",
+        }),
+      });
 
       const driverStatus = {
         driverLicenseVerificationStatus:
@@ -303,36 +299,33 @@ export const DriverProfile: React.FC = () => {
           backF,
           "driver-license-back",
         );
-        const { success } = await authenticateApiRequest(
-          "/identity/document/scan",
-          {
-            method: "POST",
-            body: {
-              userAccessCode: driverInfo?.authenticateAccessCode,
-              idFront: await fileToBase64(frontF),
-              idBack: await fileToBase64(backF),
-              country: 0, // Country code can be found here: https://docs.authenticate.com/docs/supported-countries-for-upload-id
-            },
-            schema: type({
-              success: "boolean",
-            }),
-            onError(error) {
-              if (error instanceof ResponseError) {
-                switch (error.status) {
-                  case 413:
-                    setCertificateUploadError(
-                      "image too large. Reduce the size of the uploaded certificate and try again.",
-                    );
-                    break;
-                  case 400:
-                  case 417:
-                    setCertificateUploadError(error.data?.errorMessage || null);
-                    break;
-                }
-              }
-            },
+        const { success } = await serverRequest("/identity/document/scan", {
+          method: "POST",
+          body: {
+            userAccessCode: driverInfo?.authenticateAccessCode,
+            idFront: await fileToBase64(frontF),
+            idBack: await fileToBase64(backF),
+            country: 0, // Country code can be found here: https://docs.authenticate.com/docs/supported-countries-for-upload-id
           },
-        );
+          schema: type({
+            success: "boolean",
+          }),
+          onError(error) {
+            if (error instanceof ResponseError) {
+              switch (error.status) {
+                case 413:
+                  setCertificateUploadError(
+                    "image too large. Reduce the size of the uploaded certificate and try again.",
+                  );
+                  break;
+                case 400:
+                case 417:
+                  setCertificateUploadError(error.data?.errorMessage || null);
+                  break;
+              }
+            }
+          },
+        });
 
         if (!success) {
           throw new Error("Failed to scan driver license");
@@ -440,7 +433,7 @@ export const DriverProfile: React.FC = () => {
         console.log("Setting up driver payment");
 
         const response = await serverRequest(
-          "/v1/stripe/setup-connected-account",
+          "/stripe/setup-connected-account",
           {
             method: "POST",
             schema: type({

@@ -663,7 +663,7 @@ const AIAssistedForm: React.FC<{
         requestDAO[key] = value;
       });
 
-      const res = await serverRequest("/v1/ai-agent/extract-order-request", {
+      const res = await serverRequest("/ai-agent/extract-order-request", {
         method: "POST",
         body: requestDAO,
         schema: apiResExtractOrderRequestFromText,

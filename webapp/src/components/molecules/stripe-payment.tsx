@@ -75,7 +75,7 @@ const PaymentProvider: React.FC<{
     queryKey: ["payment-intent", price],
     select: (data) => data?.clientSecret,
     queryFn: () =>
-      serverRequest("/v1/stripe/create-payment-intent", {
+      serverRequest("/stripe/create-payment-intent", {
         method: "POST",
         schema: apiResScheduleDeliveryIntent,
         body: { metadata: order } satisfies ApiReqScheduleDeliveryIntent,

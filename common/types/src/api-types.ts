@@ -5,6 +5,7 @@ import {
   newOrderEntity,
   OrderEntityFields,
   OrderPriority,
+  userEntity,
 } from "./entities.js";
 import { coordinateType, productWithQuantityType } from "./types.js";
 
@@ -60,3 +61,43 @@ export const ApiResExtractOrderRequestFromTextSchema =
   apiResExtractOrderRequestFromText.toJsonSchema();
 export type ApiResExtractOrderRequestFromText =
   typeof apiResExtractOrderRequestFromText.infer;
+
+export const apiReqProcessIdentityVerificationWithAuthenticate = type({
+  medallion: type({
+    redirectURL: "string.url?",
+  }).optional(),
+  user: type({
+    firstName: "string",
+    middleName: "string?",
+    lastName: "string",
+    dob: "string.date",
+    phone: "string?",
+    email: "string.email",
+    houseNumber: "string?",
+    streetName: "string?",
+    city: "string?",
+    country: "string?",
+    ssn: "string?",
+    zipCode: "number?",
+    state: "string?",
+  }),
+  consents: type({
+    isBackgroundDisclosureAccepted: "boolean",
+    GLBPurposeAndDPPAPurpose: "boolean",
+    FCRAPurpose: "boolean",
+  }),
+});
+
+export type ApiReqProcessIdentityVerificationWithAuthenticate =
+  typeof apiReqProcessIdentityVerificationWithAuthenticate.infer;
+
+export const apiResProcessIdentityVerificationWithAuthenticate = driverEntity
+  .pick("authenticateAccessCode")
+  .and({
+    jwt: "string",
+    token: "string",
+    processVerificationUrl: "string.url",
+  });
+
+export type ApiResProcessIdentityVerificationWithAuthenticate =
+  typeof apiResProcessIdentityVerificationWithAuthenticate.infer;

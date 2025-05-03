@@ -26,7 +26,8 @@
     "hono": "4.7.5",
     "openai": "4.95.1",
     "source-map-support": "0.5.21",
-    "stripe": "17.7.0"
+    "stripe": "17.7.0",
+    "up-fetch": "^2.1.2"
   },
   "devDependencies": {
     "@types/express": "5.0.1",
