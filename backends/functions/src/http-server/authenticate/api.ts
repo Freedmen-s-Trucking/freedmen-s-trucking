@@ -11,6 +11,7 @@ import {Hono} from "hono";
 import {ContentfulStatusCode} from "hono/utils/http-status";
 import {isResponseError, isValidationError, up} from "up-fetch";
 import {Variables} from "../../utils/types";
+import {formatDate} from "date-fns";
 
 const router = new Hono<{Variables: Variables}>();
 
@@ -134,7 +135,6 @@ router.post("/process-identity-verification", async (c) => {
         userAccessCode: "string",
       }),
     }).catch((error) => {
-      console.error(error);
       if (isResponseError(error)) {
         return c.json({error: error.data, endpoint: error.request.url}, error.status as ContentfulStatusCode);
       } else if (isValidationError(error)) {
@@ -157,6 +157,7 @@ router.post("/process-identity-verification", async (c) => {
       method: "PUT",
       body: {
         ...reqBody.user,
+        dob: formatDate(new Date(reqBody.user.dob), "dd-MM-yyyy"),
         firstName: isAuthenticateMockApi ? "Jonathan" : reqBody.user.firstName,
         lastName: isAuthenticateMockApi ? "Doe" : reqBody.user.lastName,
         userAccessCode: dbDriver.authenticateAccessCode,
@@ -167,7 +168,6 @@ router.post("/process-identity-verification", async (c) => {
         userAccessCode: "string?",
       }),
     }).catch((error) => {
-      console.error(error);
       if (isResponseError(error)) {
         return c.json({error: error.data, endpoint: error.request.url}, error.status as ContentfulStatusCode);
       } else if (isValidationError(error)) {
@@ -197,7 +197,6 @@ router.post("/process-identity-verification", async (c) => {
       success: "boolean",
     }),
   }).catch((error) => {
-    console.error(error);
     if (isResponseError(error)) {
       if (error.status === 400 && error.data?.errorMessage === "Consent has already been recorded for this user.") {
         return {success: true};
@@ -240,7 +239,6 @@ router.post("/process-identity-verification", async (c) => {
       token: "string",
     }),
   }).catch((error) => {
-    console.error(error);
     if (isResponseError(error)) {
       return c.json(
         {
