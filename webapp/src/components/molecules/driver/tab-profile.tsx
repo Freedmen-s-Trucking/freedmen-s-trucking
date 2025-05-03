@@ -34,11 +34,7 @@ import { useServerRequest } from "~/hooks/use-server-request";
 import { useStorageOperations } from "~/hooks/use-storage";
 import { setUser, updateDriverInfo } from "~/stores/controllers/auth-ctrl";
 import { useAppDispatch } from "~/stores/hooks";
-import {
-  driverVerificationBadges,
-  isAuthenticateMockApi,
-  vehicleTypes,
-} from "~/utils/constants";
+import { driverVerificationBadges, vehicleTypes } from "~/utils/constants";
 import { PUBLIC_WEBAPP_URL } from "~/utils/envs";
 import { fileToBase64, getDriverVerificationStatus } from "~/utils/functions";
 
@@ -144,20 +140,20 @@ export const DriverProfile: React.FC = () => {
     retry(failureCount, error) {
       if (
         error instanceof ResponseError &&
-        error.data?.errorMessage &&
-        error.data?.errorCode &&
+        error.data?.error?.errorMessage &&
+        error.data?.error?.errorCode &&
         error.status === 400
       ) {
         const licenseStatus = {
           driverLicenseVerificationStatus:
-            error.data.errorCode === "IDENTITY_ALREADY_VERIFIED"
+            error.data.error.errorCode === "IDENTITY_ALREADY_VERIFIED"
               ? "verified"
               : "failed",
           driverLicenseVerificationIssues:
-            error.data.errorCode === "IDENTITY_ALREADY_VERIFIED"
+            error.data.error.errorCode === "IDENTITY_ALREADY_VERIFIED"
               ? []
               : [
-                  `${error.data?.errorCode || "Error"}: ${error.data?.errorMessage}`,
+                  `${error.data.error.errorCode || "Error"}: ${error.data.error.errorMessage}`,
                 ],
         } as Partial<DriverEntity>;
 
@@ -166,18 +162,15 @@ export const DriverProfile: React.FC = () => {
         return false;
       }
 
-      if (failureCount < 5) {
+      if (failureCount < 3) {
         return true;
       }
       return false;
     },
     retryDelay: 30_000, // This mus not exceed 30s from the doc: https://tanstack.com/query/latest/docs/framework/react/guides/query-retries#retry-delay
     mutationFn: async () => {
-      const res = await serverRequest("/identity/verify", {
-        method: "POST",
-        body: {
-          userAccessCode: driverInfo?.authenticateAccessCode,
-        },
+      const res = await serverRequest("/authenticate/identity/verify", {
+        method: "GET",
         schema: type({
           success: "boolean",
           IDVScore: {
@@ -211,10 +204,10 @@ export const DriverProfile: React.FC = () => {
       driverInfo?.driverLicenseBackStoragePath,
     ],
     retry(failureCount, error) {
-      if (error instanceof ResponseError && error.data?.errorMessage) {
+      if (error instanceof ResponseError && error.data?.error?.errorMessage) {
         const licenseStatus = {
           driverLicenseVerificationStatus: "failed",
-          driverLicenseVerificationIssues: [error.data?.errorMessage],
+          driverLicenseVerificationIssues: [error.data?.error?.errorMessage],
         } as Partial<DriverEntity>;
 
         updateDriver(licenseStatus);
@@ -222,28 +215,26 @@ export const DriverProfile: React.FC = () => {
         return false;
       }
 
-      if (failureCount < 5) {
+      if (failureCount < 3) {
         return true;
       }
       return false;
     },
     retryDelay: 30_000, // This mus not exceed 30s from the doc: https://tanstack.com/query/latest/docs/framework/react/guides/query-retries#retry-delay
     queryFn: async () => {
-      const res = await serverRequest("/identity/document/scan/status", {
-        method: "POST",
-        body: {
-          userAccessCode: isAuthenticateMockApi
-            ? "100385a1-4308-49db-889f-9a898fa88c21"
-            : driverInfo?.authenticateAccessCode,
+      const res = await serverRequest(
+        "/authenticate/identity/document/scan/status",
+        {
+          method: "GET",
+          schema: type({
+            success: "boolean",
+            result:
+              "'complete' | 'parsing_failed' | 'unknown_state' | 'unknown_error' | 'under_review'",
+            numAttemptsLeft: "number",
+            description: "string",
+          }),
         },
-        schema: type({
-          success: "boolean",
-          result:
-            "'complete' | 'parsing_failed' | 'unknown_state' | 'unknown_error' | 'under_review'",
-          numAttemptsLeft: "number",
-          description: "string",
-        }),
-      });
+      );
 
       const driverStatus = {
         driverLicenseVerificationStatus:
@@ -299,33 +290,36 @@ export const DriverProfile: React.FC = () => {
           backF,
           "driver-license-back",
         );
-        const { success } = await serverRequest("/identity/document/scan", {
-          method: "POST",
-          body: {
-            userAccessCode: driverInfo?.authenticateAccessCode,
-            idFront: await fileToBase64(frontF),
-            idBack: await fileToBase64(backF),
-            country: 0, // Country code can be found here: https://docs.authenticate.com/docs/supported-countries-for-upload-id
-          },
-          schema: type({
-            success: "boolean",
-          }),
-          onError(error) {
-            if (error instanceof ResponseError) {
-              switch (error.status) {
-                case 413:
-                  setCertificateUploadError(
-                    "image too large. Reduce the size of the uploaded certificate and try again.",
-                  );
-                  break;
-                case 400:
-                case 417:
-                  setCertificateUploadError(error.data?.errorMessage || null);
-                  break;
+        const { success } = await serverRequest(
+          "/authenticate/identity/document/scan",
+          {
+            method: "POST",
+            body: {
+              userAccessCode: driverInfo?.authenticateAccessCode,
+              idFront: await fileToBase64(frontF),
+              idBack: await fileToBase64(backF),
+              country: 0, // Country code can be found here: https://docs.authenticate.com/docs/supported-countries-for-upload-id
+            },
+            schema: type({
+              success: "boolean",
+            }),
+            onError(error) {
+              if (error instanceof ResponseError) {
+                switch (error.status) {
+                  case 413:
+                    setCertificateUploadError(
+                      "image too large. Reduce the size of the uploaded certificate and try again.",
+                    );
+                    break;
+                  case 400:
+                  case 417:
+                    setCertificateUploadError(error.data?.errorMessage || null);
+                    break;
+                }
               }
-            }
+            },
           },
-        });
+        );
 
         if (!success) {
           throw new Error("Failed to scan driver license");

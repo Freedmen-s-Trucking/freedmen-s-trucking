@@ -65,9 +65,20 @@ router.post("/identity/document/scan", async (c) => {
   return c.json(res, 200);
 });
 
-router.post("/identity/verify", async (c) => {
+router.get("/identity/verify", async (c) => {
+  const authUser = c.get("user");
+
+  const dbDriverRef = (
+    getFirestore().collection(CollectionName.DRIVERS) as CollectionReference<DriverEntity, DriverEntity>
+  ).doc(authUser.uid);
+  const dbDriver = (await dbDriverRef.get()).data();
+  if (!dbDriver) {
+    return c.json({error: "Driver not found"}, 404);
+  }
   const res = await upFetch("/identity/verify", {
-    body: await c.req.raw.bytes(),
+    body: {
+      userAccessCode: isAuthenticateMockApi ? "2d91a19f-d07b-48f0-912f-886ed67009dd" : dbDriver.authenticateAccessCode,
+    },
   }).catch((error) => {
     if (isResponseError(error)) {
       return c.json({error: error.data, endpoint: error.request.url}, error.status as ContentfulStatusCode);
@@ -85,9 +96,20 @@ router.post("/identity/verify", async (c) => {
   return c.json(res, 200);
 });
 
-router.post("/identity/document/scan/status", async (c) => {
+router.get("/identity/document/scan/status", async (c) => {
+  const authUser = c.get("user");
+
+  const dbDriverRef = (
+    getFirestore().collection(CollectionName.DRIVERS) as CollectionReference<DriverEntity, DriverEntity>
+  ).doc(authUser.uid);
+  const dbDriver = (await dbDriverRef.get()).data();
+  if (!dbDriver) {
+    return c.json({error: "Driver not found"}, 404);
+  }
   const res = await upFetch("/identity/document/scan/status", {
-    body: await c.req.raw.bytes(),
+    body: {
+      userAccessCode: isAuthenticateMockApi ? "100385a1-4308-49db-889f-9a898fa88c21" : dbDriver.authenticateAccessCode,
+    },
   }).catch((error) => {
     if (isResponseError(error)) {
       return c.json({error: error.data, endpoint: error.request.url}, error.status as ContentfulStatusCode);
@@ -130,6 +152,7 @@ router.post("/process-identity-verification", async (c) => {
         ...reqBody.user,
         firstName: isAuthenticateMockApi ? "Jonathan" : reqBody.user.firstName,
         lastName: isAuthenticateMockApi ? "Doe" : reqBody.user.lastName,
+        dob: formatDate(new Date(reqBody.user.dob), "dd-MM-yyyy"),
       },
       schema: type({
         userAccessCode: "string",
