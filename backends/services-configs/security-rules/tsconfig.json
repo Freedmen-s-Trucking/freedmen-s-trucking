@@ -16,5 +16,5 @@
     "skipLibCheck": true,
     "isolatedModules": true
   },
-  "include": ["config-templates", "deploy.ts"]
+  "include": ["deploy.ts"]
 }

@@ -120,7 +120,7 @@ const SignUpUser: React.FC<{
       setIsLoading(true);
       const res = await signUpWithEmailAndPassword(email, password);
       setError(null);
-      onComplete(res);
+      setTimeout(() => onComplete(res), 2000);
     } catch (error: unknown) {
       setIsLoading(false);
       const err = error as Record<string, unknown> | null | undefined;
@@ -595,7 +595,7 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
               email: user.info.email!,
               firstName: firstName,
               lastName: lastName,
-              dob: formatDate(birthDate, "dd-MM-yyyy"),
+              dob: formatDate(birthDate, "MM-dd-yyyy"),
               ...(!!phoneNumber && { phoneNumber }),
             },
             consents: consents,
