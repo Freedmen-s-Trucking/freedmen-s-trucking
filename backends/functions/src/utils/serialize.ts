@@ -2,8 +2,8 @@
  * Converts a Record<string, unknown> to a Record<string, string> by stringifying
  * each value in the original object.
  *
- * @param param The object to serialize
- * @returns A new object with the same keys as param, but with string values
+ * @param {Record<string, unknown>} param The object to serialize
+ * @return {Record<string, string>} A new object with the same keys as param, but with string values
  */
 export function serializeToStripeMeta(param: Record<string, unknown>) {
   const result = <Record<string, string>>{};
@@ -17,8 +17,8 @@ export function serializeToStripeMeta(param: Record<string, unknown>) {
  * Converts a Record<string, string> to a Record<string, unknown> by parsing
  * each value in the original object.
  *
- * @param param The object to parse
- * @returns A new object with the same keys as param, but with unknown values
+ * @param {Record<string, unknown>} param The object to parse
+ * @return {Record<string, unknown>} A new object with the same keys as param, but with unknown values
  */
 export function parseStripeMeta(param: Record<string, unknown>) {
   const result = <Record<string, unknown>>{};

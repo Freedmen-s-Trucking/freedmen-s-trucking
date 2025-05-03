@@ -120,7 +120,7 @@ export async function generateConnectedAccountSetupLink(
  * @param {DriverEntity} driver - The driver data to transfer funds to
  * @param {number} amountInUSD - The amount of money to transfer
  * @param {EntityWithID<OrderEntity>} order - The order data related to the transfer
- * @param {keyof OrderEntity} taskId - The task ID related to the transfer
+ * @param {string} taskId - The task ID related to the transfer
  */
 export async function transferFundsToDriver(
   driver: DriverEntity,

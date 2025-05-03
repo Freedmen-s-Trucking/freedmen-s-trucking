@@ -21,7 +21,7 @@ interface HandleWebhookEventParams {
  * @param {Function} params.getRawBody - A function that returns the raw body of the request.
  * @param {Function} params.onPaymentIntentSucceeded - A function that handles a payment intent succeeded event.
  * @param {Function} params.onAccountUpdated - A function that handles an account updated event.
- * @returns {Promise<HandleWebhookEventResponse>} A promise that resolves to the result of the webhook event.
+ * @return {Promise<HandleWebhookEventResponse>} A promise that resolves to the result of the webhook event.
  */
 export async function handleStripeWebhookEvent({
   getHeader,
