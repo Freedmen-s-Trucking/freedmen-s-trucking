@@ -874,6 +874,7 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
           </Tooltip>
           .
         </label>
+        {error && <p className="py-2 text-sm text-red-500">{error}</p>}
         <PrimaryButton
           type="submit"
           isLoading={isLoading}
@@ -883,7 +884,6 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
           <span>Save{isLoading ? "..." : ""}</span>
         </PrimaryButton>
       </form>
-      {error && <p className="py-2 text-sm text-red-500">{error}</p>}
     </div>
   );
 };
