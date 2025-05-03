@@ -5,8 +5,8 @@ import {QuerySnapshot} from "firebase-admin/firestore";
  * One-time function to find the right drivers for an order.
  * WARN: this function must be used only once per order on creation.
  *
- * @param snapshot The snapshot of the drivers collection.
- * @param order The order to find the right drivers for.
+ * @param {QuerySnapshot<DriverEntity>} snapshot The snapshot of the drivers collection.
+ * @param {NewOrder} order The order to find the right drivers for.
  * @returns
  */
 export function onetimeFindRightDriversForOrder(

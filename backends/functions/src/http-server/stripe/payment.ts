@@ -20,8 +20,8 @@ type CreatePaymentIntentResponse = Stripe.Response<Stripe.PaymentIntent> | Error
 
 /**
  * Creates a Stripe PaymentIntent for a given order
- * @param args - The order data to create the PaymentIntent for
- * @param authUser - The user who is creating the PaymentIntent
+ * @param {ApiReqScheduleDeliveryIntent | null} args - The order data to create the PaymentIntent for
+ * @param {DecodedIdToken} authUser - The user who is creating the PaymentIntent
  */
 export async function createPaymentIntent(
   args: ApiReqScheduleDeliveryIntent | null,
@@ -45,8 +45,8 @@ export async function createPaymentIntent(
 
 /**
  * Creates a Stripe Connect account for a given driver
- * @param driver - The driver data to create the Connect account for
- * @param authUser - The user who is creating the Connect account
+ * @param {ApiResSetupConnectedAccount} driver - The driver data to create the Connect account for
+ * @param {DecodedIdToken} authUser - The user who is creating the Connect account
  */
 async function createStripeConnectedAccount(
   driver: ApiResSetupConnectedAccount,
@@ -90,8 +90,8 @@ async function createStripeConnectedAccount(
 
 /**
  * Generates a Stripe Connect account link for a given driver
- * @param driver - The driver data to generate the link for
- * @param authUser - The user who is generating the link
+ * @param {ApiResSetupConnectedAccount} driver - The driver data to generate the link for
+ * @param {DecodedIdToken} authUser - The user who is generating the link
  */
 export async function generateConnectedAccountSetupLink(
   driver: ApiResSetupConnectedAccount,
@@ -117,10 +117,10 @@ export async function generateConnectedAccountSetupLink(
 
 /**
  * Transfers funds to a driver's Stripe Connect account
- * @param driver - The driver data to transfer funds to
- * @param amountInUSD - The amount of money to transfer
- * @param order - The order data related to the transfer
- * @param taskId - The task ID related to the transfer
+ * @param {DriverEntity} driver - The driver data to transfer funds to
+ * @param {number} amountInUSD - The amount of money to transfer
+ * @param {EntityWithID<OrderEntity>} order - The order data related to the transfer
+ * @param {keyof OrderEntity} taskId - The task ID related to the transfer
  */
 export async function transferFundsToDriver(
   driver: DriverEntity,

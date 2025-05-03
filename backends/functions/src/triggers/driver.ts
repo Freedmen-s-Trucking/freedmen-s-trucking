@@ -21,7 +21,6 @@ import {onDocumentWritten} from "firebase-functions/v2/firestore";
 const updatePlatformOverviewOnDriverVerificationStatusChange = async (
   before: DriverEntity | undefined,
   after: DriverEntity | undefined,
-  driverId: string,
 ) => {
   const bVStatus = before?.verificationStatus;
   const aVStatus = after?.verificationStatus;
@@ -153,7 +152,7 @@ export const driverUpdateTrigger = onDocumentWritten(`${CollectionName.DRIVERS}/
   const after = data?.after?.data?.() as DriverEntity | undefined;
   const driverId = params.driverId;
   const waterFall = [
-    updatePlatformOverviewOnDriverVerificationStatusChange(before, after, driverId),
+    updatePlatformOverviewOnDriverVerificationStatusChange(before, after),
     assignTaskToDriverWhenHeBecomesVerified(before, after, driverId),
   ];
 
