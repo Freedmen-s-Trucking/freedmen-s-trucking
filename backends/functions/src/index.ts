@@ -8,3 +8,4 @@ export {httpServer} from "./http-server/index";
 // Export background triggers
 export {driverUpdateTrigger} from "./triggers/driver";
 export {orderUpdateTrigger} from "./triggers/order";
+export {scheduleDriverIdentityVerification, scheduleBackgroundCheck} from "./schedules/auto-background-check";

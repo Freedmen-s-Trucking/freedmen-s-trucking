@@ -9,23 +9,12 @@ import {
 import {CollectionReference, getFirestore} from "firebase-admin/firestore";
 import {Hono} from "hono";
 import {ContentfulStatusCode} from "hono/utils/http-status";
-import {isResponseError, isValidationError, up} from "up-fetch";
+import {isResponseError, isValidationError} from "up-fetch";
 import {Variables} from "../../utils/types";
 import {formatDate} from "date-fns";
+import {isAuthenticateMockApi, sevenYearCriminalReport, upFetch, verifyIdentity} from "./service";
 
 const router = new Hono<{Variables: Variables}>();
-
-const isAuthenticateMockApi = process.env.FUNCTIONS_EMULATOR === "true";
-
-const upFetch = up(fetch, () => ({
-  baseUrl: `https://api-v3.authenticating.com${isAuthenticateMockApi ? "/mock" : ""}`,
-  method: "POST",
-  headers: {
-    "Accept": "application/json",
-    "Content-Type": "application/json",
-    ...(isAuthenticateMockApi ? {} : {Authorization: `Bearer ${process.env.AUTHENTICATE_DOT_COM_TOKEN}`}),
-  },
-}));
 
 const apiReqDocumentScan = type({
   userAccessCode: "string.uuid",
@@ -75,11 +64,11 @@ router.get("/identity/verify", async (c) => {
   if (!dbDriver) {
     return c.json({error: "Driver not found"}, 404);
   }
-  const res = await upFetch("/identity/verify", {
-    body: {
-      userAccessCode: isAuthenticateMockApi ? "2d91a19f-d07b-48f0-912f-886ed67009dd" : dbDriver.authenticateAccessCode,
-    },
-  }).catch((error) => {
+  if (!dbDriver.authenticateAccessCode) {
+    return c.json({error: "Driver has no authentication access code"}, 400);
+  }
+
+  const res = await verifyIdentity(dbDriver.authenticateAccessCode).catch((error) => {
     if (isResponseError(error)) {
       return c.json({error: error.data, endpoint: error.request.url}, error.status as ContentfulStatusCode);
     } else if (isValidationError(error)) {
@@ -249,6 +238,12 @@ router.post("/process-identity-verification", async (c) => {
     return c.json({error: "Driver consents not found", raw: dbDriver}, 500);
   }
 
+  /**
+   * Can generate the following error: 400
+   * {
+   *   errorMessage: "This user has already completed their Medallion verification."
+   * }
+   */
   const res = await upFetch("/user/jwt", {
     body: {
       userAccessCode: isAuthenticateMockApi ? "100385a1-4308-49db-889f-9a898fa88c21" : dbDriver.authenticateAccessCode,
@@ -414,9 +409,7 @@ router.post("/identity/request/criminal/report/seven", async (c) => {
   if (body instanceof type.errors) {
     return c.json({error: body.summary}, 400);
   }
-  const res = await upFetch("/identity/request/criminal/report/seven", {
-    body: JSON.stringify(body),
-  }).catch((error) => {
+  const res = await sevenYearCriminalReport(body.userAccessCode).catch((error) => {
     if (isResponseError(error)) {
       return c.json({error: error.data, endpoint: error.request.url}, error.status as ContentfulStatusCode);
     } else if (isValidationError(error)) {
