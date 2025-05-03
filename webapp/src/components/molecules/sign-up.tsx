@@ -1,20 +1,3 @@
-import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
-import { useAuth } from "~/hooks/use-auth";
-import { FirebaseError } from "firebase/app";
-import { UserCredential } from "firebase/auth";
-import { motion } from "motion/react";
-import { Checkbox, Dropdown, Label, Spinner, Tooltip } from "flowbite-react";
-import { GoogleSignIn } from "./google-sign-in";
-import {
-  IoArrowForwardCircleOutline,
-  IoCheckmark,
-  IoClose,
-} from "react-icons/io5";
-import { FaHouseUser } from "react-icons/fa";
-import { TbLayoutDashboard, TbTruckDelivery } from "react-icons/tb";
-import { MdOutlinePostAdd } from "react-icons/md";
-import { useDbOperations } from "~/hooks/use-firestore";
-import { useStorageOperations } from "~/hooks/use-storage";
 import {
   AccountType,
   ApiReqProcessIdentityVerificationWithAuthenticate,
@@ -22,17 +5,34 @@ import {
   DriverEntity,
   VehicleType,
 } from "@freedmen-s-trucking/types";
-import { useAppDispatch } from "~/stores/hooks";
-import { setUser } from "~/stores/controllers/auth-ctrl";
-import { PrimaryButton, TextInput } from "~/components/atoms";
-import { setRequestedAuthAction } from "~/stores/controllers/app-ctrl";
-import { vehicleTypes } from "~/utils/constants";
-import { formatDate, subYears } from "date-fns";
+import { subYears } from "date-fns";
+import { FirebaseError } from "firebase/app";
+import { UserCredential } from "firebase/auth";
 import { Timestamp } from "firebase/firestore";
+import { Checkbox, Dropdown, Label, Spinner, Tooltip } from "flowbite-react";
+import { motion } from "motion/react";
+import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
+import { FaHouseUser } from "react-icons/fa";
+import {
+  IoArrowForwardCircleOutline,
+  IoCheckmark,
+  IoClose,
+} from "react-icons/io5";
+import { MdOutlinePostAdd } from "react-icons/md";
+import { TbLayoutDashboard, TbTruckDelivery } from "react-icons/tb";
+import { PrimaryButton, TextInput } from "~/components/atoms";
+import { useAuth } from "~/hooks/use-auth";
+import { useDbOperations } from "~/hooks/use-firestore";
+import { useServerRequest } from "~/hooks/use-server-request";
+import { useStorageOperations } from "~/hooks/use-storage";
+import { setRequestedAuthAction } from "~/stores/controllers/app-ctrl";
+import { setUser } from "~/stores/controllers/auth-ctrl";
+import { useAppDispatch } from "~/stores/hooks";
+import { vehicleTypes } from "~/utils/constants";
+import { PUBLIC_WEBAPP_URL } from "~/utils/envs";
 import { getPasswordSecurityLevel } from "~/utils/functions";
 import { CustomPopover } from "../atoms/popover";
-import { useServerRequest } from "~/hooks/use-server-request";
-import { PUBLIC_WEBAPP_URL } from "~/utils/envs";
+import { GoogleSignIn } from "./google-sign-in";
 
 const PASSWORD_SECURITY_LEVELS = [
   {
@@ -120,7 +120,7 @@ const SignUpUser: React.FC<{
       setIsLoading(true);
       const res = await signUpWithEmailAndPassword(email, password);
       setError(null);
-      onComplete(res);
+      setTimeout(() => onComplete(res), 2000);
     } catch (error: unknown) {
       setIsLoading(false);
       const err = error as Record<string, unknown> | null | undefined;
@@ -595,7 +595,8 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
               email: user.info.email!,
               firstName: firstName,
               lastName: lastName,
-              dob: formatDate(birthDate, "dd-MM-yyyy"),
+              dob: birthDate.toISOString(),
+              // dob: formatDate(birthDate, "MM-dd-yyyy"),
               ...(!!phoneNumber && { phoneNumber }),
             },
             consents: consents,

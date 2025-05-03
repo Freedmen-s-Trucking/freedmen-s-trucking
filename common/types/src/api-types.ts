@@ -69,7 +69,7 @@ export const apiReqProcessIdentityVerificationWithAuthenticate = type({
     firstName: "string",
     middleName: "string?",
     lastName: "string",
-    dob: "string.date",
+    dob: "string.date.iso",
     phone: "string?",
     email: "string.email",
     houseNumber: "string?",
