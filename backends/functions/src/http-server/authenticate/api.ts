@@ -15,7 +15,7 @@ import {formatDate} from "date-fns";
 
 const router = new Hono<{Variables: Variables}>();
 
-const isAuthenticateMockApi = process.env.FUNCTIONS_EMULATOR !== "true";
+const isAuthenticateMockApi = process.env.FUNCTIONS_EMULATOR === "true";
 
 const upFetch = up(fetch, () => ({
   baseUrl: `https://api-v3.authenticating.com${isAuthenticateMockApi ? "/mock" : ""}`,
