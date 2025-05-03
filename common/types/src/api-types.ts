@@ -5,7 +5,6 @@ import {
   newOrderEntity,
   OrderEntityFields,
   OrderPriority,
-  userEntity,
 } from "./entities.js";
 import { coordinateType, productWithQuantityType } from "./types.js";
 

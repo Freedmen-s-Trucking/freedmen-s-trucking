@@ -1,5 +1,5 @@
-import Stripe from 'stripe';
-import { parseStripeMeta } from '~src/utils/serialize';
+import Stripe from "stripe";
+import {parseStripeMeta} from "~src/utils/serialize";
 
 type HandleWebhookEventResponse = Error | null;
 interface HandleWebhookEventParams {
@@ -18,24 +18,26 @@ export async function handleStripeWebhookEvent({
   onPaymentIntentSucceeded,
   onAccountUpdated,
 }: HandleWebhookEventParams): Promise<HandleWebhookEventResponse> {
-  const sig = getHeader('stripe-signature');
+  const sig = getHeader("stripe-signature");
   const arrayBuffer = await getRawBody();
   const buffer = Buffer.from(arrayBuffer);
   let event: Stripe.Event;
 
   try {
-    event = Stripe.webhooks.constructEvent(buffer, sig || '', process.env.STRIPE_WEBHOOK_SECRET_SELF_ACCOUNT!);
+    event = Stripe.webhooks.constructEvent(buffer, sig || "", process.env.STRIPE_WEBHOOK_SECRET_SELF_ACCOUNT!);
   } catch (errSelfAccount) {
     try {
-      event = Stripe.webhooks.constructEvent(buffer, sig || '', process.env.STRIPE_WEBHOOK_SECRET_CONNECTED_ACCOUNT!);
+      event = Stripe.webhooks.constructEvent(buffer, sig || "", process.env.STRIPE_WEBHOOK_SECRET_CONNECTED_ACCOUNT!);
     } catch (errConnectedAccount) {
       console.error(errSelfAccount, errConnectedAccount);
-      return new Error(`Webhook Error: ${(errSelfAccount as Error).message} ${(errConnectedAccount as Error).message}`);
+      return new Error(
+        `Webhook Error: ${(errSelfAccount as Error).message}` + ` ${(errConnectedAccount as Error).message}`,
+      );
     }
   }
 
   switch (event.type) {
-    case 'payment_intent.succeeded':
+    case "payment_intent.succeeded":
       const paymentIntent = event.data.object;
       const parsedMeta = parseStripeMeta(paymentIntent.metadata);
       if (onPaymentIntentSucceeded) {
@@ -43,7 +45,7 @@ export async function handleStripeWebhookEvent({
       }
       break;
     // case 'account.external_account.updated':
-    case 'account.updated':
+    case "account.updated":
       const account = event.data.object;
       if (onAccountUpdated) {
         return onAccountUpdated(account);

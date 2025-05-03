@@ -12,16 +12,16 @@ import {
   PaymentStatus,
   PaymentType,
   PlatformOverviewEntity,
-} from '@freedmen-s-trucking/types';
+} from "@freedmen-s-trucking/types";
 import {
   CollectionReference,
   DocumentReference,
   FieldValue,
   getFirestore,
   PartialWithFieldValue,
-} from 'firebase-admin/firestore';
-import { onDocumentUpdated } from 'firebase-functions/v2/firestore';
-import { transferFundsToDriver } from '~src/http-server/stripe/payment';
+} from "firebase-admin/firestore";
+import {onDocumentUpdated} from "firebase-functions/v2/firestore";
+import {transferFundsToDriver} from "~src/http-server/stripe/payment";
 
 const updateOrderStatusOnAllSubTaskCompleted = async (
   before: OrderEntity | undefined,
@@ -30,17 +30,17 @@ const updateOrderStatusOnAllSubTaskCompleted = async (
 ) => {
   const aStatus = after?.status;
   if (aStatus === OrderStatus.COMPLETED) {
-    console.log('Order status is already completed', aStatus);
+    console.log("Order status is already completed", aStatus);
     return;
   }
   if (aStatus !== OrderStatus.TASKS_ASSIGNED) {
-    console.log('Order status has unassigned tasks', aStatus);
+    console.log("Order status has unassigned tasks", aStatus);
     return;
   }
-  const isAllSubTasksCompleted = (after?.[OrderEntityFields.assignedDriverIds] || ['fake']).every(
+  const isAllSubTasksCompleted = (after?.[OrderEntityFields.assignedDriverIds] || ["fake"]).every(
     (driverId) => after?.[`task-${driverId}`]?.driverStatus === DriverOrderStatus.DELIVERED,
   );
-  const newlyCompletedTasks: OrderEntity['task-${string}'][] = (after?.[OrderEntityFields.assignedDriverIds] || [])
+  const newlyCompletedTasks: OrderEntity["task-${string}"][] = (after?.[OrderEntityFields.assignedDriverIds] || [])
     .map((driverId) => {
       const atask = after?.[`task-${driverId}`];
       const btask = before?.[`task-${driverId}`];
@@ -69,7 +69,7 @@ const updateOrderStatusOnAllSubTaskCompleted = async (
     );
   }
   if (!isAllSubTasksCompleted) {
-    console.log('Not all sub tasks are completed');
+    console.log("Not all sub tasks are completed");
     await Promise.all(waterFall);
     return;
   }
@@ -99,7 +99,7 @@ const payOutDriversOnDeliveryCompleted = async (
   if (!after || aStatus !== OrderStatus.COMPLETED) {
     return;
   }
-  const completedTasks: OrderEntity['task-${string}'][] = (after?.[OrderEntityFields.assignedDriverIds] || [])
+  const completedTasks: OrderEntity["task-${string}"][] = (after?.[OrderEntityFields.assignedDriverIds] || [])
     .map((driverId) => {
       const task = after?.[`task-${driverId}`];
       return task?.driverStatus === DriverOrderStatus.DELIVERED ? task : null;
@@ -110,21 +110,21 @@ const payOutDriversOnDeliveryCompleted = async (
   const waterFall = [];
   for (const task of completedTasks) {
     if (task.payoutPaymentRef) {
-      console.warn('Task already has payout id');
+      console.warn("Task already has payout id");
       continue;
     }
     const driverSnapshot = await firestore.collection(CollectionName.DRIVERS).doc(task.driverId).get();
     const driver = driverSnapshot.data() as DriverEntity | undefined;
     if (!driver) {
-      console.error('Driver not found');
+      console.error("Driver not found");
       continue;
     }
     if (!driver.stripeConnectAccountId) {
-      console.error('Driver has no Stripe Connect account');
+      console.error("Driver has no Stripe Connect account");
       continue;
     }
-    if (driver.payoutCapabilities?.transfers !== 'active') {
-      console.error('Driver has no payout transfer capabilities please configure');
+    if (driver.payoutCapabilities?.transfers !== "active") {
+      console.error("Driver has no payout transfer capabilities please configure");
       continue;
     }
 
@@ -132,11 +132,11 @@ const payOutDriversOnDeliveryCompleted = async (
       const res = await transferFundsToDriver(
         driver,
         task.deliveryFee,
-        { id: orderId, data: after },
+        {id: orderId, data: after},
         `task-${task.driverId}`,
       );
       if (res instanceof Error) {
-        console.error('Failed to transfer funds to driver;', res);
+        console.error("Failed to transfer funds to driver;", res);
         continue;
       }
       const paymentCollection = firestore.collection(CollectionName.PAYMENTS) as CollectionReference<
@@ -152,7 +152,7 @@ const payOutDriversOnDeliveryCompleted = async (
           ref: res.id,
         },
         from: {
-          id: 'system',
+          id: "system",
           name: "Freedmen's Trucking",
           type: PaymentActorType.PLATFORM,
         },
@@ -160,7 +160,7 @@ const payOutDriversOnDeliveryCompleted = async (
         receivedAmount: res.amount / 100,
         to: {
           id: driver.uid,
-          name: driver.displayName || driver.email || '',
+          name: driver.displayName || driver.email || "",
           type: PaymentActorType.DRIVER,
         },
         date: FieldValue.serverTimestamp(),
@@ -179,18 +179,18 @@ const payOutDriversOnDeliveryCompleted = async (
               payoutPaymentRef: `${CollectionName.PAYMENTS}/${paymentDocRef.id}`,
             },
           },
-          { merge: true },
+          {merge: true},
         ),
       );
     } catch (error) {
-      console.error('Failed to transfer funds to driver', error);
+      console.error("Failed to transfer funds to driver", error);
       continue;
     }
   }
   await Promise.all(waterFall);
 };
 
-export const orderUpdateTrigger = onDocumentUpdated(`${CollectionName.ORDERS}/{orderId}`, async ({ data, params }) => {
+export const orderUpdateTrigger = onDocumentUpdated(`${CollectionName.ORDERS}/{orderId}`, async ({data, params}) => {
   const before = data?.before?.data?.() as OrderEntity | undefined;
   const after = data?.after?.data?.() as OrderEntity | undefined;
   const orderId = params.orderId;

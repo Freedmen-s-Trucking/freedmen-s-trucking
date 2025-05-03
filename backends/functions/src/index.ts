@@ -1,10 +1,10 @@
-import 'source-map-support/register.js';
-import 'dotenv/config';
-import './config.js';
+import "source-map-support/register.js";
+import "dotenv/config";
+import "./config.js";
 
 // Export HTTP server
-export { httpServer } from './http-server/index';
+export {httpServer} from "./http-server/index";
 
 // Export background triggers
-export { driverUpdateTrigger } from './triggers/driver';
-export { orderUpdateTrigger } from './triggers/order';
+export {driverUpdateTrigger} from "./triggers/driver";
+export {orderUpdateTrigger} from "./triggers/order";

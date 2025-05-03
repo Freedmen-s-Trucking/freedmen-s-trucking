@@ -7,7 +7,7 @@ import {
   OrderEntityFields,
   OrderStatus,
   PlatformOverviewEntity,
-} from '@freedmen-s-trucking/types';
+} from "@freedmen-s-trucking/types";
 import {
   CollectionReference,
   DocumentReference,
@@ -15,8 +15,8 @@ import {
   getFirestore,
   PartialWithFieldValue,
   WithFieldValue,
-} from 'firebase-admin/firestore';
-import { onDocumentWritten } from 'firebase-functions/v2/firestore';
+} from "firebase-admin/firestore";
+import {onDocumentWritten} from "firebase-functions/v2/firestore";
 
 const updatePlatformOverviewOnDriverVerificationStatusChange = async (
   before: DriverEntity | undefined,
@@ -29,24 +29,24 @@ const updatePlatformOverviewOnDriverVerificationStatusChange = async (
   if (aVStatus !== bVStatus) {
     const update = {} as Record<keyof PlatformOverviewEntity, FieldValue>;
     switch (aVStatus) {
-      case 'pending':
+      case "pending":
         update.totalPendingVerificationDrivers = FieldValue.increment(1);
         break;
-      case 'failed':
+      case "failed":
         update.totalFailedVerificationDrivers = FieldValue.increment(1);
         break;
-      case 'verified':
+      case "verified":
         update.totalVerifiedDrivers = FieldValue.increment(1);
         break;
     }
     switch (bVStatus) {
-      case 'pending':
+      case "pending":
         update.totalPendingVerificationDrivers = FieldValue.increment(-1);
         break;
-      case 'failed':
+      case "failed":
         update.totalFailedVerificationDrivers = FieldValue.increment(-1);
         break;
-      case 'verified':
+      case "verified":
         update.totalVerifiedDrivers = FieldValue.increment(-1);
         break;
     }
@@ -69,10 +69,10 @@ const assignTaskToDriverWhenHeBecomesVerified = async (
   const bStatus = before?.verificationStatus;
   const aStatus = after?.verificationStatus;
   const isVerified =
-    aStatus === 'verified' || (aStatus === 'pending' && after?.driverLicenseVerificationStatus === 'verified');
+    aStatus === "verified" || (aStatus === "pending" && after?.driverLicenseVerificationStatus === "verified");
   const vehicleChanged = after?.vehicles?.[0]?.type !== before?.vehicles?.[0]?.type;
   const isNewlyVerified = isVerified && aStatus !== bStatus;
-  console.log({ isVerified, vehicleChanged, isNewlyVerified });
+  console.log({isVerified, vehicleChanged, isNewlyVerified});
   if (isNewlyVerified || (isVerified && vehicleChanged)) {
     const firestore = getFirestore();
 
@@ -86,19 +86,19 @@ const assignTaskToDriverWhenHeBecomesVerified = async (
     }
     const query = orderCollection.where(
       OrderEntityFields.unassignedVehiclesTypes satisfies keyof OrderEntity,
-      'array-contains',
+      "array-contains",
       driverVehicleType,
     );
     const snapshot = await query.limit(1).get();
     if (snapshot.empty) {
-      console.info('No orders found for driver vehicle type', driverVehicleType);
+      console.info("No orders found for driver vehicle type", driverVehicleType);
       return;
     }
     const order = snapshot.docs[0];
     const orderData = order.data();
     const vehicleToRemoveIdx = orderData.unassignedVehiclesTypes.findIndex((v) => v === driverVehicleType);
     if (vehicleToRemoveIdx === -1) {
-      console.error('Driver vehicle type unexpectedly not found in unassigned vehicles');
+      console.error("Driver vehicle type unexpectedly not found in unassigned vehicles");
       return;
     }
     // Remove the driver vehicle type from the unassigned vehicles array.
@@ -107,7 +107,8 @@ const assignTaskToDriverWhenHeBecomesVerified = async (
     const details = orderData[OrderEntityFields.unassignedVehicles][vehicleToRemoveIdx];
     if (!details) {
       console.error(
-        'Vehicle unexpectedly not found in details array. However we found the vehicle type in unassigned vehicles types',
+        "Vehicle unexpectedly not found in details array. However we found" +
+          " the vehicle type in unassigned vehicles types",
       );
       return;
     }
@@ -123,9 +124,9 @@ const assignTaskToDriverWhenHeBecomesVerified = async (
         [OrderEntityFields.assignedDriverIds]: orderData.assignedDriverIds.concat(after.uid),
         [`task-${after.uid}` satisfies keyof OrderEntity]: {
           [OrderEntityFields.driverId]: after.uid,
-          [OrderEntityFields.driverName]: after.displayName || '',
-          [OrderEntityFields.driverEmail]: after.email || '',
-          [OrderEntityFields.driverPhone]: after.phoneNumber || '',
+          [OrderEntityFields.driverName]: after.displayName || "",
+          [OrderEntityFields.driverEmail]: after.email || "",
+          [OrderEntityFields.driverPhone]: after.phoneNumber || "",
           [OrderEntityFields.deliveryFee]: details.deliveryFees,
           [OrderEntityFields.driverStatus]: DriverOrderStatus.WAITING,
           [OrderEntityFields.createdAt]: FieldValue.serverTimestamp(),
@@ -142,22 +143,19 @@ const assignTaskToDriverWhenHeBecomesVerified = async (
       {
         activeTasks: FieldValue.increment(1),
       },
-      { merge: true },
+      {merge: true},
     );
   }
 };
 
-export const driverUpdateTrigger = onDocumentWritten(
-  `${CollectionName.DRIVERS}/{driverId}`,
-  async ({ data, params }) => {
-    const before = data?.before?.data?.() as DriverEntity | undefined;
-    const after = data?.after?.data?.() as DriverEntity | undefined;
-    const driverId = params.driverId;
-    const waterFall = [
-      updatePlatformOverviewOnDriverVerificationStatusChange(before, after, driverId),
-      assignTaskToDriverWhenHeBecomesVerified(before, after, driverId),
-    ];
+export const driverUpdateTrigger = onDocumentWritten(`${CollectionName.DRIVERS}/{driverId}`, async ({data, params}) => {
+  const before = data?.before?.data?.() as DriverEntity | undefined;
+  const after = data?.after?.data?.() as DriverEntity | undefined;
+  const driverId = params.driverId;
+  const waterFall = [
+    updatePlatformOverviewOnDriverVerificationStatusChange(before, after, driverId),
+    assignTaskToDriverWhenHeBecomesVerified(before, after, driverId),
+  ];
 
-    return Promise.all(waterFall);
-  },
-);
+  return Promise.all(waterFall);
+});

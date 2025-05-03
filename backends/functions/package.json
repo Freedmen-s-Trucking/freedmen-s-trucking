@@ -2,6 +2,7 @@
   "name": "functions",
   "scripts": {
     "lint": "eslint --ext .js,.ts .",
+    "format": "prettier . --write",
     "build": "bun build.js",
     "watch": "bun build.js --watch",
     "check": "tsc --noEmit",

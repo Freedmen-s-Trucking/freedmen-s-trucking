@@ -1,5 +1,6 @@
-import _stripe from 'stripe';
+import _stripe from "stripe";
+import {STRIPE_SECRET_KEY} from "~src/utils/envs";
 
-const stripe = new _stripe(process.env.STRIPE_SECRET_KEY!);
+const stripe = new _stripe(STRIPE_SECRET_KEY);
 
 export default stripe;

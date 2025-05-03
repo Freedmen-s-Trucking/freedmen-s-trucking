@@ -9,7 +9,7 @@ export function serializeToStripeMeta(param: Record<string, unknown>) {
 export function parseStripeMeta(param: Record<string, unknown>) {
   const result = <Record<string, unknown>>{};
   for (const [key, value] of Object.entries(param)) {
-    if (typeof value === 'string') {
+    if (typeof value === "string") {
       result[key] = JSON.parse(value);
     } else {
       result[key] = value;

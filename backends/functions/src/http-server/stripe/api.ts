@@ -17,7 +17,7 @@ import {
   type,
   UserEntity,
   VerificationStatus,
-} from '@freedmen-s-trucking/types';
+} from "@freedmen-s-trucking/types";
 import {
   CollectionReference,
   DocumentReference,
@@ -25,36 +25,36 @@ import {
   Filter,
   getFirestore,
   WithFieldValue,
-} from 'firebase-admin/firestore';
-import { Hono } from 'hono';
-import { onetimeFindRightDriversForOrder } from '~src/utils/order.js';
-import { createPaymentIntent, generateConnectedAccountSetupLink } from './payment';
-import { handleStripeWebhookEvent } from './webhook.js';
-import { Variables } from '../../utils/types';
+} from "firebase-admin/firestore";
+import {Hono} from "hono";
+import {onetimeFindRightDriversForOrder} from "~src/utils/order.js";
+import {createPaymentIntent, generateConnectedAccountSetupLink} from "./payment";
+import {handleStripeWebhookEvent} from "./webhook.js";
+import {Variables} from "../../utils/types";
 
-const router = new Hono<{ Variables: Variables }>();
+const router = new Hono<{Variables: Variables}>();
 
-router.post('/create-payment-intent', async (c) => {
-  const response = await createPaymentIntent(await c.req.json(), c.get('user'));
+router.post("/create-payment-intent", async (c) => {
+  const response = await createPaymentIntent(await c.req.json(), c.get("user"));
   if (response instanceof Error) {
-    return c.json({ error: response.message }, 400);
+    return c.json({error: response.message}, 400);
   }
-  return c.json({ clientSecret: response.client_secret });
+  return c.json({clientSecret: response.client_secret});
 });
 
-router.post('/setup-connected-account', async (c) => {
+router.post("/setup-connected-account", async (c) => {
   const driver = apiResSetupConnectedAccount(await c.req.json());
   if (driver instanceof type.errors) {
-    return c.json({ error: driver.summary }, 400);
+    return c.json({error: driver.summary}, 400);
   }
-  const response = await generateConnectedAccountSetupLink(driver, c.get('user'));
+  const response = await generateConnectedAccountSetupLink(driver, c.get("user"));
   if (response instanceof Error) {
-    return c.json({ error: response.message }, 400);
+    return c.json({error: response.message}, 400);
   }
-  return c.json({ response });
+  return c.json({response});
 });
 
-router.post('/webhook', async (c) => {
+router.post("/webhook", async (c) => {
   const res = await handleStripeWebhookEvent({
     getHeader: (name) => c.req.header(name),
     getRawBody: () => c.req.arrayBuffer(),
@@ -66,11 +66,11 @@ router.post('/webhook', async (c) => {
         DriverEntity
       >;
       const driverSnapshot = await driverCollection
-        .where('stripeConnectAccountId' satisfies keyof DriverEntity, '==', account.id)
+        .where("stripeConnectAccountId" satisfies keyof DriverEntity, "==", account.id)
         .limit(1)
         .get();
       if (driverSnapshot.empty) {
-        return new Error('Driver not found');
+        return new Error("Driver not found");
       }
       const driver = driverSnapshot.docs[0];
       await driverCollection.doc(driver.id).set(
@@ -79,18 +79,20 @@ router.post('/webhook', async (c) => {
             id: pm.id,
             type: pm.object,
             status: pm.status,
-            name: pm.object === 'bank_account' ? pm.bank_name : pm.brand,
+            name: pm.object === "bank_account" ? pm.bank_name : pm.brand,
           })),
-          payoutCapabilities: { transfers: account.capabilities?.transfers || 'inactive' },
+          payoutCapabilities: {
+            transfers: account.capabilities?.transfers || "inactive",
+          },
         },
-        { merge: true },
+        {merge: true},
       );
       return null;
     },
-    onPaymentIntentSucceeded: async ({ id, amount }, newOrder) => {
+    onPaymentIntentSucceeded: async ({id, amount}, newOrder) => {
       if (!newOrder) {
-        console.error('Invalid request: missing serializedOrder');
-        return new Error('Invalid request: missing serializedOrder');
+        console.error("Invalid request: missing serializedOrder");
+        return new Error("Invalid request: missing serializedOrder");
       }
 
       const verifiedNewOrder = newOrderEntity(newOrder);
@@ -108,28 +110,28 @@ router.post('/webhook', async (c) => {
         .where(
           Filter.or(
             Filter.where(
-              'verificationStatus' satisfies keyof DriverEntity,
-              '==',
-              'verified' satisfies VerificationStatus,
+              "verificationStatus" satisfies keyof DriverEntity,
+              "==",
+              "verified" satisfies VerificationStatus,
             ),
             Filter.and(
               Filter.where(
-                'verificationStatus' satisfies keyof DriverEntity,
-                '==',
-                'pending' satisfies VerificationStatus,
+                "verificationStatus" satisfies keyof DriverEntity,
+                "==",
+                "pending" satisfies VerificationStatus,
               ),
               Filter.where(
-                'driverLicenseVerificationStatus' satisfies keyof DriverEntity,
-                '==',
-                'verified' satisfies VerificationStatus,
+                "driverLicenseVerificationStatus" satisfies keyof DriverEntity,
+                "==",
+                "verified" satisfies VerificationStatus,
               ),
             ),
           ),
         )
-        .orderBy('activeTasks', 'asc');
+        .orderBy("activeTasks", "asc");
       const snapshot = await query.get();
       const [drivers, unassignedVehicles] = onetimeFindRightDriversForOrder(snapshot, verifiedNewOrder);
-      const userCollection = firestore.collection('users') as CollectionReference<UserEntity, UserEntity>;
+      const userCollection = firestore.collection("users") as CollectionReference<UserEntity, UserEntity>;
       const user = await userCollection.doc(verifiedNewOrder.ownerId).get();
 
       // Save the payment.
@@ -146,7 +148,7 @@ router.post('/webhook', async (c) => {
           ref: id,
         },
         to: {
-          id: 'system',
+          id: "system",
           name: "Freedmen's Trucking",
           type: PaymentActorType.PLATFORM,
         },
@@ -154,7 +156,7 @@ router.post('/webhook', async (c) => {
         receivedAmount: amount / 100,
         from: {
           id: user.id,
-          name: user.data()?.displayName || '',
+          name: user.data()?.displayName || "",
           type: PaymentActorType.CUSTOMER,
         },
         date: new Date().toISOString(),
@@ -167,13 +169,13 @@ router.post('/webhook', async (c) => {
       >;
       const order: WithFieldValue<OrderEntity> = {
         ...verifiedNewOrder,
-        [OrderEntityFields.clientName]: user.data()?.displayName || '',
-        [OrderEntityFields.clientEmail]: user.data()?.email || '',
-        [OrderEntityFields.clientPhone]: user.data()?.phoneNumber || '',
+        [OrderEntityFields.clientName]: user.data()?.displayName || "",
+        [OrderEntityFields.clientEmail]: user.data()?.email || "",
+        [OrderEntityFields.clientPhone]: user.data()?.phoneNumber || "",
         [OrderEntityFields.status]:
           unassignedVehicles.length === 0 ? OrderStatus.TASKS_ASSIGNED : OrderStatus.PAYMENT_RECEIVED,
-        [OrderEntityFields.unassignedVehiclesTypes]: unassignedVehicles.map(([type, _]) => type),
-        [OrderEntityFields.unassignedVehicles]: unassignedVehicles.map(([_, details]) => ({
+        [OrderEntityFields.unassignedVehiclesTypes]: unassignedVehicles.map(([type]) => type),
+        [OrderEntityFields.unassignedVehicles]: unassignedVehicles.map(([, details]) => ({
           deliveryFees: details.deliveryFees,
         })),
         [OrderEntityFields.assignedDriverIds]: drivers.map((d) => d.uid),
@@ -181,9 +183,9 @@ router.post('/webhook', async (c) => {
           (acc, driver) => {
             acc[`task-${driver.uid}` satisfies keyof OrderEntity] = {
               [OrderEntityFields.driverId]: driver.uid,
-              [OrderEntityFields.driverName]: driver.displayName || '',
-              [OrderEntityFields.driverEmail]: driver.email || '',
-              [OrderEntityFields.driverPhone]: driver.phoneNumber || '',
+              [OrderEntityFields.driverName]: driver.displayName || "",
+              [OrderEntityFields.driverEmail]: driver.email || "",
+              [OrderEntityFields.driverPhone]: driver.phoneNumber || "",
               [OrderEntityFields.deliveryFee]: driver.deliveryFees,
               [OrderEntityFields.driverStatus]: DriverOrderStatus.WAITING,
               [OrderEntityFields.createdAt]: FieldValue.serverTimestamp(),
@@ -206,7 +208,7 @@ router.post('/webhook', async (c) => {
           {
             activeTasks: FieldValue.increment(1),
           },
-          { merge: true },
+          {merge: true},
         );
       }
 
@@ -217,18 +219,18 @@ router.post('/webhook', async (c) => {
           totalEarnings: FieldValue.increment(amount / 100),
           updatedAt: FieldValue.serverTimestamp(),
         },
-        { merge: true },
+        {merge: true},
       );
-      console.log({ paymentIntent: { id, amount }, meta: newOrder });
+      console.log({paymentIntent: {id, amount}, meta: newOrder});
       return null;
     },
   });
 
   if (res instanceof Error) {
     console.error(res);
-    return c.json({ error: res.message }, 400);
+    return c.json({error: res.message}, 400);
   }
-  return c.json({ received: true });
+  return c.json({received: true});
 });
 
 export default router;
