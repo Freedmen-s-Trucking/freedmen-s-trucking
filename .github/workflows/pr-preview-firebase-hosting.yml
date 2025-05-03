@@ -31,7 +31,6 @@ jobs:
       - uses: oven-sh/setup-bun@v2
       - run: bun i --frozen-lockfile && bun run build
         env:
-          VITE_AUTHENTICATE_DOT_COM_TOKEN: ${{ secrets.AUTHENTICATE_DOT_COM_TOKEN_DEV }}
           VITE_FIREBASE_CONFIG_JSON: ${{ secrets.FIREBASE_CONFIG_JSON_DEV }}
           VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY_DEV }}
           VITE_STRIPE_CLIENT_SECRET: ${{ secrets.STRIPE_CLIENT_SECRET_DEV }}

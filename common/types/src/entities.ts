@@ -22,12 +22,6 @@ export type WithdrawalEntity = typeof withdrawalEntity.infer;
 export const userEntity = type({
   uid: "string",
   displayName: "string",
-  authenticateAccessCode: "string",
-  consents: type({
-    isBackgroundDisclosureAccepted: "boolean",
-    GLBPurposeAndDPPAPurpose: "boolean",
-    FCRAPurpose: "boolean",
-  }).optional(),
   firstName: "string",
   lastName: "string",
   email: "string | null",
@@ -47,6 +41,12 @@ export type UserEntity = typeof userEntity.infer;
 
 //userEntity /*.partial()*/
 export const driverEntity = userEntity.and({
+  authenticateAccessCode: "string?",
+  consents: type({
+    isBackgroundDisclosureAccepted: "boolean",
+    GLBPurposeAndDPPAPurpose: "boolean",
+    FCRAPurpose: "boolean",
+  }).optional(),
   driverInsuranceVerificationStatus: verificationStatus,
   driverInsuranceStoragePath: "string | null",
   driverInsuranceVerificationIssues: "string[]",
@@ -71,7 +71,6 @@ export const driverEntity = userEntity.and({
   verificationStatus: verificationStatus,
   verificationMessage: "string | null",
   stripeConnectAccountId: "string | null",
-  authenticateAccessCode: "string",
   currentEarnings: "number | null",
   totalEarnings: "number | null",
   tasksCompleted: "number | null",

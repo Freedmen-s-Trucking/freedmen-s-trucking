@@ -8,11 +8,11 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 import { UserInfo, UserMetadata } from "firebase/auth";
 
 export class AppUser {
-  readonly info: UserEntity;
-  readonly driverInfo?: DriverEntity;
-  readonly adminInfo?: AdminEntity;
-  readonly meta: UserMetadata;
-  readonly providerData: UserInfo[];
+  readonly info: Readonly<UserEntity>;
+  readonly driverInfo?: Readonly<DriverEntity>;
+  readonly adminInfo?: Readonly<AdminEntity>;
+  readonly meta: Readonly<UserMetadata>;
+  readonly providerData: Readonly<UserInfo[]>;
   readonly isAnonymous: boolean;
   readonly isEmailVerified: boolean;
 
@@ -25,11 +25,11 @@ export class AppUser {
     isAnonymous,
     isEmailVerified,
   }: {
-    info: UserEntity;
-    driverInfo?: DriverEntity;
-    adminInfo?: AdminEntity;
-    meta: UserMetadata;
-    providerData: UserInfo[];
+    info: Readonly<UserEntity>;
+    driverInfo?: Readonly<DriverEntity>;
+    adminInfo?: Readonly<AdminEntity>;
+    meta: Readonly<UserMetadata>;
+    providerData: Readonly<UserInfo[]>;
     isAnonymous: boolean;
     isEmailVerified: boolean;
   }) {
@@ -64,7 +64,15 @@ export const authCtrl = createSlice({
       }
     },
     setUser: (state, action: PayloadAction<AppUser>) => {
-      state.user = action.payload;
+      state.user = {
+        info: action.payload.info,
+        driverInfo: action.payload.driverInfo,
+        adminInfo: action.payload.adminInfo,
+        meta: action.payload.meta,
+        providerData: [...action.payload.providerData],
+        isAnonymous: action.payload.isAnonymous,
+        isEmailVerified: action.payload.isEmailVerified,
+      };
     },
   },
 });

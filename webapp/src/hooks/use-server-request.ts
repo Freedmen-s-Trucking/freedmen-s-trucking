@@ -8,7 +8,7 @@ export const useServerRequest = () => {
 
   const request = useMemo(() => {
     return up(fetch, async () => ({
-      baseUrl: SERVER_API_ENDPOINT,
+      baseUrl: `${SERVER_API_ENDPOINT}/v1`,
       headers: {
         accept: "application/json",
         "content-type": "application/json",

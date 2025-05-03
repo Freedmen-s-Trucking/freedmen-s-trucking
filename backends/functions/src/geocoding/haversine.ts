@@ -1,9 +1,5 @@
-import {
-  GetDistanceInKilometerRequest,
-  GetDistanceInKilometerResponse,
-  GeoRoutingInterface,
-} from './georouting.js';
-import { GeoPoint } from './utils/utils.js';
+import {GetDistanceInKilometerRequest, GetDistanceInKilometerResponse, GeoRoutingInterface} from "./georouting.js";
+import {GeoPoint} from "./utils/utils.js";
 
 /**
  * GeoRoutingService implementation using the Harversine algorithm.
@@ -15,13 +11,10 @@ export class HarversineGeoRoutingService implements GeoRoutingInterface {
    * @return {GetDistanceInKilometerResponse} The distance and duration between the two point.
    **/
   async getDistanceInKilometer(
-    request: GetDistanceInKilometerRequest
+    request: GetDistanceInKilometerRequest,
   ): Promise<GetDistanceInKilometerResponse | undefined> {
-    const distance = getRoundedDistanceInKilometerBetween(
-      request.startPoint,
-      request.endPoint
-    );
-    return { distance: distance };
+    const distance = getRoundedDistanceInKilometerBetween(request.startPoint, request.endPoint);
+    return {distance: distance};
   }
 }
 
@@ -42,10 +35,7 @@ function toRadians(degree: number): number {
  * @param {GeoPoint} endPoint The provided destination point in degree.
  * @return {number} The requested distance in meter.
  **/
-export function getDistanceInMeterBetween(
-  startPoint: GeoPoint,
-  endPoint: GeoPoint
-): number {
+export function getDistanceInMeterBetween(startPoint: GeoPoint, endPoint: GeoPoint): number {
   // The mean earth radius in kilometers
   const earthRadius = 6371009;
   const dLat = toRadians(endPoint.latitude - startPoint.latitude);
@@ -53,9 +43,7 @@ export function getDistanceInMeterBetween(
 
   const a =
     Math.pow(Math.sin(dLat / 2), 2) +
-    Math.pow(Math.sin(dLon / 2), 2) *
-      Math.cos(toRadians(startPoint.latitude)) *
-      Math.cos(toRadians(endPoint.latitude));
+    Math.pow(Math.sin(dLon / 2), 2) * Math.cos(toRadians(startPoint.latitude)) * Math.cos(toRadians(endPoint.latitude));
   const c = 2 * Math.asin(Math.sqrt(a));
 
   return earthRadius * c;
@@ -68,10 +56,7 @@ export function getDistanceInMeterBetween(
  * @param {GeoPoint} endPoint The provided destination point in degree.
  * @return {number} The requested distance in meter.
  **/
-export function getRoundedDistanceInKilometerBetween(
-  startPoint: GeoPoint,
-  endPoint: GeoPoint
-): number {
+export function getRoundedDistanceInKilometerBetween(startPoint: GeoPoint, endPoint: GeoPoint): number {
   const distanceInKm = getDistanceInMeterBetween(startPoint, endPoint) / 1000;
   return Math.round(distanceInKm * 10) / 10;
 }

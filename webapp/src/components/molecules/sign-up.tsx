@@ -17,23 +17,22 @@ import { useDbOperations } from "~/hooks/use-firestore";
 import { useStorageOperations } from "~/hooks/use-storage";
 import {
   AccountType,
+  ApiReqProcessIdentityVerificationWithAuthenticate,
+  apiResProcessIdentityVerificationWithAuthenticate,
   DriverEntity,
-  type,
   VehicleType,
 } from "@freedmen-s-trucking/types";
 import { useAppDispatch } from "~/stores/hooks";
 import { setUser } from "~/stores/controllers/auth-ctrl";
 import { PrimaryButton, TextInput } from "~/components/atoms";
 import { setRequestedAuthAction } from "~/stores/controllers/app-ctrl";
-import {
-  authenticateApiRequest,
-  isAuthenticateMockApi,
-  vehicleTypes,
-} from "~/utils/constants";
+import { vehicleTypes } from "~/utils/constants";
 import { formatDate, subYears } from "date-fns";
 import { Timestamp } from "firebase/firestore";
-import { fileToBase64, getPasswordSecurityLevel } from "~/utils/functions";
+import { getPasswordSecurityLevel } from "~/utils/functions";
 import { CustomPopover } from "../atoms/popover";
+import { useServerRequest } from "~/hooks/use-server-request";
+import { PUBLIC_WEBAPP_URL } from "~/utils/envs";
 
 const PASSWORD_SECURITY_LEVELS = [
   {
@@ -123,6 +122,7 @@ const SignUpUser: React.FC<{
       setError(null);
       onComplete(res);
     } catch (error: unknown) {
+      setIsLoading(false);
       const err = error as Record<string, unknown> | null | undefined;
       console.debug({ err });
       if (!(error instanceof FirebaseError)) {
@@ -141,8 +141,6 @@ const SignUpUser: React.FC<{
         setError(errMsg);
         return;
       }
-    } finally {
-      setIsLoading(false);
     }
   };
   const onGoogleSignInError = (error: unknown) => {
@@ -271,7 +269,7 @@ const SignUpUser: React.FC<{
               onChange={onPasswordChanged}
               value={password}
               maxLength={32}
-              autoComplete="new-password"
+              autoComplete="current-password"
               id="password1"
               type="password"
               required
@@ -286,11 +284,11 @@ const SignUpUser: React.FC<{
             onChange={onConfirmPasswordChanged}
             value={confirmPassword}
             maxLength={32}
-            autoComplete="current-password"
+            autoComplete="new-password"
             id="password2"
             type="password"
             required
-            color={password === confirmPassword ? "gray" : "failure"}
+            // color={password === confirmPassword ? "gray" : "failure"}
           />
         </div>
         {error && (
@@ -513,6 +511,7 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
     }));
   };
 
+  const serverRequest = useServerRequest();
   const [error, setError] = useState<null | string>(null);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -526,6 +525,7 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
     }
     try {
       setIsLoading(true);
+      setError(null);
       const driverLicenseFrontPath = await uploadCertificate(
         user.info.uid,
         driverLicenseIdFront!,
@@ -542,67 +542,9 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
         "driver-insurance",
       );
 
-      const { userAccessCode } = await authenticateApiRequest("/user/create", {
-        method: "POST",
-        body: {
-          email: user.info.email,
-          firstName: isAuthenticateMockApi ? "Jonathan" : firstName,
-          lastName: isAuthenticateMockApi ? "Doe" : lastName,
-          dob: formatDate(birthDate, "dd-MM-yyyy"),
-          phoneNumber: phoneNumber,
-        },
-        schema: type({
-          userAccessCode: "string",
-        }),
-      });
-
-      const { success } = await authenticateApiRequest("/user/consent", {
-        method: "POST",
-        body: {
-          userAccessCode: isAuthenticateMockApi
-            ? "100385a1-4308-49db-889f-9a898fa88c21"
-            : userAccessCode,
-          isBackgroundDisclosureAccepted:
-            consents.isBackgroundDisclosureAccepted,
-          GLBPurposeAndDPPAPurpose: consents.GLBPurposeAndDPPAPurpose,
-          FCRAPurpose: consents.FCRAPurpose,
-          fullName: `${firstName.trim()} ${lastName.trim()}`,
-        },
-        schema: type({
-          success: "boolean",
-        }),
-      });
-      if (!success) {
-        throw new Error("Failed to save consents");
-      }
-
-      const { success: documentScanResult } = await authenticateApiRequest(
-        "/identity/document/scan",
-        {
-          method: "POST",
-          body: {
-            userAccessCode: isAuthenticateMockApi
-              ? "2d91a19f-d07b-48f0-912f-886ed67009dd"
-              : userAccessCode,
-            idFront: await fileToBase64(driverLicenseIdFront!),
-            idBack: await fileToBase64(driverLicenseIdBack!),
-            country: 0, // Country code can be found here: https://docs.authenticate.com/docs/supported-countries-for-upload-id
-          },
-          schema: type({
-            success: "boolean",
-          }),
-        },
-      );
-
-      if (!documentScanResult) {
-        throw new Error("Failed to scan driver license");
-      }
-
       await insertUser(user.info.uid, {
         displayName: `${firstName} ${lastName}`,
         firstName: firstName,
-        consents: consents,
-        authenticateAccessCode: userAccessCode,
         lastName: lastName,
         birthDate: (birthDate && Timestamp.fromDate(birthDate)) || null,
         phoneNumber: phoneNumber,
@@ -617,6 +559,7 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
         driverInsuranceVerificationStatus: "pending",
         driverInsuranceVerificationIssues: [],
         driverInsuranceStoragePath: driverInsurancePath,
+        consents: consents,
         vehicles: [
           {
             type: driverVehicle!,
@@ -628,11 +571,12 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
         tasksCompleted: 0,
         verificationMessage: null,
         stripeConnectAccountId: null,
-        authenticateAccessCode: userAccessCode,
         activeTasks: 0,
         payoutMethods: [],
         withdrawalHistory: [],
       };
+
+      delete driverInfo.authenticateAccessCode;
 
       await updateDriver(user.info.uid, driverInfo);
       dispatch(
@@ -641,6 +585,32 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
           driverInfo: driverInfo,
         }),
       );
+
+      const res = await serverRequest(
+        "/authenticate/process-identity-verification",
+        {
+          method: "POST",
+          body: {
+            user: {
+              email: user.info.email!,
+              firstName: firstName,
+              lastName: lastName,
+              dob: formatDate(birthDate, "dd-MM-yyyy"),
+              ...(!!phoneNumber && { phoneNumber }),
+            },
+            consents: consents,
+            medallion: {
+              redirectURL: PUBLIC_WEBAPP_URL?.startsWith("https")
+                ? PUBLIC_WEBAPP_URL
+                : "https://freedmen-s-trucking.web.app",
+            },
+          } satisfies ApiReqProcessIdentityVerificationWithAuthenticate,
+          schema: apiResProcessIdentityVerificationWithAuthenticate,
+        },
+      );
+
+      console.log({ res });
+      location.href = res.processVerificationUrl;
 
       setError(null);
       onAdditionalInfoAdded();

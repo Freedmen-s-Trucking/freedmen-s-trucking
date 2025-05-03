@@ -1,26 +1,31 @@
-import { DriverEntity, FIXED_DRIVER_SERVICE_FEE_PERCENT, NewOrder, VehicleType } from '@freedmen-s-trucking/types';
-import { QuerySnapshot } from 'firebase-admin/firestore';
+import {DriverEntity, FIXED_DRIVER_SERVICE_FEE_PERCENT, NewOrder, VehicleType} from "@freedmen-s-trucking/types";
+import {QuerySnapshot} from "firebase-admin/firestore";
+
+type OneTimeFindRightDriversForOrderResponse = [
+  (DriverEntity & {uid: string; deliveryFees: number})[],
+  readonly [VehicleType, {deliveryFees: number}][],
+];
 
 /**
  * One-time function to find the right drivers for an order.
  * WARN: this function must be used only once per order on creation.
  *
- * @param snapshot The snapshot of the drivers collection.
- * @param order The order to find the right drivers for.
- * @returns
+ * @param {QuerySnapshot<DriverEntity>} snapshot The snapshot of the drivers collection.
+ * @param {NewOrder} order The order to find the right drivers for.
+ * @return {OneTimeFindRightDriversForOrderResponse} The right drivers for the order.
  */
 export function onetimeFindRightDriversForOrder(
   snapshot: QuerySnapshot<DriverEntity>,
   order: NewOrder,
-): [(DriverEntity & { uid: string; deliveryFees: number })[], readonly [VehicleType, { deliveryFees: number }][]] {
-  const drivers = [] as (DriverEntity & { uid: string; deliveryFees: number })[];
+): OneTimeFindRightDriversForOrderResponse {
+  const drivers = [] as (DriverEntity & {uid: string; deliveryFees: number})[];
   const requiredVehicles = order.requiredVehicles.map((v) => ({
     type: v.type,
     quantity: v.quantity,
     deliveryFees: v.fees,
   }));
   for (const doc of snapshot.docs) {
-    const driver: DriverEntity & { uid: string } = { ...doc.data(), uid: doc.id };
+    const driver: DriverEntity & {uid: string} = {...doc.data(), uid: doc.id};
     if (!driver.vehicles || !driver.vehicles.length) {
       continue;
     }
@@ -43,13 +48,15 @@ export function onetimeFindRightDriversForOrder(
         return acc.concat(
           Array(v.quantity).fill([
             v.type,
-            { deliveryFees: (v.deliveryFees * FIXED_DRIVER_SERVICE_FEE_PERCENT) / 100 },
+            {
+              deliveryFees: (v.deliveryFees * FIXED_DRIVER_SERVICE_FEE_PERCENT) / 100,
+            },
           ] as const),
         );
       }
       return acc;
     },
-    <readonly [VehicleType, { deliveryFees: number }][]>[],
+    <readonly [VehicleType, {deliveryFees: number}][]>[],
   );
   return [drivers, unassignedVehicles] as const;
 }

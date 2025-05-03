@@ -15,7 +15,8 @@ const StorageProvider: React.FC<{
 
   useEffect(() => {
     if (isDevMode) {
-      connectStorageEmulator(storage, "127.0.0.1", 9199);
+      const location = new URL(window.location.href);
+      connectStorageEmulator(storage, location.hostname, 9199);
     }
   }, [storage]);
 

@@ -1,4 +1,4 @@
-import { AUTHENTICATE_DOT_COM_TOKEN, isDevMode } from "./envs";
+import { isDevMode } from "./envs";
 import {
   BsCarFrontFill,
   BsShieldFillCheck,
@@ -9,7 +9,6 @@ import {
 import { TbCarSuv } from "react-icons/tb";
 import { PiTruck, PiVan } from "react-icons/pi";
 import { VehicleType } from "@freedmen-s-trucking/types";
-import { up } from "up-fetch";
 
 export const PAGE_ROUTES = [
   { name: "Home", href: "/preview" },
@@ -209,13 +208,3 @@ export const vehicleTypes: Record<
 };
 
 export const isAuthenticateMockApi = isDevMode;
-export const authenticateApiRequest = up(fetch, () => ({
-  baseUrl: `https://api-v3.authenticating.com${isAuthenticateMockApi ? "/mock" : ""}`,
-  headers: {
-    accept: "application/json",
-    "content-type": "application/json",
-    ...(isDevMode
-      ? {}
-      : { authorization: `Bearer ${AUTHENTICATE_DOT_COM_TOKEN}` }),
-  },
-}));

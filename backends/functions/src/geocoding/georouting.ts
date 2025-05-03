@@ -1,6 +1,6 @@
-import { HarversineGeoRoutingService } from './haversine.js';
-import { OSRMGeoRoutingService } from './osrm.js';
-import { GeoPoint } from './utils/utils.js';
+import {HarversineGeoRoutingService} from "./haversine.js";
+import {OSRMGeoRoutingService} from "./osrm.js";
+import {GeoPoint} from "./utils/utils.js";
 
 export enum GeoRoutingServiceType {
   osm,
@@ -8,9 +8,7 @@ export enum GeoRoutingServiceType {
 }
 
 export interface GeoRoutingInterface {
-  getDistanceInKilometer(
-    request: GetDistanceInKilometerRequest
-  ): Promise<GetDistanceInKilometerResponse | undefined>;
+  getDistanceInKilometer(request: GetDistanceInKilometerRequest): Promise<GetDistanceInKilometerResponse | undefined>;
 }
 
 export interface GetDistanceInKilometerRequest {
@@ -36,8 +34,8 @@ export interface GetDistanceInKilometerResponse {
 export class GeoRoutingService {
   /**
    * Returns the corresponding georouting implementation service.
-   * @param {GeoRoutingServiceType} serviceType The type of open street map routing distance service.
-   * @return {GeoRoutingInterface} The corresponding open street map routing distance service implementation.
+   * @param {GeoRoutingServiceType} serviceType The type of OSRM routing distance service.
+   * @return {GeoRoutingInterface} The corresponding OSRM routing distance service implementation.
    */
   static create(serviceType: GeoRoutingServiceType): GeoRoutingInterface {
     switch (serviceType) {

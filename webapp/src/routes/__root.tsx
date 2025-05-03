@@ -12,11 +12,20 @@ import { useEffect } from "react";
 import { useAuth } from "~/hooks/use-auth";
 import { Flowbite } from "flowbite-react";
 import { getFlowbiteTheme } from "~/utils/functions";
+import { APP_ENV } from "~/utils/envs";
 
 const Component: React.FC = () => {
   const { user } = useAuth();
   const router = useRouter();
   const routeState = useRouterState();
+
+  useEffect(() => {
+    if (!window.document.title) return;
+    if (APP_ENV === "prod") return;
+    if (window.document.title.toLowerCase().includes(APP_ENV.toLowerCase()))
+      return;
+    window.document.title = `${APP_ENV.toUpperCase()} - ${window.document.title}`;
+  }, []);
 
   useEffect(() => {
     if (

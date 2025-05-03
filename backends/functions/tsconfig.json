@@ -3,7 +3,7 @@
     /* --- Updated Build Options for ES2022 & ESM --- */
     "target": "ES2022", // Set target to ES2022
     "module": "ES2022", // Use Node.js's modern module resolution for ESM (or ESNext/ES2022)
-    "moduleResolution": "bundler", // Aligns with the 'module' setting for modern Node.js behavior (or "Bundler")
+    "moduleResolution": "node", // Aligns with the 'module' setting for modern Node.js behavior (or "Bundler")
     "outDir": "lib",
     "rootDir": ".",
 

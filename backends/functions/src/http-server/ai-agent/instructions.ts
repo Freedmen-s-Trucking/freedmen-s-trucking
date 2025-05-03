@@ -1,4 +1,4 @@
-import { ApiResExtractOrderRequestFromTextSchema } from '@freedmen-s-trucking/types';
+import {ApiResExtractOrderRequestFromTextSchema} from "@freedmen-s-trucking/types";
 
 export const systemPrompt = `
 You are an intelligent assistant for a delivery service platform. 

@@ -1,10 +1,10 @@
 import {
+  ApiReqScheduleDeliveryIntent,
   ApiResExtractOrderRequestFromText,
   apiResExtractOrderRequestFromText,
   DistanceMeasurement,
   LATEST_PLATFORM_SETTINGS_PATH,
   Location,
-  NewOrder,
   OrderPriority,
   PlaceLocation,
   PlatformSettingsEntity,
@@ -28,6 +28,10 @@ import {
 import StripePayment from "~/components/molecules/stripe-payment";
 import { useAuth } from "~/hooks/use-auth";
 import { useDbOperations } from "~/hooks/use-firestore";
+import {
+  fetchPlaceDetails,
+  fetchPlacesFromGoogle,
+} from "~/hooks/use-geocoding";
 import { useComputeDeliveryEstimation } from "~/hooks/use-price-calculator";
 import { useGetRemoteConfig } from "~/hooks/use-remote-config";
 import { useServerRequest } from "~/hooks/use-server-request";
@@ -36,10 +40,6 @@ import { useAppDispatch } from "~/stores/hooks";
 import { RemoteConfigKeys } from "~/utils/constants";
 import { formatPrice } from "~/utils/functions";
 import { TextArea } from "../atoms/base";
-import {
-  fetchPlaceDetails,
-  fetchPlacesFromGoogle,
-} from "~/hooks/use-geocoding";
 
 const tabTheme = {
   tablist: {
@@ -510,7 +510,9 @@ const PaymentButton: React.FC<{
 }) => {
   const { user } = useAuth();
   const [isScheduling, setIsScheduling] = useState(false);
-  const [processPayment, setProcessPayment] = useState<NewOrder | null>(null);
+  const [processPayment, setProcessPayment] = useState<
+    ApiReqScheduleDeliveryIntent["metadata"] | null
+  >(null);
 
   const onPaymentComplete = () => {
     setProcessPayment(null);
@@ -548,7 +550,6 @@ const PaymentButton: React.FC<{
     setIsScheduling(true);
     try {
       setProcessPayment({
-        ownerId: user.info.uid,
         distanceInMiles: estimations.distanceInMiles || 0,
         distanceMeasurement: estimations.distanceMeasurement!,
         pickupLocation: {
@@ -624,7 +625,6 @@ const AIAssistedForm: React.FC<{
   className?: string;
   onOrderCreated?: () => void;
 }> = ({ brightness, className, onOrderCreated }) => {
-  const request = useServerRequest();
   const { fetchPlatformSettings } = useDbOperations();
 
   const { data: availableCities } = useQuery({
@@ -651,6 +651,7 @@ const AIAssistedForm: React.FC<{
   };
   const [reqInfo, setReqInfo] = useState<RequestInfo>({});
 
+  const serverRequest = useServerRequest();
   const { mutate: autoDetectRequestAndEstimateFees, isPending } = useMutation({
     mutationKey: ["auto-detect-request-and-estimate-fees", availableCities],
     mutationFn: async (ev: React.FormEvent<HTMLFormElement>) => {
@@ -662,7 +663,7 @@ const AIAssistedForm: React.FC<{
         requestDAO[key] = value;
       });
 
-      const res = await request("/v1/ai-agent/extract-order-request", {
+      const res = await serverRequest("/ai-agent/extract-order-request", {
         method: "POST",
         body: requestDAO,
         schema: apiResExtractOrderRequestFromText,

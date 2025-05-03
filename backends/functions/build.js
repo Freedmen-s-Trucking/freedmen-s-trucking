@@ -1,15 +1,15 @@
-import * as esbuild from 'esbuild';
-import path from 'path';
-import pkg from 'package.json';
+import * as esbuild from "esbuild";
+import path from "path";
+import pkg from "package.json";
 
 const externalDeps = pkg.dependencies ? Object.keys(pkg.dependencies) : [];
 
-const isWatchMode = process.argv.includes('--watch');
+const isWatchMode = process.argv.includes("--watch");
 
 /** @type {esbuild.SameShape<esbuild.BuildOptions, esbuild.BuildOptions>} */
 const options = {
-  entryPoints: ['src/index.ts'],
-  outfile: 'lib/index.js',
+  entryPoints: ["src/index.ts"],
+  outfile: "lib/index.js",
   bundle: true,
   write: true,
   treeShaking: true,
@@ -18,12 +18,12 @@ const options = {
   // minifyIdentifiers: true,
   // minifySyntax: true,
   sourcemap: true,
-  platform: 'node',
-  target: 'ES2022',
-  format: 'esm',
-  resolveExtensions: ['.js', '.ts'],
+  platform: "node",
+  target: "ES2022",
+  format: "esm",
+  resolveExtensions: [".js", ".ts"],
   alias: {
-    '@freedmen-s-trucking/types': path.resolve(__dirname, '../../common/types/src/index.ts'),
+    "@freedmen-s-trucking/types": path.resolve(__dirname, "../../common/types/src/index.ts"),
   },
   external: externalDeps,
 };
