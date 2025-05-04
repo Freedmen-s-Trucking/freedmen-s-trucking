@@ -13,12 +13,16 @@ import { useAuth } from "~/hooks/use-auth";
 import { Flowbite } from "flowbite-react";
 import { getFlowbiteTheme } from "~/utils/functions";
 import { APP_ENV } from "~/utils/envs";
+import { useFCM } from "~/hooks/use-fcm";
+import { useMutation } from "@tanstack/react-query";
+import { useServerRequest } from "~/hooks/use-server-request";
 
 const Component: React.FC = () => {
   const { user } = useAuth();
   const router = useRouter();
   const routeState = useRouterState();
 
+  // Add environment prefix to the document title
   useEffect(() => {
     if (!window.document.title) return;
     if (APP_ENV === "prod") return;
@@ -27,6 +31,7 @@ const Component: React.FC = () => {
     window.document.title = `${APP_ENV.toUpperCase()} - ${window.document.title}`;
   }, []);
 
+  // Redirect to login if user is anonymous and trying to access protected routes
   useEffect(() => {
     if (
       (!user || user.isAnonymous) &&
@@ -35,6 +40,39 @@ const Component: React.FC = () => {
       router.navigate({ to: "/" });
     }
   }, [user, router, routeState]);
+
+  const { requestNotificationPermission } = useFCM();
+  const serverRequest = useServerRequest();
+
+  const { mutate: updateFCMToken } = useMutation({
+    mutationFn: async () => {
+      const token = await requestNotificationPermission();
+      if (!token) return;
+      await serverRequest("/user/update-fcm-token", {
+        method: "POST",
+        body: JSON.stringify({ token }),
+      });
+    },
+    onError(error, variables, context) {
+      console.error(error, variables, context);
+    },
+  });
+
+  // Request notification permission
+  useEffect(() => {
+    if (!user || user.isAnonymous || user.info.fcmToken) return;
+    updateFCMToken();
+
+    // In your main app code (e.g., React component)
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.ready.then((registration) => {
+        // Ask for notification permission via Service Worker
+        registration.active?.postMessage({
+          action: "requestNotificationPermission",
+        });
+      });
+    }
+  }, [updateFCMToken, user]);
 
   return (
     <>

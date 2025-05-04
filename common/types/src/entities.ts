@@ -26,6 +26,7 @@ export const userEntity = type({
   lastName: "string",
   email: "string | null",
   phoneNumber: "string | null",
+  fcmToken: "string | null?",
   photoURL: "string | null",
   birthDate: dateStringOrTimestampType.optional(),
   uploadedProfileStoragePath: type("string | null").optional(),

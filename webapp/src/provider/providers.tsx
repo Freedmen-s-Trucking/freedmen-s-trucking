@@ -2,6 +2,7 @@ import { FirebaseProvider } from "./firebase";
 import { AnalyticsProvider } from "./analytics";
 import { AuthCtx, AuthProvider } from "./auth";
 import { PerformanceMonitoringProvider } from "./performance-monitoring";
+import { MessagingProvider } from "./messaging";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { persistor, store } from "~/stores/store";
@@ -42,19 +43,21 @@ export const RootProviders: React.FC<{
         <QueryClientProvider client={queryClient}>
           <FirebaseProvider>
             <PerformanceMonitoringProvider>
-              <StorageProvider>
-                <FireStoreProvider>
-                  <RemoteConfigProvider>
-                    <Provider store={store}>
-                      <PersistGate loading={null} persistor={persistor}>
-                        <AuthProvider>
-                          <LoadingProviders>{children}</LoadingProviders>
-                        </AuthProvider>
-                      </PersistGate>
-                    </Provider>
-                  </RemoteConfigProvider>
-                </FireStoreProvider>
-              </StorageProvider>
+              <MessagingProvider>
+                <StorageProvider>
+                  <FireStoreProvider>
+                    <RemoteConfigProvider>
+                      <Provider store={store}>
+                        <PersistGate loading={null} persistor={persistor}>
+                          <AuthProvider>
+                            <LoadingProviders>{children}</LoadingProviders>
+                          </AuthProvider>
+                        </PersistGate>
+                      </Provider>
+                    </RemoteConfigProvider>
+                  </FireStoreProvider>
+                </StorageProvider>
+              </MessagingProvider>
             </PerformanceMonitoringProvider>
           </FirebaseProvider>
           {isDevMode && (

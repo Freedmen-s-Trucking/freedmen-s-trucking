@@ -7,7 +7,16 @@ import { RootProviders } from "./provider/providers";
 import { useGetRemoteConfig } from "./hooks/use-remote-config";
 import { RemoteConfigKeys } from "./utils/constants";
 import { useAuth } from "./hooks/use-auth";
+import { APP_ENV } from "./utils/envs";
 
+if (APP_ENV === "prod") {
+  window.console.debug = () => {};
+  window.console.info = () => {};
+  window.console.trace = () => {};
+  window.console.log = () => {};
+  window.console.warn = () => {};
+  window.console.error = () => {};
+}
 // Create a new router instance
 const router = createRouter({
   routeTree,

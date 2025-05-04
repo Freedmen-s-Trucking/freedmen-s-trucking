@@ -33,6 +33,7 @@ import {onetimeFindRightDriversForOrder} from "~src/utils/order.js";
 import {createPaymentIntent, generateConnectedAccountSetupLink} from "./payment";
 import {handleStripeWebhookEvent} from "./webhook.js";
 import {Variables} from "../../utils/types";
+import {getMessaging} from "firebase-admin/messaging";
 
 const router = new Hono<{Variables: Variables}>();
 
@@ -211,6 +212,16 @@ router.post("/webhook", async (c) => {
         [OrderPrivateDetailsEntityFields.deliveryCode]: Math.random().toString(10).slice(2, 8),
       });
 
+      // Update System summary.
+      await (firestore.doc(LATEST_PLATFORM_OVERVIEW_PATH) as DocumentReference<PlatformOverviewEntity>).set(
+        {
+          totalActiveOrders: FieldValue.increment(1),
+          totalEarnings: FieldValue.increment(amount / 100),
+          updatedAt: FieldValue.serverTimestamp(),
+        },
+        {merge: true},
+      );
+
       // Update driver's active tasks.
       for (const driver of drivers) {
         await driverCollection.doc(driver.uid).set(
@@ -221,15 +232,28 @@ router.post("/webhook", async (c) => {
         );
       }
 
-      // Update System summary.
-      await (firestore.doc(LATEST_PLATFORM_OVERVIEW_PATH) as DocumentReference<PlatformOverviewEntity>).set(
-        {
-          totalActiveOrders: FieldValue.increment(1),
-          totalEarnings: FieldValue.increment(amount / 100),
-          updatedAt: FieldValue.serverTimestamp(),
-        },
-        {merge: true},
-      );
+      // Send notification about newly assigned order
+      for (const driver of drivers) {
+        if (!driver.fcmToken) {
+          continue;
+        }
+
+        getMessaging()
+          .send({
+            notification: {
+              title: "New Order!",
+              body: "You have a new order",
+            },
+            token: driver.fcmToken,
+          })
+          .then((response) => {
+            console.log("Successfully sent message:", response);
+          })
+          .catch((error) => {
+            console.error("Error sending message:", error);
+          });
+      }
+
       console.log({paymentIntent: {id, amount}, meta: newOrder});
       return null;
     },

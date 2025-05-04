@@ -25,6 +25,6 @@
       "@freedmen-s-trucking/types": ["../common/types"]
     }
   },
-  "include": ["src", "test"],
+  "include": ["src", "test", "public/firebase-messaging-sw.js"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
