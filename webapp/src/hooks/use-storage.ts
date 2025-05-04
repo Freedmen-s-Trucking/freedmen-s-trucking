@@ -16,7 +16,33 @@ export const useStorageOperations = () => {
   const storage = useStorage();
 
   /**
-   * Uploads the provided image
+   * Uploads the provided package capture
+   */
+  const uploadOrderPackageDelivered = useCallback(
+    async (orderId: string, packageCapture: File) => {
+      checkFalsyAndThrow(
+        { orderId, packageCapture },
+        "FStorageError:: The orderId or packageCapture must not be empty or null or undefined",
+      );
+      const orderStorageRef = ref(storage, `orders/${orderId}`);
+
+      if (packageCapture.type.startsWith("image/")) {
+        const storageRef = ref(orderStorageRef, `package-delivered`);
+        const res = uploadBytes(storageRef, packageCapture).then((snapshot) => {
+          console.log({ snapshot });
+          console.log("Uploaded a blob or file!");
+          return snapshot.ref.fullPath;
+        });
+        return res;
+      }
+
+      throw new Error("FStorageError:: Invalid file type");
+    },
+    [storage],
+  );
+
+  /**
+   * Uploads the provided profile image
    */
   const uploadProfile = useCallback(
     async (uid: string, profile: File) => {
@@ -87,5 +113,10 @@ export const useStorageOperations = () => {
     [storage],
   );
 
-  return { uploadCertificate, fetchImage, uploadProfile };
+  return {
+    uploadCertificate,
+    fetchImage,
+    uploadProfile,
+    uploadOrderPackageDelivered,
+  };
 };

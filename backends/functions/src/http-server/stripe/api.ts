@@ -7,6 +7,8 @@ import {
   newOrderEntity,
   OrderEntity,
   OrderEntityFields,
+  OrderPrivateDetailsEntity,
+  OrderPrivateDetailsEntityFields,
   OrderStatus,
   PaymentActorType,
   PaymentEntity,
@@ -200,7 +202,14 @@ router.post("/webhook", async (c) => {
         [OrderEntityFields.updatedAt]: FieldValue.serverTimestamp(),
         [OrderEntityFields.paymentRef]: paymentDocRef.path,
       };
-      await orderCollection.add(order);
+      const createdOrder = await orderCollection.add(order);
+
+      const orderPrivateDetailsCollection = firestore.collection(
+        CollectionName.ORDERS_PRIVATE_DETAILS,
+      ) as CollectionReference<OrderPrivateDetailsEntity, OrderPrivateDetailsEntity>;
+      await orderPrivateDetailsCollection.doc(createdOrder.id).set({
+        [OrderPrivateDetailsEntityFields.deliveryCode]: Math.random().toString(10).slice(2, 8),
+      });
 
       // Update driver's active tasks.
       for (const driver of drivers) {

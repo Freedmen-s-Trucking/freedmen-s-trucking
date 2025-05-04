@@ -147,6 +147,13 @@ export enum OrderPriority {
 export enum DistanceMeasurement {
   OSRM_FASTEST_ROUTE = "osrm-fastest-route",
 }
+export enum OrderPrivateDetailsEntityFields {
+  deliveryCode = "deliveryCode",
+}
+export const orderPrivateDetailsEntity = type({
+  [OrderPrivateDetailsEntityFields.deliveryCode]: "string",
+});
+export type OrderPrivateDetailsEntity = typeof orderPrivateDetailsEntity.infer;
 
 export enum OrderEntityFields {
   clientName = "clientName",

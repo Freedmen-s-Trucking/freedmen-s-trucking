@@ -172,7 +172,7 @@ export const TextInput = React.forwardRef<
 >(({ className = "", ...inputProps }, ref) => (
   <input
     {...inputProps}
-    className={`block w-full rounded-lg border border-gray-300 bg-primary-50 p-2.5 py-3 text-sm text-secondary-950 focus:border-secondary-500 focus:ring-secondary-500 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+    className={`block w-full rounded-lg border border-gray-300 bg-primary-50 p-2.5 py-3 text-secondary-950 focus:border-secondary-500 focus:ring-secondary-500 disabled:cursor-not-allowed disabled:opacity-50 ${className} text-sm`}
     ref={ref}
     onKeyDown={(e) => {
       if (e.key === "Enter") {

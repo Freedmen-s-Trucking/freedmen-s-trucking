@@ -53,14 +53,30 @@ const useOrderDbOperations = (db: Firestore) => {
    * Update order.
    */
   const updateOrderStatus = useCallback(
-    async (
-      userId: string,
-      orderPath: string,
-      driverStatus: DriverOrderStatus,
-      coords: Coordinate | undefined,
-    ) => {
+    async (params: {
+      userId: string;
+      orderPath: string;
+      driverStatus: DriverOrderStatus;
+      coords: Coordinate | undefined;
+      driverConfirmationCode?: string;
+      deliveredOrderConfirmationImage?: string | null;
+    }) => {
+      const {
+        userId,
+        orderPath,
+        driverStatus,
+        coords,
+        driverConfirmationCode,
+        deliveredOrderConfirmationImage,
+      } = params;
       checkFalsyAndThrow(
-        { userId, orderPath, driverStatus },
+        {
+          userId,
+          orderPath,
+          driverStatus,
+          driverConfirmationCode,
+          deliveredOrderConfirmationImage,
+        },
         "FirestoreError::updateOrderStatus",
         type({
           userId: "string",
@@ -78,14 +94,30 @@ const useOrderDbOperations = (db: Firestore) => {
       if (userId !== prevOrder[`task-${userId}`]?.driverId) {
         throw new Error("Unauthorized");
       }
+
+      if (
+        driverStatus === DriverOrderStatus.DELIVERED &&
+        (!driverConfirmationCode || !deliveredOrderConfirmationImage)
+      ) {
+        throw new Error("Invalid order status");
+      }
       // TODO: Validate status
       await updateDoc(docRef, {
         [`task-${userId}.${OrderEntityFields.driverStatus}`]: driverStatus,
+        ...(!!driverConfirmationCode && {
+          [`task-${userId}.${OrderEntityFields.driverConfirmationCode}`]:
+            driverConfirmationCode,
+        }),
+        ...(!!deliveredOrderConfirmationImage && {
+          [`task-${userId}.${OrderEntityFields.deliveredOrderConfirmationImage}`]:
+            deliveredOrderConfirmationImage,
+        }),
         [`task-${userId}.${OrderEntityFields.updatedAt}`]: serverTimestamp(),
         [`task-${userId}.${OrderEntityFields.driverPositions}.${driverStatus}`]:
           coords,
       });
 
+      // TODO: Verify if driver tasks are updated by the backend.
       if (driverStatus === DriverOrderStatus.DELIVERED) {
         const docRef = doc(collection(db, CollectionName.DRIVERS), userId);
         const docSnapshot = await getDoc(docRef);

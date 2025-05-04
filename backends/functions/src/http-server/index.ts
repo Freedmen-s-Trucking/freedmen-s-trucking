@@ -6,6 +6,7 @@ import {secureHeaders} from "hono/secure-headers";
 import stripeApiRouter from "./stripe/api";
 import aiAgentApiRouter from "./ai-agent/api";
 import authenticateApiRouter from "./authenticate/api";
+import orderApiRouter from "./order/api";
 import {bearerAuth} from "hono/bearer-auth";
 import {getAuth} from "firebase-admin/auth";
 import {Variables} from "../utils/types";
@@ -40,6 +41,7 @@ apiV1Route.use(async (c, next) => {
 apiV1Route.route("/stripe", stripeApiRouter);
 apiV1Route.route("/ai-agent", aiAgentApiRouter);
 apiV1Route.route("/authenticate", authenticateApiRouter);
+apiV1Route.route("/order", orderApiRouter);
 
 apiV1Route.notFound((c) => {
   return c.json({error: "404 Not Found"}, 404);

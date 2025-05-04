@@ -8,8 +8,6 @@ import {
   OrderStatus,
   RequiredVehicleEntity,
 } from "@freedmen-s-trucking/types";
-import { useGeolocated } from "react-geolocated";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   AdvancedMarker,
   AdvancedMarkerAnchorPoint,
@@ -20,30 +18,19 @@ import {
   StaticMap,
   useAdvancedMarkerRef,
 } from "@vis.gl/react-google-maps";
-import {
-  Accordion,
-  Avatar,
-  Badge,
-  Button,
-  Card,
-  Modal,
-  Spinner,
-  Table,
-  Tooltip,
-} from "flowbite-react";
-import { useMemo, useState } from "react";
+import { Accordion, Avatar, Badge, Card, Modal, Table } from "flowbite-react";
+import { useMemo } from "react";
 import { BsTrainFreightFront } from "react-icons/bs";
+import { FaMapMarkerAlt } from "react-icons/fa";
 import { GiTruck } from "react-icons/gi";
 import { HiArrowRight, HiMail, HiPhone, HiUser } from "react-icons/hi";
 import { IoCarOutline } from "react-icons/io5";
 import { PiVanBold } from "react-icons/pi";
 import { TbCarSuv, TbTruckDelivery } from "react-icons/tb";
 import { useAuth } from "~/hooks/use-auth";
-import { useDbOperations } from "~/hooks/use-firestore";
 import { GOOGLE_MAPS_API_KEY } from "~/utils/envs";
-import { SecondaryButton } from "~/components/atoms";
-import { FaMapMarkerAlt } from "react-icons/fa";
 import { customDateFormat, formatPrice } from "~/utils/functions";
+import GetNextActionButton from "./change-order-status-modal";
 
 const driverStatusMap: Record<
   DriverOrderStatus,
@@ -181,150 +168,6 @@ const DisplayRequiredVehicles: React.FC<{
         </span>
       ))}
     </div>
-  );
-};
-
-const GetNextActionButton: React.FC<{
-  orderPath: string;
-  driverStatus: DriverOrderStatus;
-}> = ({ orderPath, driverStatus }) => {
-  const { user } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
-  const { updateOrderStatus } = useDbOperations();
-  const action = driverStatusMap[driverStatus];
-  const [showStatusChangeModal, setShowStatusChangeModal] = useState(false);
-  const [error, setError] = useState<string>();
-  const nextActionRequiresGeolocation = [
-    DriverOrderStatus.DELIVERED,
-    DriverOrderStatus.ON_THE_WAY_TO_PICKUP,
-    DriverOrderStatus.ON_THE_WAY_TO_DELIVER,
-  ].includes(action.nextStatus || DriverOrderStatus.WAITING);
-  // Access the client
-  const queryClient = useQueryClient();
-  const ConfirmModal = () => {
-    const { coords, isGeolocationAvailable, isGeolocationEnabled } =
-      useGeolocated({
-        positionOptions: {
-          enableHighAccuracy: true,
-          maximumAge: 30000,
-          timeout: 5000,
-        },
-        isOptimisticGeolocationEnabled: false,
-        userDecisionTimeout: 5000,
-        watchLocationPermissionChange: true,
-        watchPosition: true,
-        onError(positionError) {
-          if (positionError) {
-            console.error("Geolocation error:", positionError);
-            setError(`Geolocation error: ${positionError.message}`);
-          }
-        },
-      });
-    const { mutate: moveToNextStatus } = useMutation({
-      mutationFn: async () => {
-        if (!action.nextStatus) return true;
-        let error: string | null = null;
-        if (!isGeolocationAvailable) {
-          error = "Your browser does not support Geolocation";
-        } else if (!isGeolocationEnabled) {
-          error =
-            "Geolocation is not enabled, please enable it in your browser settings.";
-        }
-        if (error) {
-          setError(error);
-          return false;
-        }
-        if (!coords) {
-          setError("Unable To get the location, please try again.");
-          return false;
-        }
-        await updateOrderStatus(user.info.uid, orderPath, action.nextStatus, {
-          latitude: coords.latitude,
-          longitude: coords.longitude,
-        });
-        return true;
-      },
-      onMutate: () => {
-        console.log("Moving to next status for order", orderPath);
-        setIsLoading(true);
-      },
-      onSuccess: (data) => {
-        setIsLoading(false);
-        if (!data) return;
-        setShowStatusChangeModal(false);
-        queryClient.invalidateQueries({ queryKey: ["activeOrders"] });
-        queryClient.invalidateQueries({ queryKey: ["historyOrders"] });
-        queryClient.invalidateQueries({ queryKey: ["driverInfo"] });
-      },
-      onError: (error) => {
-        console.error("Failed to update order status:", error);
-        setIsLoading(false);
-        setShowStatusChangeModal(false);
-      },
-    });
-    return (
-      <Modal
-        size="sm"
-        // className=" bg-black bg-opacity-70 [&>div>div]:bg-primary-50 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-end md:[&>div]:h-auto"
-        show={showStatusChangeModal}
-        onClose={() => setShowStatusChangeModal(false)}
-      >
-        <Modal.Header className="[&>button]:rounded-full [&>button]:bg-accent-400 [&>button]:p-[1px] [&>button]:text-primary-100 [&>button]:transition-all  [&>button]:duration-300  hover:[&>button]:scale-110 hover:[&>button]:text-primary-950 ">
-          <span className="text-lg font-medium">Confirm Action</span>
-        </Modal.Header>
-        <Modal.Body className="text-secondary-950">
-          <p className="mb-4">{action.nextStatusConfirmation}</p>
-          {nextActionRequiresGeolocation && !coords && (
-            <p className="text-sm text-orange-500">
-              {isGeolocationAvailable && !isGeolocationEnabled
-                ? "Enable Geolocation Access To continue"
-                : isGeolocationAvailable
-                  ? "Wait for location to be retrieved."
-                  : "Geolocation is not available in this browser."}
-            </p>
-          )}
-          <form
-            onSubmit={(ev) => {
-              ev.preventDefault();
-              moveToNextStatus();
-            }}
-            className="flex flex-col gap-8"
-          >
-            {error && (
-              <p className="pt-2 italic text-red-500 underline">{error}</p>
-            )}
-            <SecondaryButton
-              type="submit"
-              isLoading={isLoading}
-              disabled={nextActionRequiresGeolocation && !coords}
-              className="self-end border-teal-500 bg-teal-200 py-2 text-secondary-950"
-            >
-              Confirm
-            </SecondaryButton>
-          </form>
-        </Modal.Body>
-      </Modal>
-    );
-  };
-
-  if (!action) return null;
-
-  return (
-    <>
-      <Tooltip content={action.nextStatusDescription} placement="top">
-        <Button
-          color={action.color}
-          size="sm"
-          className={`disabled:opacity-100 [&>span]:flex [&>span]:flex-row [&>span]:items-center [&>span]:justify-center [&>span]:gap-2`}
-          disabled={isLoading || !action.nextStatus}
-          onClick={() => setShowStatusChangeModal(true)}
-        >
-          {isLoading && <Spinner />}
-          {action.action}
-        </Button>
-      </Tooltip>
-      {showStatusChangeModal && <ConfirmModal />}
-    </>
   );
 };
 
@@ -684,8 +527,10 @@ const OrderDetailsView: React.FC<{
           <div className="mt-3 flex justify-end">
             <GetNextActionButton
               orderPath={order.path}
-              driverStatus={
-                driverTask?.driverStatus || DriverOrderStatus.WAITING
+              action={
+                driverStatusMap[
+                  driverTask?.driverStatus || DriverOrderStatus.WAITING
+                ]
               }
             />
           </div>
@@ -791,8 +636,10 @@ export const Order: React.FC<{
           <div className="mt-3 flex justify-end">
             <GetNextActionButton
               orderPath={order.path}
-              driverStatus={
-                driverTask?.driverStatus || DriverOrderStatus.WAITING
+              action={
+                driverStatusMap[
+                  driverTask?.driverStatus || DriverOrderStatus.WAITING
+                ]
               }
             />
           </div>

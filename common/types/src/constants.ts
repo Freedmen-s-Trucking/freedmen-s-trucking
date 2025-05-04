@@ -64,6 +64,7 @@ export const vehiclesInfoList: VehicleInfo[] = [
 export enum CollectionName {
   DRIVERS = "drivers",
   ORDERS = "orders",
+  ORDERS_PRIVATE_DETAILS = "ordersPrivateDetails",
   TASKS = "tasks",
   PAYMENTS = "payments",
   PLATFORM_OVERVIEW = "platformOverviews",
