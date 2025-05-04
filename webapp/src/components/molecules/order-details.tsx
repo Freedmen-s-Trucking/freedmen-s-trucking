@@ -1,3 +1,4 @@
+import { motion } from "motion/react";
 import {
   AccountType,
   DriverOrderStatus,
@@ -7,6 +8,7 @@ import {
   OrderPriority,
   OrderStatus,
   RequiredVehicleEntity,
+  type,
 } from "@freedmen-s-trucking/types";
 import {
   AdvancedMarker,
@@ -19,7 +21,7 @@ import {
   useAdvancedMarkerRef,
 } from "@vis.gl/react-google-maps";
 import { Accordion, Avatar, Badge, Card, Modal, Table } from "flowbite-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { BsTrainFreightFront } from "react-icons/bs";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import { GiTruck } from "react-icons/gi";
@@ -31,6 +33,10 @@ import { useAuth } from "~/hooks/use-auth";
 import { GOOGLE_MAPS_API_KEY } from "~/utils/envs";
 import { customDateFormat, formatPrice } from "~/utils/functions";
 import GetNextActionButton from "./change-order-status-modal";
+import { useServerRequest } from "~/hooks/use-server-request";
+import { PrimaryButton } from "../atoms";
+import { useQuery } from "@tanstack/react-query";
+import { isResponseError } from "up-fetch";
 
 const driverStatusMap: Record<
   DriverOrderStatus,
@@ -182,6 +188,98 @@ const PriorityBadge: React.FC<{ priority: OrderPriority }> = ({ priority }) => {
     default:
       return <Badge color="gray">Unknown</Badge>;
   }
+};
+
+const GetDeliveryCode: React.FC<{
+  orderId: string;
+  viewType: AccountType;
+  className?: string;
+}> = ({ orderId, viewType, className }) => {
+  const [showModal, setShowModal] = useState(false);
+  const serverRequest = useServerRequest();
+
+  const {
+    data: deliveryCode,
+    isFetching,
+    error: queryError,
+  } = useQuery({
+    enabled: showModal,
+    queryKey: ["deliveryCode", orderId],
+    retry: 1,
+    queryFn: async () => {
+      try {
+        const res = await serverRequest(`/order/get-delivery-code/${orderId}`, {
+          method: "GET",
+          schema: type({
+            deliveryCode: "string",
+          }),
+        });
+
+        return res.deliveryCode;
+      } catch (error) {
+        if (isResponseError(error)) {
+          throw new Error(`Failed to get delivery code: ${error.data.error}`);
+        }
+        return null;
+      }
+    },
+  });
+
+  if (viewType !== "customer") {
+    return null;
+  }
+
+  return (
+    <>
+      <PrimaryButton
+        onClick={() => setShowModal(true)}
+        className={`${className} w-52 bg-green-400 py-2`}
+      >
+        Get Delivery Code
+      </PrimaryButton>
+      {showModal && (
+        <Modal
+          title="Get Delivery Code"
+          size="sm"
+          show
+          dismissible
+          onClose={() => setShowModal(false)}
+        >
+          <Modal.Header className="[&>button]:rounded-full [&>button]:bg-accent-400 [&>button]:p-[1px] [&>button]:text-primary-100 [&>button]:transition-all [&>button]:duration-300 hover:[&>button]:scale-110 hover:[&>button]:text-primary-950">
+            <span className="text-lg font-medium">
+              {isFetching ? "Loading..." : "Delivery Code"}
+            </span>
+          </Modal.Header>
+          <Modal.Body className="min-h-[100px] text-secondary-950">
+            {isFetching && (
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="flex w-full flex-row items-center justify-evenly gap-2"
+                transition={{ type: "spring", stiffness: 100 }}
+              >
+                <span className="inline-block h-7 w-7 animate-spin rounded-full border-4 border-primary-100/10 border-t-primary-900" />
+              </motion.div>
+            )}
+            {!isFetching && queryError && (
+              <div className="flex w-full flex-row items-center justify-evenly gap-2">
+                <span className="text-sm text-red-500">
+                  {queryError.message}
+                </span>
+              </div>
+            )}
+            {!isFetching && deliveryCode && (
+              <div className="flex w-full flex-row items-center justify-evenly gap-2">
+                <span className="text-3xl text-primary-800">
+                  {deliveryCode}
+                </span>
+              </div>
+            )}
+          </Modal.Body>
+        </Modal>
+      )}
+    </>
+  );
 };
 
 const OrderDetailsView: React.FC<{
@@ -535,6 +633,13 @@ const OrderDetailsView: React.FC<{
             />
           </div>
         )}
+        {user.info.uid === order.data[OrderEntityFields.ownerId] && (
+          <GetDeliveryCode
+            orderId={order.path.split("/").pop() || ""}
+            viewType={viewType}
+            className="mt-3"
+          />
+        )}
       </div>
     </Card>
   );
@@ -632,6 +737,13 @@ export const Order: React.FC<{
             </div>
           </div>
         </div>
+        {user.info.uid === order.data[OrderEntityFields.ownerId] && (
+          <GetDeliveryCode
+            orderId={order.path.split("/").pop() || ""}
+            viewType={viewType}
+            className="mt-3"
+          />
+        )}
         {viewType === "driver" && (
           <div className="mt-3 flex justify-end">
             <GetNextActionButton
