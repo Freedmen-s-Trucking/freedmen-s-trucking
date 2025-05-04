@@ -17,21 +17,26 @@ export const customLogger = (message: string, ...rest: string[]) => {
 const apiV1Route = new Hono<{Variables: Variables}>();
 apiV1Route.use(logger(customLogger));
 apiV1Route.use(secureHeaders());
-apiV1Route.use(
-  bearerAuth({
-    verifyToken: async (token, c) => {
-      const auth = getAuth();
-      try {
-        const idTokenResult = await auth.verifyIdToken(token);
-        c.set("user", idTokenResult);
-        return true;
-      } catch (error) {
-        console.error(error);
-        return false;
-      }
-    },
-  }),
-);
+apiV1Route.use(async (c, next) => {
+  console.log({reqPath: c.req.path});
+  // Skip bearer auth for stripe webhook
+  if (c.req.path.endsWith("/stripe/webhook")) {
+    await next();
+  } else {
+    await bearerAuth({
+      verifyToken: async (token, c) => {
+        const auth = getAuth();
+        try {
+          const idTokenResult = await auth.verifyIdToken(token);
+          c.set("user", idTokenResult);
+          return true;
+        } catch (error) {
+          return false;
+        }
+      },
+    })(c, next);
+  }
+});
 apiV1Route.route("/stripe", stripeApiRouter);
 apiV1Route.route("/ai-agent", aiAgentApiRouter);
 apiV1Route.route("/authenticate", authenticateApiRouter);
