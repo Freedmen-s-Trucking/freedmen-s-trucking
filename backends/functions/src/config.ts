@@ -36,9 +36,9 @@ global.console = {
       (optionalParams[0] as {error?: Error})?.error?.stack ||
       new Error().stack
     )
-      ?.split("\n")
+      ?.split(/\n\s+at /)
       .slice(1, 10)
-      .join("\n");
+      .join("\nat ");
     const formattedStack = `*Stack:* \`\`\`${stack}\`\`\``;
     const title = "🚨 *Error Caught in Cloud Function* 🚨";
     const slackMessage = {

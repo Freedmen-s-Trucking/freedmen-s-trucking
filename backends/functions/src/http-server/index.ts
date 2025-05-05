@@ -59,7 +59,7 @@ app.route("/api/v1", apiV1Route);
 
 export const httpServer = onRequest(
   {
-    timeoutSeconds: 10,
+    timeoutSeconds: 20,
   },
   getRequestListener(app.fetch),
 );

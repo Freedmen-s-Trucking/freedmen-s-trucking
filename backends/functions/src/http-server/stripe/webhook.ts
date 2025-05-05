@@ -1,5 +1,5 @@
 import Stripe from "stripe";
-import {STRIPE_WEBHOOK_SECRET_CONNECTED_ACCOUNT, STRIPE_WEBHOOK_SECRET_SELF_ACCOUNT} from "~src/utils/envs";
+import {ENV_STRIPE_WEBHOOK_SECRET_CONNECTED_ACCOUNT, ENV_STRIPE_WEBHOOK_SECRET_SELF_ACCOUNT} from "~src/utils/envs";
 import {parseStripeMeta} from "~src/utils/serialize";
 
 type HandleWebhookEventResponse = Error | null;
@@ -35,10 +35,10 @@ export async function handleStripeWebhookEvent({
   let event: Stripe.Event;
 
   try {
-    event = Stripe.webhooks.constructEvent(buffer, sig || "", STRIPE_WEBHOOK_SECRET_SELF_ACCOUNT);
+    event = Stripe.webhooks.constructEvent(buffer, sig || "", ENV_STRIPE_WEBHOOK_SECRET_SELF_ACCOUNT);
   } catch (errSelfAccount) {
     try {
-      event = Stripe.webhooks.constructEvent(buffer, sig || "", STRIPE_WEBHOOK_SECRET_CONNECTED_ACCOUNT);
+      event = Stripe.webhooks.constructEvent(buffer, sig || "", ENV_STRIPE_WEBHOOK_SECRET_CONNECTED_ACCOUNT);
     } catch (errConnectedAccount) {
       console.error(errSelfAccount, errConnectedAccount);
       return new Error(

@@ -132,132 +132,133 @@ export const DriverProfile: React.FC = () => {
     }
   };
 
-  const { mutate: driverLicenseFinalCheck } = useMutation({
-    mutationKey: [
-      "driverLicenseFinalCheck",
-      driverInfo?.authenticateAccessCode,
-    ],
-    retry(failureCount, error) {
-      if (
-        error instanceof ResponseError &&
-        error.data?.error?.errorMessage &&
-        error.data?.error?.errorCode &&
-        error.status === 400
-      ) {
-        const licenseStatus = {
-          driverLicenseVerificationStatus:
-            error.data.error.errorCode === "IDENTITY_ALREADY_VERIFIED"
-              ? "verified"
-              : "failed",
-          driverLicenseVerificationIssues:
-            error.data.error.errorCode === "IDENTITY_ALREADY_VERIFIED"
-              ? []
-              : [
-                  `${error.data.error.errorCode || "Error"}: ${error.data.error.errorMessage}`,
-                ],
-        } as Partial<DriverEntity>;
+  const serverRequest = useServerRequest();
+  // const { mutate: driverLicenseFinalCheck } = useMutation({
+  //   mutationKey: [
+  //     "driverLicenseFinalCheck",
+  //     driverInfo?.authenticateAccessCode,
+  //   ],
+  //   retry(failureCount, error) {
+  //     if (
+  //       error instanceof ResponseError &&
+  //       error.data?.error?.errorMessage &&
+  //       error.data?.error?.errorCode &&
+  //       error.status === 400
+  //     ) {
+  //       const licenseStatus = {
+  //         driverLicenseVerificationStatus:
+  //           error.data.error.errorCode === "IDENTITY_ALREADY_VERIFIED"
+  //             ? "verified"
+  //             : "failed",
+  //         driverLicenseVerificationIssues:
+  //           error.data.error.errorCode === "IDENTITY_ALREADY_VERIFIED"
+  //             ? []
+  //             : [
+  //                 `${error.data.error.errorCode || "Error"}: ${error.data.error.errorMessage}`,
+  //               ],
+  //       } as Partial<DriverEntity>;
 
-        updateDriver(licenseStatus);
-        dispatch(updateDriverInfo(licenseStatus));
-        return false;
-      }
+  //       updateDriver(licenseStatus);
+  //       dispatch(updateDriverInfo(licenseStatus));
+  //       return false;
+  //     }
 
-      if (failureCount < 3) {
-        return true;
-      }
-      return false;
-    },
-    retryDelay: 30_000, // This mus not exceed 30s from the doc: https://tanstack.com/query/latest/docs/framework/react/guides/query-retries#retry-delay
-    mutationFn: async () => {
-      const res = await serverRequest("/authenticate/identity/verify", {
-        method: "GET",
-        schema: type({
-          success: "boolean",
-          IDVScore: {
-            ssn: "number | null",
-            name: "number | null",
-            dob: "number | null",
-          },
-        }),
-      });
+  //     if (failureCount < 3) {
+  //       return true;
+  //     }
+  //     return false;
+  //   },
+  //   retryDelay: 30_000, // This mus not exceed 30s from the doc: https://tanstack.com/query/latest/docs/framework/react/guides/query-retries#retry-delay
+  //   mutationFn: async () => {
+  //     const res = await serverRequest("/authenticate/identity/verify", {
+  //       method: "GET",
+  //       schema: type({
+  //         success: "boolean",
+  //         IDVScore: {
+  //           ssn: "number | null",
+  //           name: "number | null",
+  //           dob: "number | null",
+  //         },
+  //       }),
+  //     });
 
-      const driverStatus = {
-        driverLicenseVerificationStatus: res.success ? "verified" : "failed",
-        driverLicenseVerificationIssues: [],
-      } as Partial<DriverEntity>;
+  //     const driverStatus = {
+  //       driverLicenseVerificationStatus: res.success ? "verified" : "failed",
+  //       driverLicenseVerificationIssues: [],
+  //     } as Partial<DriverEntity>;
 
-      updateDriver(driverStatus);
-      dispatch(updateDriverInfo(driverStatus));
-      return res;
-    },
-    throwOnError() {
-      return false;
-    },
-  });
+  //     updateDriver(driverStatus);
+  //     dispatch(updateDriverInfo(driverStatus));
+  //     return res;
+  //   },
+  //   throwOnError() {
+  //     return false;
+  //   },
+  // });
 
-  useQuery({
-    initialData: null,
-    enabled: driverInfo?.driverLicenseVerificationStatus !== "verified",
-    queryKey: [
-      "driverLicenseUploadCheck",
-      driverInfo?.driverLicenseFrontStoragePath,
-      driverInfo?.driverLicenseBackStoragePath,
-    ],
-    retry(failureCount, error) {
-      if (error instanceof ResponseError && error.data?.error?.errorMessage) {
-        const licenseStatus = {
-          driverLicenseVerificationStatus: "failed",
-          driverLicenseVerificationIssues: [error.data?.error?.errorMessage],
-        } as Partial<DriverEntity>;
+  // useQuery({
+  //   initialData: null,
+  //   enabled: driverInfo?.driverLicenseVerificationStatus !== "verified",
+  //   queryKey: [
+  //     "driverLicenseUploadCheck",
+  //     driverInfo?.driverLicenseFrontStoragePath,
+  //     driverInfo?.driverLicenseBackStoragePath,
+  //   ],
+  //   retry(failureCount, error) {
+  //     if (error instanceof ResponseError && error.data?.error?.errorMessage) {
+  //       const licenseStatus = {
+  //         driverLicenseVerificationStatus: "failed",
+  //         driverLicenseVerificationIssues: [error.data?.error?.errorMessage],
+  //       } as Partial<DriverEntity>;
 
-        updateDriver(licenseStatus);
-        dispatch(updateDriverInfo(licenseStatus));
-        return false;
-      }
+  //       updateDriver(licenseStatus);
+  //       dispatch(updateDriverInfo(licenseStatus));
+  //       return false;
+  //     }
 
-      if (failureCount < 3) {
-        return true;
-      }
-      return false;
-    },
-    retryDelay: 30_000, // This mus not exceed 30s from the doc: https://tanstack.com/query/latest/docs/framework/react/guides/query-retries#retry-delay
-    queryFn: async () => {
-      const res = await serverRequest(
-        "/authenticate/identity/document/scan/status",
-        {
-          method: "GET",
-          schema: type({
-            success: "boolean",
-            result:
-              "'complete' | 'parsing_failed' | 'unknown_state' | 'unknown_error' | 'under_review'",
-            numAttemptsLeft: "number",
-            description: "string",
-          }),
-        },
-      );
+  //     if (failureCount < 3) {
+  //       return true;
+  //     }
+  //     return false;
+  //   },
+  //   retryDelay: 30_000, // This mus not exceed 30s from the doc: https://tanstack.com/query/latest/docs/framework/react/guides/query-retries#retry-delay
+  //   queryFn: async () => {
+  //     const res = await serverRequest(
+  //       "/authenticate/identity/document/scan/status",
+  //       {
+  //         method: "GET",
+  //         schema: type({
+  //           success: "boolean",
+  //           result:
+  //             "'complete' | 'parsing_failed' | 'unknown_state' | 'unknown_error' | 'under_review'",
+  //           numAttemptsLeft: "number",
+  //           description: "string",
+  //         }),
+  //       },
+  //     );
 
-      const driverStatus = {
-        driverLicenseVerificationStatus:
-          res.result === "parsing_failed" ? "failed" : "pending",
-        driverLicenseVerificationIssues:
-          res.result === "parsing_failed"
-            ? [
-                "Unable to detect the image. This can be caused by poor-quality photos, bad lighting, glares, or other things that interfere with the image. Please try again and make sure that the ID is on a contrasted surface (i.e., a white ID on a black background or a black ID on a white background)",
-              ]
-            : [],
-      } as Partial<DriverEntity>;
-      updateDriver(driverStatus);
-      dispatch(updateDriverInfo(driverStatus));
+  //     const driverStatus = {
+  //       driverLicenseVerificationStatus:
+  //         res.result === "parsing_failed" ? "failed" : "pending",
+  //       driverLicenseVerificationIssues:
+  //         res.result === "parsing_failed"
+  //           ? [
+  //               "Unable to detect the image. This can be caused by poor-quality photos, bad lighting, glares, or other things that interfere with the image. Please try again and make sure that the ID is on a contrasted surface (i.e., a white ID on a black background or a black ID on a white background)",
+  //             ]
+  //           : [],
+  //     } as Partial<DriverEntity>;
+  //     updateDriver(driverStatus);
+  //     dispatch(updateDriverInfo(driverStatus));
 
-      if (res.result === "complete") {
-        driverLicenseFinalCheck();
-      }
-      return res;
-    },
-    throwOnError() {
-      return false;
-    },
-  });
+  //     if (res.result === "complete") {
+  //       driverLicenseFinalCheck();
+  //     }
+  //     return res;
+  //   },
+  //   throwOnError() {
+  //     return false;
+  //   },
+  // });
   const setDriverVehicle = async (vehicleType: VehicleType) => {
     updateDriver({
       vehicles: [
@@ -420,7 +421,6 @@ export const DriverProfile: React.FC = () => {
     },
   });
 
-  const serverRequest = useServerRequest();
   const { mutate: setupDriverPayment, isPending: setupDriverPaymentIsPending } =
     useMutation({
       mutationFn: async () => {

@@ -44,6 +44,8 @@ const Component: React.FC = () => {
 
   const { mutate: updateFCMToken } = useMutation({
     mutationFn: async () => {
+      if (!sessionStorage.getItem("updateFCMTokenRunning")) return;
+      sessionStorage.setItem("updateFCMTokenRunning", "true");
       const token = await requestNotificationPermission();
       if (!token) return;
       await serverRequest("/user/update-fcm-token", {
@@ -53,6 +55,7 @@ const Component: React.FC = () => {
     },
     onError(error, variables, context) {
       console.error(error, variables, context);
+      sessionStorage.removeItem("updateFCMTokenRunning");
     },
   });
 

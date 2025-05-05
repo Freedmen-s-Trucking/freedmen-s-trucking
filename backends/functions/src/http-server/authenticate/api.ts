@@ -12,7 +12,8 @@ import {isResponseError, isValidationError} from "up-fetch";
 import {Variables} from "../../utils/types";
 import {formatDate} from "date-fns";
 import {isAuthenticateMockApi, sevenYearCriminalReport, upFetch, verifyIdentity} from "./service";
-import {PUBLIC_WEBAPP_URL} from "~src/utils/envs";
+import {ENV_PUBLIC_WEBAPP_URL} from "~src/utils/envs";
+import {sendWelcomeMail} from "~src/services/mails/sendgrid";
 
 const router = new Hono<{Variables: Variables}>();
 
@@ -135,7 +136,9 @@ router.post("/process-identity-verification", async (c) => {
     return c.json({error: "Driver not found"}, 404);
   }
 
+  let isNewUser = false;
   if (!dbDriver.authenticateAccessCode) {
+    isNewUser = true;
     const authenticateUserCreateBody = {
       ...reqBody.user,
       firstName: isAuthenticateMockApi ? "Jonathan" : reqBody.user.firstName,
@@ -270,7 +273,7 @@ router.post("/process-identity-verification", async (c) => {
         (error.status === 400 &&
           error.data?.errorMessage === "This user has already completed their Medallion verification.")
       ) {
-        return {jwt: "", token: "", processVerificationUrl: PUBLIC_WEBAPP_URL, isAuthenticateMockApi};
+        return {jwt: "", token: "", processVerificationUrl: ENV_PUBLIC_WEBAPP_URL, isAuthenticateMockApi};
       }
       console.error(error, {authenticateUserJwtBody, isAuthenticateMockApi});
       return c.json(
@@ -296,6 +299,21 @@ router.post("/process-identity-verification", async (c) => {
     authenticateAccessCode: dbDriver.authenticateAccessCode,
     ...res,
   } satisfies ApiResProcessIdentityVerificationWithAuthenticate;
+
+  // if (isNewUser) {
+  try {
+    console.info("driver details", {...dbDriver});
+    console.log("driver details", {...dbDriver});
+    console.debug("driver details", {...dbDriver});
+    if (dbDriver.email) {
+      await sendWelcomeMail(dbDriver.email, res.token);
+    } else {
+      console.info("Driver email not found", {driverId: dbDriver.uid});
+    }
+  } catch (error) {
+    console.error(error);
+  }
+  // }
   return c.json(resBody, 200);
 });
 

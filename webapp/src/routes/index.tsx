@@ -1,5 +1,5 @@
 import { createFileRoute, redirect, useRouter } from "@tanstack/react-router";
-import { motion } from "motion/react";
+import { motion, Variants } from "motion/react";
 import { useEffect, useState, useRef } from "react";
 
 import {
@@ -13,9 +13,20 @@ import {
 import { useAppDispatch } from "~/stores/hooks";
 import { setRequestedAuthAction } from "~/stores/controllers/app-ctrl";
 import { CreateOrder } from "~/components/molecules/create-order";
+import { Badge } from "flowbite-react";
+
+// Welcome back animation
+const welcomeBackVariants: Variants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { delay: 1, duration: 0.5, ease: "easeOut" },
+  },
+};
 
 // Staggered animation for container children
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -27,7 +38,7 @@ const containerVariants = {
 };
 
 // Animation for heading elements
-const headingVariants = {
+const headingVariants: Variants = {
   hidden: { opacity: 0, y: -20 },
   visible: {
     opacity: 1,
@@ -37,7 +48,7 @@ const headingVariants = {
 };
 
 // Animation for buttons and content cards
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
@@ -89,12 +100,31 @@ function Index() {
   return (
     <div className="relative h-screen w-screen overflow-hidden">
       <BackgroundBalls />
+
       <motion.div
         initial="hidden"
         animate="visible"
         variants={containerVariants}
       >
         <Container className="flex h-screen w-screen flex-col items-center gap-1 px-4 transition-colors duration-300 sm:gap-3 sm:p-12 sm:px-8 md:gap-8 md:p-16 lg:gap-12">
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={welcomeBackVariants}
+            className="flex justify-between text-sm font-medium text-gray-500"
+          >
+            Already have an account?&nbsp;
+            <button
+              onClick={() =>
+                dispatch(setRequestedAuthAction({ type: "login" }))
+              }
+              className="font-bold text-secondary-950 hover:underline"
+            >
+              <Badge className="inline border border-primary-800 bg-primary-100 text-xs text-primary-900">
+                Login
+              </Badge>
+            </button>
+          </motion.div>
           <motion.div
             className="flex flex-[2] flex-col justify-end text-center xs:flex-[3] md:px-12"
             variants={containerVariants}
