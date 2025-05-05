@@ -5,7 +5,7 @@ import { useAuth } from "~/hooks/use-auth";
 import { useDbOperations } from "~/hooks/use-firestore";
 import { Modal, Button, Spinner, Tooltip } from "flowbite-react";
 import { Camera } from "lucide-react";
-import { SecondaryButton, TextInput } from "~/components/atoms";
+import { PrimaryButton, SecondaryButton, TextInput } from "~/components/atoms";
 import { DriverOrderStatus } from "@freedmen-s-trucking/types";
 import { useServerRequest } from "~/hooks/use-server-request";
 import { isResponseError } from "up-fetch";
@@ -47,6 +47,7 @@ const GetNextActionButton = ({
   const [isLoading, setIsLoading] = useState(false);
   const { updateOrderStatus } = useDbOperations();
   const [showStatusChangeModal, setShowStatusChangeModal] = useState(false);
+  const [deliveryCode, setDeliveryCode] = useState<string>();
   const [error, setError] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
@@ -418,16 +419,6 @@ const GetNextActionButton = ({
         <Modal.Body className="text-secondary-950">
           <p className="mb-4">{action.nextStatusConfirmation}</p>
 
-          {nextActionRequiresGeolocation && !coords && (
-            <p className="text-sm text-orange-500">
-              {isGeolocationAvailable && !isGeolocationEnabled
-                ? "Enable Geolocation Access To continue"
-                : isGeolocationAvailable
-                  ? "Wait for location to be retrieved."
-                  : "Geolocation is not available in this browser."}
-            </p>
-          )}
-
           {/* Photo capture section for delivery confirmation */}
           {needsDeliveryPhotoAndCode && (
             <div className="mb-4">
@@ -513,26 +504,37 @@ const GetNextActionButton = ({
                   className="text-center text-5xl font-bold tracking-[1rem]"
                   placeholder="123456"
                   maxLength={6}
+                  value={deliveryCode}
+                  onChange={(e) => setDeliveryCode(e.target.value)}
                   required
-                  id="deliveryCode"
                   name="deliveryCode"
                 />
               </label>
             )}
+            {nextActionRequiresGeolocation && !coords && (
+              <p className="text-sm text-orange-500">
+                {isGeolocationAvailable && !isGeolocationEnabled
+                  ? "Enable Geolocation Access To continue"
+                  : isGeolocationAvailable
+                    ? "Wait for location to be retrieved."
+                    : "Geolocation is not available in this browser."}
+              </p>
+            )}
             {error && (
               <p className="pt-2 italic text-red-500 underline">{error}</p>
             )}
-            <SecondaryButton
+            <PrimaryButton
               type="submit"
               isLoading={isLoading}
               disabled={
                 (nextActionRequiresGeolocation && !coords) ||
                 (needsDeliveryPhotoAndCode && !imageData)
               }
-              className="self-end border-teal-500 bg-teal-200 py-2 text-secondary-950"
+              style={{ backgroundColor: action.color }}
+              className="self-end py-2 text-white"
             >
               Confirm
-            </SecondaryButton>
+            </PrimaryButton>
           </form>
         </Modal.Body>
       </Modal>

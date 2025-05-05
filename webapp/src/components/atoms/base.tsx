@@ -86,7 +86,7 @@ export const PrimaryButton: React.FC<
       disabled={isDisabled}
       initial="initial"
       animate={isLoading ? "loading" : "initial"}
-      className={`flex flex-row items-center justify-center rounded-lg bg-primary-700  p-4 font-medium text-primary-100 transition-colors duration-300 hover:bg-primary-800 disabled:bg-primary-800 ${className}`}
+      className={`flex flex-row items-center justify-center rounded-lg  p-4 font-medium text-primary-100 transition-colors duration-300 ${className} bg-primary-700 hover:bg-primary-800 disabled:bg-primary-800/80 `}
     >
       {isLoading ? (
         <motion.div
