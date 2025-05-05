@@ -256,7 +256,7 @@ const GetDeliveryCode: React.FC<{
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 className="flex w-full flex-row items-center justify-evenly gap-2"
-                transition={{ type: "spring", stiffness: 100 }}
+                transition={{ type: "nextStatusspring", stiffness: 100 }}
               >
                 <span className="inline-block h-7 w-7 animate-spin rounded-full border-4 border-primary-100/10 border-t-primary-900" />
               </motion.div>
