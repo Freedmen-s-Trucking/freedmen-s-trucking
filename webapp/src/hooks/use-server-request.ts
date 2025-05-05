@@ -7,14 +7,17 @@ export const useServerRequest = () => {
   const { getIDToken } = useAuth();
 
   const request = useMemo(() => {
-    return up(fetch, async () => ({
-      baseUrl: `${SERVER_API_ENDPOINT}/v1`,
-      headers: {
-        accept: "application/json",
-        "content-type": "application/json",
-        authorization: `Bearer ${await getIDToken()}` as const,
-      },
-    }));
+    return up(fetch, async () => {
+      const token = await getIDToken();
+      return {
+        baseUrl: `${SERVER_API_ENDPOINT}/v1`,
+        headers: {
+          accept: "application/json",
+          "content-type": "application/json",
+          ...(!!token && { authorization: `Bearer ${token}` as const }),
+        },
+      };
+    });
   }, [getIDToken]);
 
   return request;

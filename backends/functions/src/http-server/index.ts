@@ -50,7 +50,9 @@ apiV1Route.notFound((c) => {
 });
 
 apiV1Route.onError((err, c) => {
-  console.error(`${err}`, err);
+  if (err) {
+    console.error(`${err}`, err, c.req.path, c.req.method);
+  }
   return c.json({error: "Internal Server Error"}, 500);
 });
 

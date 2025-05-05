@@ -76,7 +76,7 @@ const driverStatusMap: Record<
       "You confirm you have picked up the package and you're on the way to deliver the package.",
   },
   [DriverOrderStatus.ON_THE_WAY_TO_DELIVER]: {
-    action: "Delivered",
+    action: "Mark As Delivered",
     color: "purple",
     badge: <Badge color="purple">On The Way To Deliver</Badge>,
     nextStatus: DriverOrderStatus.DELIVERED,
