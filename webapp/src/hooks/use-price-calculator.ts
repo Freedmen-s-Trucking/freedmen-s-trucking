@@ -134,7 +134,7 @@ export function computeTheMinimumRequiredVehiclesAndFees(
 
   return {
     vehicles: requiredVehicles,
-    fees: totalFees.reduce((acc, fee) => acc + fee, 0),
+    fees: Math.ceil(totalFees.reduce((acc, fee) => acc + fee, 0)) - 0.01,
   };
 }
 

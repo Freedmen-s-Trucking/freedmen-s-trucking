@@ -77,6 +77,11 @@ export const driverEntity = userEntity.and({
   totalEarnings: "number | null",
   tasksCompleted: "number | null",
   activeTasks: "number | null",
+  latestLocation: coordinateType
+    .and({
+      timestamp: dateStringOrTimestampType,
+    })
+    .optional(),
 });
 export type DriverEntity = typeof driverEntity.infer;
 

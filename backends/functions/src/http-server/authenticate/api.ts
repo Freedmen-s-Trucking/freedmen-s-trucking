@@ -1,5 +1,4 @@
 import {
-  ApiReqProcessIdentityVerificationWithAuthenticate,
   apiReqProcessIdentityVerificationWithAuthenticate,
   ApiResProcessIdentityVerificationWithAuthenticate,
   CollectionName,
@@ -13,6 +12,7 @@ import {isResponseError, isValidationError} from "up-fetch";
 import {Variables} from "../../utils/types";
 import {formatDate} from "date-fns";
 import {isAuthenticateMockApi, sevenYearCriminalReport, upFetch, verifyIdentity} from "./service";
+import {PUBLIC_WEBAPP_URL} from "~src/utils/envs";
 
 const router = new Hono<{Variables: Variables}>();
 
@@ -136,17 +136,19 @@ router.post("/process-identity-verification", async (c) => {
   }
 
   if (!dbDriver.authenticateAccessCode) {
+    const authenticateUserCreateBody = {
+      ...reqBody.user,
+      firstName: isAuthenticateMockApi ? "Jonathan" : reqBody.user.firstName,
+      lastName: isAuthenticateMockApi ? "Doe" : reqBody.user.lastName,
+      dob: formatDate(new Date(reqBody.user.dob), "dd-MM-yyyy"),
+    };
     const res = await upFetch("/user/create", {
-      body: {
-        ...reqBody.user,
-        firstName: isAuthenticateMockApi ? "Jonathan" : reqBody.user.firstName,
-        lastName: isAuthenticateMockApi ? "Doe" : reqBody.user.lastName,
-        dob: formatDate(new Date(reqBody.user.dob), "dd-MM-yyyy"),
-      },
+      body: authenticateUserCreateBody,
       schema: type({
         userAccessCode: "string",
       }),
     }).catch((error) => {
+      console.error(error, {authenticateUserCreateBody, isAuthenticateMockApi});
       if (isResponseError(error)) {
         return c.json({error: error.data, endpoint: error.request.url}, error.status as ContentfulStatusCode);
       } else if (isValidationError(error)) {
@@ -165,21 +167,21 @@ router.post("/process-identity-verification", async (c) => {
       authenticateAccessCode: res.userAccessCode,
     });
   } else {
+    const authenticateUserUpdateBody = {
+      ...reqBody.user,
+      dob: formatDate(new Date(reqBody.user.dob), "dd-MM-yyyy"),
+      firstName: isAuthenticateMockApi ? "Jonathan" : reqBody.user.firstName,
+      lastName: isAuthenticateMockApi ? "Doe" : reqBody.user.lastName,
+      userAccessCode: dbDriver.authenticateAccessCode,
+    };
     const res = await upFetch("/user/update", {
       method: "PUT",
-      body: {
-        ...reqBody.user,
-        dob: formatDate(new Date(reqBody.user.dob), "dd-MM-yyyy"),
-        firstName: isAuthenticateMockApi ? "Jonathan" : reqBody.user.firstName,
-        lastName: isAuthenticateMockApi ? "Doe" : reqBody.user.lastName,
-        userAccessCode: dbDriver.authenticateAccessCode,
-      } satisfies ApiReqProcessIdentityVerificationWithAuthenticate["user"] & {
-        userAccessCode: string;
-      },
+      body: authenticateUserUpdateBody,
       schema: apiReqProcessIdentityVerificationWithAuthenticate.get("user").partial().and({
         userAccessCode: "string?",
       }),
     }).catch((error) => {
+      console.error(error, {authenticateUserUpdateBody, isAuthenticateMockApi});
       if (isResponseError(error)) {
         return c.json({error: error.data, endpoint: error.request.url}, error.status as ContentfulStatusCode);
       } else if (isValidationError(error)) {
@@ -195,20 +197,24 @@ router.post("/process-identity-verification", async (c) => {
   }
 
   // Update user consents
+  const authenticateUserConsentBody = {
+    userAccessCode: isAuthenticateMockApi ? "100385a1-4308-49db-889f-9a898fa88c21" : dbDriver.authenticateAccessCode,
+    isBackgroundDisclosureAccepted:
+      reqBody.consents.isBackgroundDisclosureAccepted ?? dbDriver.consents?.isBackgroundDisclosureAccepted ?? false,
+    GLBPurposeAndDPPAPurpose:
+      reqBody.consents.GLBPurposeAndDPPAPurpose ?? dbDriver.consents?.GLBPurposeAndDPPAPurpose ?? false,
+    FCRAPurpose: reqBody.consents.FCRAPurpose ?? dbDriver.consents?.FCRAPurpose ?? false,
+    fullName: isAuthenticateMockApi
+      ? "Jonathan Doe"
+      : `${reqBody.user.firstName.trim()} ${reqBody.user.lastName.trim()}`,
+  };
   const consentReqRes = await upFetch("/user/consent", {
-    body: {
-      userAccessCode: isAuthenticateMockApi ? "100385a1-4308-49db-889f-9a898fa88c21" : dbDriver.authenticateAccessCode,
-      isBackgroundDisclosureAccepted:
-        reqBody.consents.isBackgroundDisclosureAccepted ?? dbDriver.consents?.isBackgroundDisclosureAccepted ?? false,
-      GLBPurposeAndDPPAPurpose:
-        reqBody.consents.GLBPurposeAndDPPAPurpose ?? dbDriver.consents?.GLBPurposeAndDPPAPurpose ?? false,
-      FCRAPurpose: reqBody.consents.FCRAPurpose ?? dbDriver.consents?.FCRAPurpose ?? false,
-      fullName: `${reqBody.user.firstName.trim()} ${reqBody.user.lastName.trim()}`,
-    },
+    body: authenticateUserConsentBody,
     schema: type({
       success: "boolean",
     }),
   }).catch((error) => {
+    console.error(error, {authenticateUserConsentBody, isAuthenticateMockApi});
     if (isResponseError(error)) {
       if (error.status === 400 && error.data?.errorMessage === "Consent has already been recorded for this user.") {
         return {success: true};
@@ -244,20 +250,29 @@ router.post("/process-identity-verification", async (c) => {
    *   errorMessage: "This user has already completed their Medallion verification."
    * }
    */
+  const authenticateUserJwtBody = {
+    userAccessCode: dbDriver.authenticateAccessCode,
+    preferredWorkflowID: process.env.AUTHENTICATE_DOT_COM_MEDALLION_ID,
+    ...(!!reqBody.medallion?.redirectURL && {
+      redirectURL: reqBody.medallion.redirectURL,
+    }),
+  };
   const res = await upFetch("/user/jwt", {
-    body: {
-      userAccessCode: isAuthenticateMockApi ? "100385a1-4308-49db-889f-9a898fa88c21" : dbDriver.authenticateAccessCode,
-      preferredWorkflowID: process.env.AUTHENTICATE_DOT_COM_MEDALLION_ID,
-      ...(!!reqBody.medallion?.redirectURL && {
-        redirectURL: reqBody.medallion.redirectURL,
-      }),
-    },
+    body: authenticateUserJwtBody,
     schema: type({
       jwt: "string",
       token: "string",
     }),
   }).catch((error) => {
     if (isResponseError(error)) {
+      if (
+        isAuthenticateMockApi ||
+        (error.status === 400 &&
+          error.data?.errorMessage === "This user has already completed their Medallion verification.")
+      ) {
+        return {jwt: "", token: "", processVerificationUrl: PUBLIC_WEBAPP_URL, isAuthenticateMockApi};
+      }
+      console.error(error, {authenticateUserJwtBody, isAuthenticateMockApi});
       return c.json(
         {
           error: error.data,
@@ -277,9 +292,9 @@ router.post("/process-identity-verification", async (c) => {
     return res;
   }
   const resBody = {
-    ...res,
     processVerificationUrl: `https://verify.authenticating.com/?token=${res.token}`,
     authenticateAccessCode: dbDriver.authenticateAccessCode,
+    ...res,
   } satisfies ApiResProcessIdentityVerificationWithAuthenticate;
   return c.json(resBody, 200);
 });

@@ -9,6 +9,7 @@ import {
   Card,
   Spinner,
   Avatar,
+  Accordion,
 } from "flowbite-react";
 import {
   HiSearch,
@@ -36,6 +37,13 @@ import { useStorageOperations } from "~/hooks/use-storage";
 import { tabTheme } from "~/utils/constants";
 import { SecondaryButton, TextInput } from "~/components/atoms";
 import { formatPrice, getDriverVerificationStatus } from "~/utils/functions";
+import {
+  AdvancedMarker,
+  InfoWindow,
+  Map,
+  Pin,
+  useAdvancedMarkerRef,
+} from "@vis.gl/react-google-maps";
 
 const btTheme = {
   base: "group relative flex items-stretch justify-center p-0.5 text-center font-medium transition-[color,background-color,border-color,text-decoration-color,fill,stroke,box-shadow] focus:z-10 focus:outline-none",
@@ -152,6 +160,37 @@ const btTheme = {
   },
 } as const;
 
+const CustomMarker = ({
+  position,
+  driver,
+}: {
+  position: google.maps.LatLng | google.maps.LatLngLiteral;
+  driver: EntityWithPath<DriverEntity & { user: UserEntity }>;
+}) => {
+  const [markerRef, marker] = useAdvancedMarkerRef();
+  return (
+    <>
+      <AdvancedMarker position={position} ref={markerRef}>
+        <Pin
+          background={"#FFAF01"}
+          borderColor={"#FF9100"}
+          glyphColor={"#FFC400"}
+        />
+      </AdvancedMarker>
+      <InfoWindow
+        anchor={marker}
+        className="m-0 p-0"
+        headerContent={<span>{driver.data.user.displayName}</span>}
+      >
+        <div className="flex flex-col gap-2">
+          <span>{driver.data.user.email}</span>
+          <span>{driver.data.user.phoneNumber}</span>
+        </div>
+      </InfoWindow>
+    </>
+  );
+};
+
 const DriverManagement: React.FC = () => {
   const { fetchDrivers } = useDbOperations();
   const { fetchImage } = useStorageOperations();
@@ -163,8 +202,9 @@ const DriverManagement: React.FC = () => {
   > | null>(null);
   const [showModal, setShowModal] = useState(false);
 
-  const { data, isLoading } = useQuery({
+  const { data: drivers, isLoading } = useQuery({
     initialData: [],
+    refetchInterval: 30000,
     queryKey: ["drivers"],
     queryFn: fetchDrivers,
   });
@@ -222,7 +262,6 @@ const DriverManagement: React.FC = () => {
         ev: React.FormEvent<HTMLFormElement>;
       }) => {
         let statusHint: string | null = null;
-        console.log("updateDriverStatus");
         if (args.ev) {
           args.ev.preventDefault();
 
@@ -277,14 +316,14 @@ const DriverManagement: React.FC = () => {
       </div>
     );
   }
-  if (!data || data.length === 0) {
+  if (!drivers || drivers.length === 0) {
     return (
       <div className="flex h-64 items-center justify-center">
         <p className="text-gray-500">No drivers found</p>
       </div>
     );
   }
-  const filteredDrivers = data.filter((driver) => {
+  const filteredDrivers = drivers.filter((driver) => {
     const matchesSearch =
       driver.data.user?.displayName
         ?.toLowerCase()
@@ -325,6 +364,47 @@ const DriverManagement: React.FC = () => {
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-primary-700">Driver Management</h2>
+      <Accordion collapseAll className="w-full border-none">
+        <Accordion.Panel className="border-none">
+          <Accordion.Title className="border-b-[1px] bg-transparent p-0 text-secondary-950 hover:bg-transparent focus:right-0 focus:bg-transparent focus:ring-transparent [&>h2]:w-full">
+            <span className="text-base font-semibold">View On Map</span>
+          </Accordion.Title>
+          <Accordion.Content className="border-none px-0">
+            <Map
+              mapId={"DEMO_MAP_ID"}
+              style={{ width: "100%", height: "50vh" }}
+              defaultZoom={10}
+              minZoom={3}
+              defaultCenter={{
+                lat: 38.9059849,
+                lng: -77.03341792,
+              }}
+              gestureHandling={"greedy"}
+              disableDefaultUI={true}
+            >
+              {drivers?.map((driver) => {
+                if (
+                  !driver.data.latestLocation ||
+                  !driver.data.latestLocation.latitude ||
+                  !driver.data.latestLocation.longitude
+                ) {
+                  return null;
+                }
+                return (
+                  <CustomMarker
+                    key={driver.path}
+                    position={{
+                      lat: driver.data.latestLocation.latitude,
+                      lng: driver.data.latestLocation.longitude,
+                    }}
+                    driver={driver}
+                  />
+                );
+              })}
+            </Map>
+          </Accordion.Content>
+        </Accordion.Panel>
+      </Accordion>
 
       <div className="flex flex-col gap-4 sm:flex-row">
         <div className="relative w-full sm:w-96">

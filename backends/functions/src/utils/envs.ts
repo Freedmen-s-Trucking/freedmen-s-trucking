@@ -29,3 +29,11 @@ export const STRIPE_WEBHOOK_SECRET_CONNECTED_ACCOUNT = (() => {
   }
   return secret;
 })();
+
+export const PUBLIC_WEBAPP_URL = (() => {
+  const url = process.env.PUBLIC_WEBAPP_URL;
+  if (!url) {
+    throw new Error("PUBLIC_WEBAPP_URL not found, check your environment variables");
+  }
+  return url;
+})();

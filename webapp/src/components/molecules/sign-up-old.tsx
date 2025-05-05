@@ -408,6 +408,14 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
   const [phoneNumber, setPhoneNumber] = useState<string>(
     user.info.phoneNumber || "",
   );
+  const [driverLicenseIdFront, setDriverLicenseIdFront] = useState<File | null>(
+    null,
+  );
+  const driverLicenseIdBackInputRef = useRef<HTMLInputElement>(null);
+  const [driverLicenseIdBack, setDriverLicenseIdBack] = useState<File | null>(
+    null,
+  );
+  const driverLicenseIdFrontInputRef = useRef<HTMLInputElement>(null);
   const [driverVehicle, setDriverVehicle] = useState<VehicleType | null>(null);
   const [driverInsurance, setDriverInsurance] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -443,6 +451,38 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
     setPhoneNumber(formattedValue);
   };
 
+  const onDriverLicenseIDFrontChanged = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const files = e.target.files;
+    if (
+      files &&
+      files.length > 0 &&
+      ["image/png", "image/jpeg", "image/jpg"].includes(files[0].type)
+    ) {
+      setDriverLicenseIdFront(files[0]);
+    } else {
+      console.warn(
+        "invalid format detected, the platform may not work as expected.",
+      );
+    }
+  };
+  const onDriverLicenseIDBackChanged = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const files = e.target.files;
+    if (
+      files &&
+      files.length > 0 &&
+      ["image/png", "image/jpeg", "image/jpg"].includes(files[0].type)
+    ) {
+      setDriverLicenseIdBack(files[0]);
+    } else {
+      console.warn(
+        "invalid format detected, the platform may not work as expected.",
+      );
+    }
+  };
   const onDriverInsuranceChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (
@@ -479,13 +519,23 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
       setError("Missing required fields");
       return;
     }
-    if (!driverInsurance) {
+    if (!driverLicenseIdFront || !driverLicenseIdBack || !driverInsurance) {
       setError("Missing required certificates");
       return;
     }
     try {
       setIsLoading(true);
       setError(null);
+      const driverLicenseFrontPath = await uploadCertificate(
+        user.info.uid,
+        driverLicenseIdFront!,
+        "driver-license-front",
+      );
+      const driverLicenseBackPath = await uploadCertificate(
+        user.info.uid,
+        driverLicenseIdBack!,
+        "driver-license-back",
+      );
       const driverInsurancePath = await uploadCertificate(
         user.info.uid,
         driverInsurance!,
@@ -504,8 +554,8 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
         ...user.info,
         driverLicenseVerificationStatus: "pending",
         driverLicenseVerificationIssues: [],
-        driverLicenseFrontStoragePath: null,
-        driverLicenseBackStoragePath: null,
+        driverLicenseFrontStoragePath: driverLicenseFrontPath,
+        driverLicenseBackStoragePath: driverLicenseBackPath,
         driverInsuranceVerificationStatus: "pending",
         driverInsuranceVerificationIssues: [],
         driverInsuranceStoragePath: driverInsurancePath,
@@ -546,6 +596,7 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
               firstName: firstName,
               lastName: lastName,
               dob: birthDate.toISOString(),
+              // dob: formatDate(birthDate, "MM-dd-yyyy"),
               ...(!!phoneNumber && { phoneNumber }),
             },
             consents: consents,
@@ -597,6 +648,7 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
               required
               min={2}
               autoComplete="given-name"
+              // className="mt-1 block w-full rounded-md border-gray-300 py-4 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
             />
           </label>
           <label className="inline-block">
@@ -669,7 +721,7 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
             </Dropdown.Item>
           ))}
         </Dropdown>
-        {/* <span className="block text-sm font-medium text-secondary-800">
+        <span className="block text-sm font-medium text-secondary-800">
           Driver License ID Front
           <span className="text-lg text-red-400">*</span>
         </span>
@@ -740,7 +792,7 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
               />
             </label>
           )}
-        </div> */}
+        </div>
         <span className="block text-sm font-medium text-secondary-800">
           Insurance and Registration
           <span className="text-lg text-red-400">*</span>
@@ -822,7 +874,7 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
           </Tooltip>
           .
         </label>
-        {error && <p className="py-2 text-xs text-red-500">{error}</p>}
+        {error && <p className="py-2 text-sm text-red-500">{error}</p>}
         <PrimaryButton
           type="submit"
           isLoading={isLoading}

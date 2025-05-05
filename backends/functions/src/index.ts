@@ -10,4 +10,6 @@ export {driverUpdateTrigger} from "./triggers/driver";
 export {orderUpdateTrigger} from "./triggers/order";
 
 // Export schedulers
-export {scheduleDriverIdentityVerification, scheduleBackgroundCheck} from "./schedules/auto-background-check";
+export {scheduleBackgroundCheck} from "./schedules/auto-background-check-scheduler";
+export {scheduleDriverIdentityVerification} from "./schedules/driver-identity-verification-scheduler";
+export {scheduleDriverInsuranceVerification} from "./schedules/driver-insurance-verification-scheduler";

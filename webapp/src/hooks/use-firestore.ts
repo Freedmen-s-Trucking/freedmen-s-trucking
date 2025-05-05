@@ -10,6 +10,7 @@ import {
   increment,
   limit,
   onSnapshot,
+  PartialWithFieldValue,
   Query,
   query,
   serverTimestamp,
@@ -213,10 +214,10 @@ const useDriverDbOperations = (db: Firestore) => {
    * Updates driver in the database.
    */
   const updateDriver = useCallback(
-    async (uid: string, driver: Partial<DriverEntity>) => {
+    async (uid: string, driver: PartialWithFieldValue<DriverEntity>) => {
       checkFalsyAndThrow(
         { uid, driver },
-        "FirestoreError::updateDriverCertificates",
+        "FirestoreError::updateDriver",
         type({
           uid: "string",
           driver: driverEntity.partial(),
@@ -227,8 +228,12 @@ const useDriverDbOperations = (db: Firestore) => {
         uid,
       ).withConverter(driverEntityConverter);
 
-      console.log({ uid, update: driver }, new Error().stack);
-
+      if (driver.latestLocation) {
+        driver.latestLocation = {
+          ...driver.latestLocation,
+          timestamp: serverTimestamp(),
+        } as WithFieldValue<DriverEntity["latestLocation"]>;
+      }
       await setDoc(docRef, driver, { merge: true });
     },
     [db],
@@ -361,7 +366,7 @@ const useDriverDbOperations = (db: Firestore) => {
   );
 
   return {
-    updateDriver,
+    updateDriver: updateDriver,
     getDriver,
     fetchCompletedOrder,
     fetchCurrentActiveOrders,
@@ -513,7 +518,7 @@ export const useDbOperations = () => {
 
   const { insertUser, createUser, getUser } = useUserDbOperations(db);
   const {
-    updateDriver,
+    updateDriver: updateDriver,
     getDriver,
     fetchCompletedOrder,
     fetchCurrentActiveOrders,
@@ -534,7 +539,7 @@ export const useDbOperations = () => {
     fetchCompletedOrder,
     fetchCurrentActiveOrders,
     getUser,
-    updateDriver,
+    updateDriver: updateDriver,
     getDriver,
     updateOrderStatus: updateOrderStatus,
     updatePlatformSettings,

@@ -19,7 +19,7 @@ const rawStorageRules = fs.readFileSync(
   "utf8",
 );
 
-const storageBuckets = ["users", "drivers-certifications"];
+const storageBuckets = ["users", "drivers-certifications", "orders"];
 const storageReleaseTasks = storageBuckets.map((bucket) =>
   admin
     .securityRules()

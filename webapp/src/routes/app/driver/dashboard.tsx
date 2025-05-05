@@ -1,6 +1,8 @@
 import { DriverOrderStatus } from "@freedmen-s-trucking/types";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { differenceInMinutes } from "date-fns";
+import { Timestamp } from "firebase/firestore";
 import {
   Avatar,
   Badge,
@@ -12,7 +14,8 @@ import {
   Tooltip,
 } from "flowbite-react";
 import { motion } from "motion/react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useGeolocated } from "react-geolocated";
 import { CiMenuKebab } from "react-icons/ci";
 import {
   HiAdjustments,
@@ -28,6 +31,8 @@ import { DriverProfile } from "~/components/molecules/driver/tab-profile";
 import { Order } from "~/components/molecules/order-details";
 import { useAuth } from "~/hooks/use-auth";
 import { useDbOperations } from "~/hooks/use-firestore";
+import { updateDriverInfo } from "~/stores/controllers/auth-ctrl";
+import { useAppDispatch } from "~/stores/hooks";
 import { driverVerificationBadges, tabTheme } from "~/utils/constants";
 import {
   customDateFormat,
@@ -111,12 +116,68 @@ const getVerificationBadge = (
   );
 };
 
+const WatchLocation: React.FC = () => {
+  const { coords } = useGeolocated({
+    positionOptions: {
+      enableHighAccuracy: true,
+      maximumAge: 30000,
+      timeout: 5000,
+    },
+    isOptimisticGeolocationEnabled: false,
+    userDecisionTimeout: 5000,
+    watchLocationPermissionChange: true,
+    watchPosition: true,
+    onError(positionError) {
+      if (positionError) {
+        console.error("Geolocation error:", positionError);
+      }
+    },
+  });
+
+  const { updateDriver } = useDbOperations();
+  const { user } = useAuth();
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    const prevLocationTimestamp = user?.driverInfo?.latestLocation?.timestamp;
+    const prevDate =
+      prevLocationTimestamp instanceof Timestamp
+        ? prevLocationTimestamp.toDate()
+        : prevLocationTimestamp instanceof Date
+          ? prevLocationTimestamp
+          : prevLocationTimestamp && typeof prevLocationTimestamp === "string"
+            ? new Date(prevLocationTimestamp)
+            : new Date(0);
+    const diffInMinutes = differenceInMinutes(new Date(), prevDate);
+
+    if (coords && coords.latitude && coords.longitude && diffInMinutes >= 5) {
+      const location = {
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+        timestamp: Timestamp.fromDate(new Date()),
+      };
+      updateDriver(user.info.uid, {
+        latestLocation: location,
+      });
+      dispatch(updateDriverInfo({ latestLocation: location }));
+    }
+  }, [
+    coords,
+    updateDriver,
+    user.info.uid,
+    dispatch,
+    user?.driverInfo?.latestLocation?.timestamp,
+  ]);
+  return null;
+};
+
 const DriverDashboard = () => {
   const { getDriver, fetchCurrentActiveOrders, fetchCompletedOrder } =
     useDbOperations();
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number] | null>(
     "overview",
   );
+
   const [showDriverId, setShowDriverId] = useState(false);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
@@ -167,6 +228,7 @@ const DriverDashboard = () => {
 
   return (
     <div className="mx-auto max-w-5xl p-4">
+      <WatchLocation />
       {/* Driver Header */}
       <div className="mb-6 flex flex-col items-center rounded-lg bg-white p-4 shadow md:flex-row">
         <div className="relative mb-4 md:mb-0 md:mr-6">

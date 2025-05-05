@@ -56,6 +56,7 @@ jobs:
           echo "AUTHENTICATE_DOT_COM_TOKEN=${{ secrets.AUTHENTICATE_DOT_COM_TOKEN_DEV }}" >> .env
           echo "AUTHENTICATE_DOT_COM_MEDALLION_ID=${{ secrets.AUTHENTICATE_DOT_COM_MEDALLION_ID_DEV }}" >> .env
           echo "SLACK_ALERT_CHANNEL_WEBHOOK_URL=${{ secrets.SLACK_ALERT_CHANNEL_WEBHOOK_URL_DEV }}" >> .env
+          echo "PUBLIC_WEBAPP_URL=${{ vars.PUBLIC_WEBAPP_URL_DEV }}" >> .env
 
       # Deploy Cloud Functions.
       # The double --force is not a mistake — the second one applies to artifact policy setup.

@@ -9,7 +9,7 @@ export const defaultPlatformFeePercent = 6;
 /**
  * Base platform fee to apply on each order.
  */
-export const basePlatformFeeInUSD = 4.99;
+export const basePlatformFeeInUSD = 1.99;
 
 /**
  * Delivery priority prices addons.

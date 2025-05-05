@@ -1,6 +1,6 @@
 import {Hono} from "hono";
 import {apiReqExtractOrderRequestFromText, type} from "@freedmen-s-trucking/types";
-import {extractOrderRequestFromText} from "./agent";
+import {extractOrderRequestFromText} from "~src/services/ai-agent/extract-order-request-from-text";
 
 const router = new Hono();
 

@@ -13,7 +13,7 @@ import {
 } from "@freedmen-s-trucking/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { add, formatDuration, intervalToDuration } from "date-fns";
-import { Dropdown, Modal, Tabs } from "flowbite-react";
+import { Badge, Dropdown, Modal, Tabs } from "flowbite-react";
 import { motion } from "motion/react";
 import React, { useCallback, useState } from "react";
 import { FaTrash } from "react-icons/fa6";
@@ -40,6 +40,12 @@ import { useAppDispatch } from "~/stores/hooks";
 import { RemoteConfigKeys } from "~/utils/constants";
 import { formatPrice } from "~/utils/functions";
 import { TextArea } from "../atoms/base";
+import { ArrowRight } from "lucide-react";
+import { IoCarOutline } from "react-icons/io5";
+import { TbCarSuv } from "react-icons/tb";
+import { PiVanBold } from "react-icons/pi";
+import { GiTruck } from "react-icons/gi";
+import { BsTrainFreightFront } from "react-icons/bs";
 
 const tabTheme = {
   tablist: {
@@ -482,6 +488,61 @@ const ManualForm: React.FC<{
     </div>
   );
 };
+const DisplayRequiredVehicles: React.FC<{
+  vehicles: RequiredVehicleEntity[] | undefined;
+}> = ({ vehicles }) => {
+  const vehicleIcons: Record<RequiredVehicleEntity["type"], React.ReactNode> = {
+    SEDAN: <IoCarOutline size={24} className="inline" />,
+    SUV: <TbCarSuv size={24} className="inline" />,
+    VAN: <PiVanBold size={24} className="inline" />,
+    TRUCK: <GiTruck size={24} className="inline" />,
+    FREIGHT: <BsTrainFreightFront size={24} className="inline" />,
+  };
+  return (
+    <div className="flex items-center gap-2">
+      {(vehicles || []).map((vehicle) => (
+        <span key={vehicle.type} className="flex items-center">
+          {vehicle.quantity > 1 && (
+            <span className="text-sm">{vehicle.quantity}&nbsp;*&nbsp;</span>
+          )}
+          {vehicleIcons[vehicle.type]}-
+          {vehicle.quantity <= 1 && (
+            <span className="text-sm">{vehicle.type}</span>
+          )}
+        </span>
+      ))}
+    </div>
+  );
+};
+
+const PriorityBadge: React.FC<{ priority: OrderPriority }> = ({ priority }) => {
+  switch (priority) {
+    case OrderPriority.URGENT:
+      return (
+        <Badge className="inline" color="red">
+          Urgent
+        </Badge>
+      );
+    case OrderPriority.EXPEDITED:
+      return (
+        <Badge className="inline" color="yellow">
+          Expedited
+        </Badge>
+      );
+    case OrderPriority.STANDARD:
+      return (
+        <Badge className="inline" color="blue">
+          Standard
+        </Badge>
+      );
+    default:
+      return (
+        <Badge className="inline" color="gray">
+          Unknown
+        </Badge>
+      );
+  }
+};
 
 const PaymentButton: React.FC<{
   isLoading: boolean;
@@ -606,6 +667,7 @@ const PaymentButton: React.FC<{
       )}
       <PrimaryButton
         disabled={disabled}
+        className="py-2"
         type={validEstimations ? "button" : "submit"}
         onClick={validEstimations ? handleScheduleDelivery : undefined}
         isLoading={isLoading || isScheduling}
@@ -613,7 +675,7 @@ const PaymentButton: React.FC<{
         {isScheduling || isLoading
           ? "Scheduling..."
           : estimations?.fees
-            ? `Schedule Now For ${formatPrice(estimations.fees)}`
+            ? `✓ Confirm + Pay`
             : "Estimate Delivery"}
       </PrimaryButton>
     </>
@@ -756,45 +818,39 @@ const AIAssistedForm: React.FC<{
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.5 }}
-            className={`block w-full text-wrap rounded-xl border  p-3 text-sm  focus:outline-none focus:ring-transparent sm:text-[16px] ${brightness === "dark" ? "border-gray-300 bg-amber-400/30 text-white focus:border-red-400" : "border-gray-300 bg-amber-200/30 text-secondary-900 focus:border-red-900"}`}
+            className={`flex w-full flex-col gap-1 text-wrap rounded-xl border p-3 text-sm  shadow-md focus:outline-none  focus:ring-transparent sm:text-[16px] md:w-11/12 ${brightness === "dark" ? "border-gray-300 text-white focus:border-red-400" : " bg-primary-50 text-secondary-900 focus:border-red-900"}`}
           >
-            <span className="block"> Priority: {reqInfo.urgencyLevel}</span>
-            <span className="block">
-              Pickup Location: {reqInfo.pickupLocation?.address}
+            <span className="block text-xs">
+              Order:{" "}
+              <span className="font-bold">
+                {reqInfo?.items?.[0]?.name}
+                {(reqInfo?.items?.[0]?.quantity || 0) > 1
+                  ? ` x ${reqInfo?.items?.[0]?.quantity}`
+                  : ""}
+              </span>
             </span>
-            <span className="block">
-              Dropoff Location: {reqInfo.dropoffLocation?.address}
+            <div className="flex items-center">
+              <span className="inline flex-1 text-start text-sm">
+                {reqInfo.pickupLocation?.address}
+              </span>
+              <span className="inline">
+                <ArrowRight className="inline" />
+              </span>
+              <span className="inline flex-1 text-end text-sm">
+                {reqInfo.dropoffLocation?.address}
+              </span>
+            </div>
+            <span className="block text-xs">
+              <PriorityBadge
+                priority={reqInfo.urgencyLevel || OrderPriority.STANDARD}
+              />
             </span>
-            <span className="block">
-              Required Vehicle Type:{" "}
-              {estimations?.vehicles
-                ?.map((v) => `${v.quantity}*${v.type}`)
-                .join(", ") || "N/A"}
-            </span>
-            <span className="block">
-              Estimated Delivery Cost:{" "}
+            <div className="flex items-center">
+              <DisplayRequiredVehicles vehicles={estimations?.vehicles} />
+            </div>
+            <span className="block pt-2 text-xl font-bold text-primary-900">
               {estimations?.fees !== undefined
                 ? formatPrice(estimations.fees)
-                : "N/A"}
-            </span>
-            <span className="block">
-              Estimated Delivery Time:{" "}
-              {estimations?.durationInSeconds
-                ? formatDuration(
-                    intervalToDuration({
-                      start: new Date(0),
-                      end: add(new Date(0), {
-                        seconds: estimations.durationInSeconds,
-                      }),
-                    }),
-                    { zero: true, format: ["hours", "minutes", "seconds"] },
-                  )
-                : "N/A"}
-            </span>
-            <span className="block">
-              Estimated Distance:{" "}
-              {estimations?.distanceInMiles !== undefined
-                ? `${estimations.distanceInMiles.toFixed(3)} miles`
                 : "N/A"}
             </span>
           </motion.div>

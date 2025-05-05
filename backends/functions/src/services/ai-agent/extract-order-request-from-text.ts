@@ -1,6 +1,28 @@
 import {ApiResExtractOrderRequestFromTextSchema} from "@freedmen-s-trucking/types";
+import {openAiClient} from "./config";
 
-export const systemPrompt = `
+export const extractOrderRequestFromText = async (text: string) => {
+  const response = await openAiClient.chat.completions.create({
+    model: "gpt-4o",
+    messages: [
+      {role: "developer", content: orderDataExtractionSystemPrompt},
+      {role: "user", content: text},
+    ],
+    temperature: 0.2,
+    response_format: {
+      type: "json_schema",
+      json_schema: {
+        name: "OrderRequest",
+        description: "Order request details",
+        // strict: true,
+        schema: ApiResExtractOrderRequestFromTextSchema as Record<string, unknown>,
+      },
+    },
+  });
+  return response.choices[0].message.content;
+};
+
+const orderDataExtractionSystemPrompt = `
 You are an intelligent assistant for a delivery service platform. 
 Your job is to extract structured delivery information from a natural language request provided by a client. 
 Clients describe their delivery using informal text, and you must identify and structure all relevant data. 

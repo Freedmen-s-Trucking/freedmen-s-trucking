@@ -13,7 +13,7 @@ const firebaseConfig = swEnv.FIREBASE_CONFIG;
 if (!firebaseConfig) {
   throw new Error("Firebase config not found");
 }
-firebase.initializeApp(firebaseConfig);
+firebase.initializeApp(JSON.parse(firebaseConfig));
 const messaging = firebase.messaging();
 
 // Handle background messages

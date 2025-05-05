@@ -1,7 +1,6 @@
 import {
   createRootRouteWithContext,
   Outlet,
-  useRouter,
   useRouterState,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
@@ -19,7 +18,6 @@ import { useServerRequest } from "~/hooks/use-server-request";
 
 const Component: React.FC = () => {
   const { user } = useAuth();
-  const router = useRouter();
   const routeState = useRouterState();
 
   // Add environment prefix to the document title
@@ -37,9 +35,9 @@ const Component: React.FC = () => {
       (!user || user.isAnonymous) &&
       routeState.location.pathname.startsWith("/app")
     ) {
-      router.navigate({ to: "/" });
+      window.location.href = "/";
     }
-  }, [user, router, routeState]);
+  }, [user, routeState]);
 
   const { requestNotificationPermission } = useFCM();
   const serverRequest = useServerRequest();

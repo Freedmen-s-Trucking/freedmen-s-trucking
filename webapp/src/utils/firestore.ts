@@ -40,6 +40,8 @@ export const driverEntityConverter = {
       verificationStatus: driver.verificationStatus,
       payoutCapabilities: driver.payoutCapabilities || null,
       verificationMessage: driver.verificationMessage || null,
+      latestLocation: driver.latestLocation || null,
+      sevenYearBackgroundCheck: driver.sevenYearBackgroundCheck || null,
       stripeConnectAccountId: driver.stripeConnectAccountId || null,
       authenticateAccessCode: driver.authenticateAccessCode,
       currentEarnings: driver.currentEarnings || null,

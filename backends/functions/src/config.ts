@@ -29,7 +29,13 @@ global.console = {
     prettyParams = prettyParams.replace(/"([^"]+)":/g, "$1:");
 
     const formattedParamsStr = optionalParams.length > 0 ? `*Params:* \`\`\`${prettyParams}\`\`\`` : "";
-    const stack = ((message as Error)?.stack || (optionalParams[0] as Error)?.stack || new Error().stack)
+    const stack = (
+      (message as Error)?.stack ||
+      (message as {error?: Error})?.error?.stack ||
+      (optionalParams[0] as Error)?.stack ||
+      (optionalParams[0] as {error?: Error})?.error?.stack ||
+      new Error().stack
+    )
       ?.split("\n")
       .slice(1, 10)
       .join("\n");

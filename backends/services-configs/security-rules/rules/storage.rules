@@ -1,25 +1,33 @@
 rules_version = '2';
 
+// WARNING: It's required to update the storage buckets list in backends/services-configs/security-rules/deploy.ts
+
 // Craft rules based on data in your Firestore database
 // allow write: if firestore.get(
 //    /databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin;
 service firebase.storage {
   match /b/{bucket}/o {
+    // WARNING: It's required to update the storage buckets list in backends/services-configs/security-rules/deploy.ts
     // Allow read/write access to a document keyed by the user's UID
     match /users/{uid}/{sub=**} {
       allow read: if request.auth != null;
       allow write: if request.auth != null && request.auth.uid == uid;
     }
+    
+    // WARNING: It's required to update the storage buckets list in backends/services-configs/security-rules/deploy.ts
     match /drivers-certifications/{uid}/{sub=**} {
       allow read: if request.auth != null;
       allow write: if request.auth != null && request.auth.uid == uid;
     }
 
+    // WARNING: It's required to update the storage buckets list in backends/services-configs/security-rules/deploy.ts
     // Allow read/write access to orders by the driver
     // Make sure the driver is the owner of the order and the orderId exist.
     match /orders/{orderId}/{sub=**} {
       allow read, write: if request.auth != null;
     }
+
+    // WARNING: It's required to update the storage buckets list in backends/services-configs/security-rules/deploy.ts
     match /{allPaths=**} {
       allow read, write: if false;
       // allow read, write: if request.time < timestamp.date(2025, 4, 22);
