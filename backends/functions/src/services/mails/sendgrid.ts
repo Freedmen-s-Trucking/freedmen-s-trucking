@@ -18,11 +18,11 @@ export const sendEmail = async ({
   // Create email message
   const msg = {
     to,
-    // from: {
-    from: "noreply@freedmensdispatch.com",
-    //   email: "noreply@freedmensdispatch.com",
-    //   name: "Freedmen's Dispatch",
-    // },
+    from: {
+      // from: "noreply@freedmensdispatch.com",
+      email: "roland@freedmenstrucking.net",
+      name: "Freedmen's Dispatch",
+    },
     subject,
     text,
     html,
@@ -31,7 +31,7 @@ export const sendEmail = async ({
   return sgMail.send(msg);
 };
 
-export const sendWelcomeMail = (email: string, token: string) =>
+export const sendWelcomeMail = (email: string, verificationLink: string) =>
   sendEmail({
     to: email,
     subject: "Welcome to Freedmen's - Verify Your Email",
@@ -39,8 +39,8 @@ export const sendWelcomeMail = (email: string, token: string) =>
 
 Click the link below to verify your email and activate your driver account:
 
-https://freedmensplatform.com/verify?token=${token}`,
+${verificationLink}`,
     html: `<p>Welcome to Freedmen's Dispatch.</p>
 <p>Click the link below to verify your email and activate your driver account:</p>
-<a href="https://freedmensplatform.com/verify?token=${token}">Verify Email</a>`,
+<a href="${verificationLink}">Verify Email</a>`,
   });

@@ -1,4 +1,4 @@
-import { DriverOrderStatus } from "@freedmen-s-trucking/types";
+import { DriverEntity, DriverOrderStatus } from "@freedmen-s-trucking/types";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { differenceInMinutes } from "date-fns";
@@ -172,7 +172,7 @@ const WatchLocation: React.FC = () => {
 };
 
 const DriverDashboard = () => {
-  const { getDriver, fetchCurrentActiveOrders, fetchCompletedOrder } =
+  const { watchDriver, fetchCurrentActiveOrders, fetchCompletedOrder } =
     useDbOperations();
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number] | null>(
     "overview",
@@ -185,17 +185,14 @@ const DriverDashboard = () => {
     await signOut();
   };
 
-  const { data: driverInfo } = useQuery({
-    initialData: user.driverInfo,
-    queryKey: ["driverInfo"],
-    queryFn: () => {
-      return getDriver(user.info.uid);
-    },
-    throwOnError(error, query) {
-      console.warn({ ref: "driverInfo", error, query });
-      return false;
-    },
-  });
+  const [driverInfo, setDriverInfo] = useState<DriverEntity | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = watchDriver(user.info.uid, (arg) => {
+      setDriverInfo(arg);
+    });
+    return () => unsubscribe();
+  }, [watchDriver, user.info.uid]);
 
   const { data: activeOrders, isLoading: activeOrdersLoading } = useQuery({
     initialData: [],
@@ -516,7 +513,7 @@ const DriverDashboard = () => {
             animate="visible"
             variants={fadeVariants}
           >
-            <DriverProfile />
+            <DriverProfile driverInfo={driverInfo} />
           </motion.div>
         </Tabs.Item>
       </Tabs>

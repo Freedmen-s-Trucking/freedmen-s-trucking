@@ -33,12 +33,14 @@ const AdminDashboard: React.FC = () => {
     useState<EntityWithPath<PlatformOverviewEntity> | null>(null);
 
   useEffect(() => {
-    fetchPlatformOverview((arg) =>
+    const unsubscribe = fetchPlatformOverview((arg) =>
       setData(
         arg ||
           ({ data: {}, path: "" } as EntityWithPath<PlatformOverviewEntity>),
       ),
     );
+
+    return () => unsubscribe();
   }, [fetchPlatformOverview]);
 
   const onActiveTabChange = (tabindex: number) => {

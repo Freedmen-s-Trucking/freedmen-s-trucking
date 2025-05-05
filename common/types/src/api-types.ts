@@ -85,7 +85,7 @@ export const apiReqProcessIdentityVerificationWithAuthenticate = type({
     GLBPurposeAndDPPAPurpose: "boolean",
     FCRAPurpose: "boolean",
   }),
-});
+}).partial();
 
 export type ApiReqProcessIdentityVerificationWithAuthenticate =
   typeof apiReqProcessIdentityVerificationWithAuthenticate.infer;

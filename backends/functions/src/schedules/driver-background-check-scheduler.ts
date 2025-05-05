@@ -7,6 +7,7 @@ import {sevenYearCriminalReport} from "~src/http-server/authenticate/service";
  * Runs every 5mins to check for drivers with pending background checks
  */
 export const scheduleBackgroundCheck = onSchedule("*/5 * * * *", async () => {
+  console.log("Running scheduler for background check");
   const firestore = getFirestore();
   const driverCollection = firestore.collection(CollectionName.DRIVERS) as CollectionReference<
     DriverEntity,

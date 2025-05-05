@@ -126,24 +126,6 @@ function Index() {
             </button>
           </motion.div>
           <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={welcomeBackVariants}
-            className="flex justify-between text-sm font-medium text-gray-500"
-          >
-            Already have an account?&nbsp;
-            <button
-              onClick={() =>
-                dispatch(setRequestedAuthAction({ type: "login" }))
-              }
-              className="font-bold text-secondary-950 hover:underline"
-            >
-              <Badge className="inline border border-primary-800 bg-primary-100 text-xs text-primary-900">
-                Login
-              </Badge>
-            </button>
-          </motion.div>
-          <motion.div
             className="flex flex-[2] flex-col justify-end text-center xs:flex-[3] md:px-12"
             variants={containerVariants}
           >

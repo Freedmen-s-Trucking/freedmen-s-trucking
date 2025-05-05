@@ -5,7 +5,7 @@ import {
   DriverEntity,
   type,
 } from "@freedmen-s-trucking/types";
-import {CollectionReference, getFirestore} from "firebase-admin/firestore";
+import {CollectionReference, getFirestore, Timestamp} from "firebase-admin/firestore";
 import {Hono} from "hono";
 import {ContentfulStatusCode} from "hono/utils/http-status";
 import {isResponseError, isValidationError} from "up-fetch";
@@ -136,14 +136,28 @@ router.post("/process-identity-verification", async (c) => {
     return c.json({error: "Driver not found"}, 404);
   }
 
+  const driverBirthDate = dbDriver.birthDate;
+  const birthDate = reqBody.user?.dob
+    ? new Date(reqBody.user.dob)
+    : driverBirthDate instanceof Date
+      ? driverBirthDate
+      : typeof driverBirthDate === "string"
+        ? new Date(driverBirthDate)
+        : !!driverBirthDate
+          ? new Timestamp(driverBirthDate.seconds, driverBirthDate.nanoseconds).toDate()
+          : null;
+
   let isNewUser = false;
   if (!dbDriver.authenticateAccessCode) {
+    if (!birthDate) {
+      return c.json({error: "Birth date is required: Please update your profile."}, 400);
+    }
     isNewUser = true;
     const authenticateUserCreateBody = {
       ...reqBody.user,
-      firstName: isAuthenticateMockApi ? "Jonathan" : reqBody.user.firstName,
-      lastName: isAuthenticateMockApi ? "Doe" : reqBody.user.lastName,
-      dob: formatDate(new Date(reqBody.user.dob), "dd-MM-yyyy"),
+      firstName: isAuthenticateMockApi ? "Jonathan" : reqBody.user?.firstName || dbDriver.firstName,
+      lastName: isAuthenticateMockApi ? "Doe" : reqBody.user?.lastName || dbDriver.lastName,
+      dob: formatDate(birthDate, "dd-MM-yyyy"),
     };
     const res = await upFetch("/user/create", {
       body: authenticateUserCreateBody,
@@ -170,17 +184,20 @@ router.post("/process-identity-verification", async (c) => {
       authenticateAccessCode: res.userAccessCode,
     });
   } else {
+    if (!birthDate) {
+      return c.json({error: "Birth date is required: Please update your profile."}, 400);
+    }
     const authenticateUserUpdateBody = {
       ...reqBody.user,
-      dob: formatDate(new Date(reqBody.user.dob), "dd-MM-yyyy"),
-      firstName: isAuthenticateMockApi ? "Jonathan" : reqBody.user.firstName,
-      lastName: isAuthenticateMockApi ? "Doe" : reqBody.user.lastName,
+      dob: formatDate(birthDate, "dd-MM-yyyy"),
+      firstName: isAuthenticateMockApi ? "Jonathan" : reqBody.user?.firstName || dbDriver.firstName,
+      lastName: isAuthenticateMockApi ? "Doe" : reqBody.user?.lastName || dbDriver.lastName,
       userAccessCode: dbDriver.authenticateAccessCode,
     };
     const res = await upFetch("/user/update", {
       method: "PUT",
       body: authenticateUserUpdateBody,
-      schema: apiReqProcessIdentityVerificationWithAuthenticate.get("user").partial().and({
+      schema: apiReqProcessIdentityVerificationWithAuthenticate.required().get("user").partial().and({
         userAccessCode: "string?",
       }),
     }).catch((error) => {
@@ -199,54 +216,55 @@ router.post("/process-identity-verification", async (c) => {
     }
   }
 
-  // Update user consents
-  const authenticateUserConsentBody = {
-    userAccessCode: isAuthenticateMockApi ? "100385a1-4308-49db-889f-9a898fa88c21" : dbDriver.authenticateAccessCode,
-    isBackgroundDisclosureAccepted:
-      reqBody.consents.isBackgroundDisclosureAccepted ?? dbDriver.consents?.isBackgroundDisclosureAccepted ?? false,
-    GLBPurposeAndDPPAPurpose:
-      reqBody.consents.GLBPurposeAndDPPAPurpose ?? dbDriver.consents?.GLBPurposeAndDPPAPurpose ?? false,
-    FCRAPurpose: reqBody.consents.FCRAPurpose ?? dbDriver.consents?.FCRAPurpose ?? false,
-    fullName: isAuthenticateMockApi
-      ? "Jonathan Doe"
-      : `${reqBody.user.firstName.trim()} ${reqBody.user.lastName.trim()}`,
-  };
-  const consentReqRes = await upFetch("/user/consent", {
-    body: authenticateUserConsentBody,
-    schema: type({
-      success: "boolean",
-    }),
-  }).catch((error) => {
-    console.error(error, {authenticateUserConsentBody, isAuthenticateMockApi});
-    if (isResponseError(error)) {
-      if (error.status === 400 && error.data?.errorMessage === "Consent has already been recorded for this user.") {
-        return {success: true};
+  if (reqBody.consents) {
+    // Update user consents
+    const authenticateUserConsentBody = {
+      userAccessCode: isAuthenticateMockApi ? "100385a1-4308-49db-889f-9a898fa88c21" : dbDriver.authenticateAccessCode,
+      isBackgroundDisclosureAccepted:
+        reqBody.consents.isBackgroundDisclosureAccepted ?? dbDriver.consents?.isBackgroundDisclosureAccepted ?? false,
+      GLBPurposeAndDPPAPurpose:
+        reqBody.consents.GLBPurposeAndDPPAPurpose ?? dbDriver.consents?.GLBPurposeAndDPPAPurpose ?? false,
+      FCRAPurpose: reqBody.consents.FCRAPurpose ?? dbDriver.consents?.FCRAPurpose ?? false,
+      fullName: isAuthenticateMockApi
+        ? "Jonathan Doe"
+        : `${(reqBody.user?.firstName || dbDriver.firstName).trim()} ${(reqBody.user?.lastName || dbDriver.lastName).trim()}`,
+    };
+    const consentReqRes = await upFetch("/user/consent", {
+      body: authenticateUserConsentBody,
+      schema: type({
+        success: "boolean",
+      }),
+    }).catch((error) => {
+      console.error(error, {authenticateUserConsentBody, isAuthenticateMockApi});
+      if (isResponseError(error)) {
+        if (error.status === 400 && error.data?.errorMessage === "Consent has already been recorded for this user.") {
+          return {success: true};
+        }
+        return c.json({error: error.data, endpoint: error.request.url}, error.status as ContentfulStatusCode);
+      } else if (isValidationError(error)) {
+        return c.json({error: error.issues}, 400);
+      } else {
+        return c.json({error: "Failed to parse consents", raw: error}, 500);
       }
-      return c.json({error: error.data, endpoint: error.request.url}, error.status as ContentfulStatusCode);
-    } else if (isValidationError(error)) {
-      return c.json({error: error.issues}, 400);
-    } else {
-      return c.json({error: "Failed to parse consents", raw: error}, 500);
-    }
-  });
-
-  if (consentReqRes instanceof Response) {
-    return consentReqRes;
-  }
-
-  if (consentReqRes.success) {
-    dbDriver.consents = reqBody.consents;
-    await dbDriverRef.update({
-      consents: reqBody.consents,
     });
-  } else {
-    return c.json({error: "Failed to save consents", raw: consentReqRes}, 500);
-  }
 
-  if (!dbDriver.authenticateAccessCode || !dbDriver.consents) {
-    return c.json({error: "Driver consents not found", raw: dbDriver}, 500);
-  }
+    if (consentReqRes instanceof Response) {
+      return consentReqRes;
+    }
 
+    if (consentReqRes.success) {
+      dbDriver.consents = reqBody.consents;
+      await dbDriverRef.update({
+        consents: reqBody.consents,
+      });
+    } else {
+      return c.json({error: "Failed to save consents", raw: consentReqRes}, 500);
+    }
+
+    if (!dbDriver.authenticateAccessCode || !dbDriver.consents) {
+      return c.json({error: "Driver consents not found", raw: dbDriver}, 500);
+    }
+  }
   /**
    * Can generate the following error: 400
    * {
@@ -300,20 +318,17 @@ router.post("/process-identity-verification", async (c) => {
     ...res,
   } satisfies ApiResProcessIdentityVerificationWithAuthenticate;
 
-  // if (isNewUser) {
-  try {
-    console.info("driver details", {...dbDriver});
-    console.log("driver details", {...dbDriver});
-    console.debug("driver details", {...dbDriver});
-    if (dbDriver.email) {
-      await sendWelcomeMail(dbDriver.email, res.token);
-    } else {
-      console.info("Driver email not found", {driverId: dbDriver.uid});
+  if (isNewUser) {
+    try {
+      if (dbDriver.email) {
+        await sendWelcomeMail(dbDriver.email, resBody.processVerificationUrl);
+      } else {
+        console.info("Unable to send the welcome mail, the driver email not found", {driverId: dbDriver.uid});
+      }
+    } catch (error) {
+      console.error("Unable to send the welcome mail", {driverId: dbDriver.uid, error});
     }
-  } catch (error) {
-    console.error(error);
   }
-  // }
   return c.json(resBody, 200);
 });
 

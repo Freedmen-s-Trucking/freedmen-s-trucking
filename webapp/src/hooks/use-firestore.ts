@@ -258,6 +258,28 @@ const useDriverDbOperations = (db: Firestore) => {
     [db],
   );
 
+  const watchDriver = useCallback(
+    (uid: string, onValue: (driver: DriverEntity | null) => void) => {
+      checkFalsyAndThrow(
+        { uid },
+        "FirestoreError::getDriver uid must not be falsy",
+      );
+      const docRef = doc(
+        collection(db, CollectionName.DRIVERS),
+        uid,
+      ).withConverter(driverEntityConverter);
+      const unsubscribe = onSnapshot(docRef, (snapshot) => {
+        if (snapshot.exists()) {
+          onValue(snapshot.data());
+        } else {
+          onValue(null);
+        }
+      });
+      return unsubscribe;
+    },
+    [db],
+  );
+
   /**
    * Fetches active orders user orders into the database.
    */
@@ -370,6 +392,7 @@ const useDriverDbOperations = (db: Firestore) => {
     getDriver,
     fetchCompletedOrder,
     fetchCurrentActiveOrders,
+    watchDriver,
   };
 };
 
@@ -428,9 +451,7 @@ const useAdminDbOperations = (db: Firestore) => {
    * Note: Firebase security rules is the one responsible to grant access to the data, not client code.
    */
   const fetchPlatformOverview = useCallback(
-    async (
-      onValue: (arg: EntityWithPath<PlatformOverviewEntity> | null) => void,
-    ) => {
+    (onValue: (arg: EntityWithPath<PlatformOverviewEntity> | null) => void) => {
       const docRef = doc(db, LATEST_PLATFORM_OVERVIEW_PATH);
       const unsubscribe = onSnapshot<
         PlatformOverviewEntity,
@@ -522,6 +543,7 @@ export const useDbOperations = () => {
     getDriver,
     fetchCompletedOrder,
     fetchCurrentActiveOrders,
+    watchDriver,
   } = useDriverDbOperations(db);
 
   const {
@@ -539,6 +561,7 @@ export const useDbOperations = () => {
     fetchCompletedOrder,
     fetchCurrentActiveOrders,
     getUser,
+    watchDriver,
     updateDriver: updateDriver,
     getDriver,
     updateOrderStatus: updateOrderStatus,

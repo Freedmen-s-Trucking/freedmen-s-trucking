@@ -492,14 +492,14 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
         "driver-insurance",
       );
 
-      await insertUser(user.info.uid, {
+      const dataToUpdate: Partial<DriverEntity> = {
         displayName: `${firstName} ${lastName}`,
         firstName: firstName,
         lastName: lastName,
         birthDate: (birthDate && Timestamp.fromDate(birthDate)) || null,
         phoneNumber: phoneNumber,
         isPhoneNumberVerified: false,
-      });
+      };
       const driverInfo: DriverEntity = {
         ...user.info,
         driverLicenseVerificationStatus: "pending",
@@ -524,11 +524,16 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
         activeTasks: 0,
         payoutMethods: [],
         withdrawalHistory: [],
+        ...dataToUpdate,
       };
 
       delete driverInfo.authenticateAccessCode;
 
-      await updateDriver(user.info.uid, driverInfo);
+      await Promise.all([
+        insertUser(user.info.uid, dataToUpdate),
+        updateDriver(user.info.uid, driverInfo),
+      ]);
+
       dispatch(
         setUser({
           ...user,
