@@ -40,7 +40,10 @@ export const scheduleDriverIdentityVerification = onSchedule("*/5 * * * *", asyn
             if (error.data.errorCode === "IDENTITY_ALREADY_VERIFIED") {
               return {success: true, issues: []};
             }
-            return {success: false, issues: [error.data?.errorMessage]};
+            if (error.data.errorCode === "IDENTITY_DEPENDENCY_CHECK_NOT_INITIATED") {
+              throw error;
+            }
+            return {success: false, issues: [`${error.data.errorCode || "ERROR"}: ${error.data?.errorMessage}`]};
           } else {
             console.error("Failed to verify driver identity", {driverId: driverSnapshot.id, error});
             return null;
@@ -79,7 +82,12 @@ export const scheduleDriverIdentityVerification = onSchedule("*/5 * * * *", asyn
         await Promise.all([dbTask, mailTask]);
       }
     } catch (error) {
-      console.error(error);
+      if (isResponseError(error)) {
+        if (error.data.errorCode === "IDENTITY_DEPENDENCY_CHECK_NOT_INITIATED") {
+          continue;
+        }
+      }
+      console.error("Failed to verify driver identity", {driverId: driverSnapshot.id, error});
     }
   }
 });

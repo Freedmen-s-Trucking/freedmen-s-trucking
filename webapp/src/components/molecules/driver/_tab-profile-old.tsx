@@ -1,6 +1,4 @@
 import {
-  ApiReqProcessIdentityVerificationWithAuthenticate,
-  apiResProcessIdentityVerificationWithAuthenticate,
   ApiResSetupConnectedAccount,
   DriverEntity,
   type,
@@ -22,7 +20,7 @@ import { useEffect, useRef, useState } from "react";
 import { CiImageOff } from "react-icons/ci";
 import { HiX } from "react-icons/hi";
 import { MdRestartAlt } from "react-icons/md";
-import { isResponseError } from "up-fetch";
+import { ResponseError } from "up-fetch";
 import {
   AppImage,
   BodyText,
@@ -34,11 +32,11 @@ import { useAuth } from "~/hooks/use-auth";
 import { useDbOperations } from "~/hooks/use-firestore";
 import { useServerRequest } from "~/hooks/use-server-request";
 import { useStorageOperations } from "~/hooks/use-storage";
-// import { setUser, updateDriverInfo } from "~/stores/controllers/auth-ctrl";
-// import { useAppDispatch } from "~/stores/hooks";
+import { setUser, updateDriverInfo } from "~/stores/controllers/auth-ctrl";
+import { useAppDispatch } from "~/stores/hooks";
 import { driverVerificationBadges, vehicleTypes } from "~/utils/constants";
 import { PUBLIC_WEBAPP_URL } from "~/utils/envs";
-import { getDriverVerificationStatus } from "~/utils/functions";
+import { fileToBase64, getDriverVerificationStatus } from "~/utils/functions";
 
 const getVerificationBadge = (
   status: keyof typeof driverVerificationBadges,
@@ -59,35 +57,33 @@ const getVerificationBadge = (
   );
 };
 
-export const DriverProfile: React.FC<{ driverInfo: DriverEntity | null }> = ({
-  driverInfo,
-}) => {
+export const DriverProfile: React.FC = () => {
   const { fetchImage, uploadCertificate } = useStorageOperations();
   const { user } = useAuth();
-  // const dispatch = useAppDispatch();
+  const driverInfo = user.driverInfo;
+  const dispatch = useAppDispatch();
   const queryClient = useQueryClient();
   const { updateDriver: _updateDriver } = useDbOperations();
-  // const driverLicenseIdFrontInputRef = useRef<HTMLInputElement>(null);
-  // const driverLicenseIdBackInputRef = useRef<HTMLInputElement>(null);
+  const driverLicenseIdFrontInputRef = useRef<HTMLInputElement>(null);
+  const driverLicenseIdBackInputRef = useRef<HTMLInputElement>(null);
   const driverInsuranceInputRef = useRef<HTMLInputElement>(null);
   const [certificateUploadError, setCertificateUploadError] = useState<
     string | null
   >(null);
-  // const [driverLicenseIdFront, setDriverLicenseIdFront] = useState<File | null>(
-  //   null,
-  // );
-  // const [driverLicenseIdBack, setDriverLicenseIdBack] = useState<File | null>(
-  //   null,
-  // );
+  const [driverLicenseIdFront, setDriverLicenseIdFront] = useState<File | null>(
+    null,
+  );
+  const [driverLicenseIdBack, setDriverLicenseIdBack] = useState<File | null>(
+    null,
+  );
   const [driverInsurance, setDriverInsurance] = useState<File | null>(null);
 
   const { mutate: updateDriver } = useMutation({
     mutationFn: async (driverInfo: Partial<DriverEntity>) => {
       return _updateDriver(user.info.uid, driverInfo);
     },
-    onSuccess() {
-      // onSuccess(_, variables) {
-      // dispatch(updateDriverInfo(variables));
+    onSuccess(_, variables) {
+      dispatch(updateDriverInfo(variables));
       queryClient.invalidateQueries({ queryKey: ["driverInfo"] });
     },
     onError(err) {
@@ -96,20 +92,20 @@ export const DriverProfile: React.FC<{ driverInfo: DriverEntity | null }> = ({
     },
   });
 
-  // const { data: driverLicenseFrontUrl } = useQuery({
-  //   initialData: "",
-  //   enabled: !!driverInfo?.driverLicenseFrontStoragePath,
-  //   queryKey: ["driverLicenseUrl", driverInfo?.driverLicenseFrontStoragePath],
-  //   queryFn: () => fetchImage(driverInfo?.driverLicenseFrontStoragePath || ""),
-  //   throwOnError: false,
-  // });
-  // const { data: driverLicenseBackUrl } = useQuery({
-  //   initialData: "",
-  //   enabled: !!driverInfo?.driverLicenseBackStoragePath,
-  //   queryKey: ["driverLicenseUrl", driverInfo?.driverLicenseBackStoragePath],
-  //   queryFn: () => fetchImage(driverInfo?.driverLicenseBackStoragePath || ""),
-  //   throwOnError: false,
-  // });
+  const { data: driverLicenseFrontUrl } = useQuery({
+    initialData: "",
+    enabled: !!driverInfo?.driverLicenseFrontStoragePath,
+    queryKey: ["driverLicenseUrl", driverInfo?.driverLicenseFrontStoragePath],
+    queryFn: () => fetchImage(driverInfo?.driverLicenseFrontStoragePath || ""),
+    throwOnError: false,
+  });
+  const { data: driverLicenseBackUrl } = useQuery({
+    initialData: "",
+    enabled: !!driverInfo?.driverLicenseBackStoragePath,
+    queryKey: ["driverLicenseUrl", driverInfo?.driverLicenseBackStoragePath],
+    queryFn: () => fetchImage(driverInfo?.driverLicenseBackStoragePath || ""),
+    throwOnError: false,
+  });
   const { data: driverInsuranceUrl } = useQuery({
     initialData: "",
     enabled: !!driverInfo?.driverInsuranceStoragePath,
@@ -136,7 +132,132 @@ export const DriverProfile: React.FC<{ driverInfo: DriverEntity | null }> = ({
     }
   };
 
-  const serverRequest = useServerRequest();
+  const { mutate: driverLicenseFinalCheck } = useMutation({
+    mutationKey: [
+      "driverLicenseFinalCheck",
+      driverInfo?.authenticateAccessCode,
+    ],
+    retry(failureCount, error) {
+      if (
+        error instanceof ResponseError &&
+        error.data?.error?.errorMessage &&
+        error.data?.error?.errorCode &&
+        error.status === 400
+      ) {
+        const licenseStatus = {
+          driverLicenseVerificationStatus:
+            error.data.error.errorCode === "IDENTITY_ALREADY_VERIFIED"
+              ? "verified"
+              : "failed",
+          driverLicenseVerificationIssues:
+            error.data.error.errorCode === "IDENTITY_ALREADY_VERIFIED"
+              ? []
+              : [
+                  `${error.data.error.errorCode || "Error"}: ${error.data.error.errorMessage}`,
+                ],
+        } as Partial<DriverEntity>;
+
+        updateDriver(licenseStatus);
+        dispatch(updateDriverInfo(licenseStatus));
+        return false;
+      }
+
+      if (failureCount < 3) {
+        return true;
+      }
+      return false;
+    },
+    retryDelay: 30_000, // This mus not exceed 30s from the doc: https://tanstack.com/query/latest/docs/framework/react/guides/query-retries#retry-delay
+    mutationFn: async () => {
+      const res = await serverRequest("/authenticate/identity/verify", {
+        method: "GET",
+        schema: type({
+          success: "boolean",
+          IDVScore: {
+            ssn: "number | null",
+            name: "number | null",
+            dob: "number | null",
+          },
+        }),
+      });
+
+      const driverStatus = {
+        driverLicenseVerificationStatus: res.success ? "verified" : "failed",
+        driverLicenseVerificationIssues: [],
+      } as Partial<DriverEntity>;
+
+      updateDriver(driverStatus);
+      dispatch(updateDriverInfo(driverStatus));
+      return res;
+    },
+    throwOnError() {
+      return false;
+    },
+  });
+
+  useQuery({
+    initialData: null,
+    enabled: driverInfo?.driverLicenseVerificationStatus !== "verified",
+    queryKey: [
+      "driverLicenseUploadCheck",
+      driverInfo?.driverLicenseFrontStoragePath,
+      driverInfo?.driverLicenseBackStoragePath,
+    ],
+    retry(failureCount, error) {
+      if (error instanceof ResponseError && error.data?.error?.errorMessage) {
+        const licenseStatus = {
+          driverLicenseVerificationStatus: "failed",
+          driverLicenseVerificationIssues: [error.data?.error?.errorMessage],
+        } as Partial<DriverEntity>;
+
+        updateDriver(licenseStatus);
+        dispatch(updateDriverInfo(licenseStatus));
+        return false;
+      }
+
+      if (failureCount < 3) {
+        return true;
+      }
+      return false;
+    },
+    retryDelay: 30_000, // This mus not exceed 30s from the doc: https://tanstack.com/query/latest/docs/framework/react/guides/query-retries#retry-delay
+    queryFn: async () => {
+      const res = await serverRequest(
+        "/authenticate/identity/document/scan/status",
+        {
+          method: "GET",
+          schema: type({
+            success: "boolean",
+            result:
+              "'complete' | 'parsing_failed' | 'unknown_state' | 'unknown_error' | 'under_review'",
+            numAttemptsLeft: "number",
+            description: "string",
+          }),
+        },
+      );
+
+      const driverStatus = {
+        driverLicenseVerificationStatus:
+          res.result === "parsing_failed" ? "failed" : "pending",
+        driverLicenseVerificationIssues:
+          res.result === "parsing_failed"
+            ? [
+                "Unable to detect the image. This can be caused by poor-quality photos, bad lighting, glares, or other things that interfere with the image. Please try again and make sure that the ID is on a contrasted surface (i.e., a white ID on a black background or a black ID on a white background)",
+              ]
+            : [],
+      } as Partial<DriverEntity>;
+      updateDriver(driverStatus);
+      dispatch(updateDriverInfo(driverStatus));
+
+      if (res.result === "complete") {
+        driverLicenseFinalCheck();
+      }
+      return res;
+    },
+    throwOnError() {
+      return false;
+    },
+  });
   const setDriverVehicle = async (vehicleType: VehicleType) => {
     updateDriver({
       vehicles: [
@@ -151,39 +272,105 @@ export const DriverProfile: React.FC<{ driverInfo: DriverEntity | null }> = ({
     mutate: handleUploadLicense,
     isPending: handleUploadLicenseIsPending,
   } = useMutation({
-    onError(error) {
-      if (isResponseError(error)) {
-        if (error.status === 400) {
-          setCertificateUploadError(
-            JSON.stringify(error.data).replace(/["{}]/g, ""),
-          );
-        }
-      }
-    },
-    mutationFn: async () => {
-      const res = await serverRequest(
-        "/authenticate/process-identity-verification",
-        {
-          method: "POST",
-          body: {
-            medallion: {
-              redirectURL: PUBLIC_WEBAPP_URL?.startsWith("https")
-                ? PUBLIC_WEBAPP_URL
-                : "https://freedmen-s-trucking.web.app",
+    mutationFn: async (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      // WARNING: e.currentTarget is null for unknown reason that is why we use the target instead.
+      const fd = new FormData(e.currentTarget || e.target);
+      const frontF = fd.get("driverLicenseFront");
+      const backF = fd.get("driverLicenseBack");
+      console.log({ frontF, backF });
+      if (frontF instanceof File && backF instanceof File) {
+        const frontNewPath = await uploadCertificate(
+          user.info.uid,
+          frontF,
+          "driver-license-front",
+        );
+        const backNewPath = await uploadCertificate(
+          user.info.uid,
+          backF,
+          "driver-license-back",
+        );
+        const { success } = await serverRequest(
+          "/authenticate/identity/document/scan",
+          {
+            method: "POST",
+            body: {
+              userAccessCode: driverInfo?.authenticateAccessCode,
+              idFront: await fileToBase64(frontF),
+              idBack: await fileToBase64(backF),
+              country: 0, // Country code can be found here: https://docs.authenticate.com/docs/supported-countries-for-upload-id
             },
-          } satisfies ApiReqProcessIdentityVerificationWithAuthenticate,
-          schema: apiResProcessIdentityVerificationWithAuthenticate,
-        },
-      );
-      updateDriver({
-        driverLicenseFrontStoragePath: null,
-        driverLicenseBackStoragePath: null,
-        driverLicenseVerificationStatus: "pending",
-        driverLicenseVerificationIssues: [],
-      });
-      setCertificateUploadError(null);
+            schema: type({
+              success: "boolean",
+            }),
+            onError(error) {
+              if (error instanceof ResponseError) {
+                switch (error.status) {
+                  case 413:
+                    setCertificateUploadError(
+                      "image too large. Reduce the size of the uploaded certificate and try again.",
+                    );
+                    break;
+                  case 400:
+                  case 417:
+                    setCertificateUploadError(error.data?.errorMessage || null);
+                    break;
+                }
+              }
+            },
+          },
+        );
 
-      window.location.href = res.processVerificationUrl;
+        if (!success) {
+          throw new Error("Failed to scan driver license");
+        }
+        updateDriver({
+          driverLicenseFrontStoragePath: frontNewPath,
+          driverLicenseBackStoragePath: backNewPath,
+          driverLicenseVerificationStatus: "pending",
+          driverLicenseVerificationIssues: [],
+        });
+        setDriverLicenseIdBack(null);
+        setDriverLicenseIdFront(null);
+        setCertificateUploadError(null);
+        dispatch(
+          setUser({
+            ...user,
+            driverInfo: {
+              ...(user.driverInfo || ({} as DriverEntity)),
+              driverLicenseFrontStoragePath: frontNewPath,
+              driverLicenseBackStoragePath: backNewPath,
+              driverLicenseVerificationStatus: "pending",
+              driverLicenseVerificationIssues: [],
+            },
+          }),
+        );
+        if (driverLicenseIdFrontInputRef.current?.value) {
+          driverLicenseIdFrontInputRef.current.value = "";
+        }
+        if (driverLicenseIdBackInputRef.current?.value) {
+          driverLicenseIdBackInputRef.current.value = "";
+        }
+        queryClient.invalidateQueries({
+          queryKey: [
+            "driverLicenseUrl",
+            driverInfo?.driverLicenseFrontStoragePath,
+          ],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [
+            "driverLicenseUrl",
+            driverInfo?.driverLicenseBackStoragePath,
+          ],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [
+            "driverLicenseUploadCheck",
+            driverInfo?.driverLicenseFrontStoragePath,
+            driverInfo?.driverLicenseBackStoragePath,
+          ],
+        });
+      }
     },
   });
 
@@ -208,6 +395,17 @@ export const DriverProfile: React.FC<{ driverInfo: DriverEntity | null }> = ({
           driverInsuranceVerificationStatus: "pending",
           driverInsuranceVerificationIssues: [],
         });
+        dispatch(
+          setUser({
+            ...user,
+            driverInfo: {
+              ...(user.driverInfo || ({} as DriverEntity)),
+              driverInsuranceStoragePath: res,
+              driverInsuranceVerificationStatus: "pending",
+              driverInsuranceVerificationIssues: [],
+            },
+          }),
+        );
         if (driverInsuranceInputRef.current) {
           driverInsuranceInputRef.current.value = "";
         }
@@ -222,6 +420,7 @@ export const DriverProfile: React.FC<{ driverInfo: DriverEntity | null }> = ({
     },
   });
 
+  const serverRequest = useServerRequest();
   const { mutate: setupDriverPayment, isPending: setupDriverPaymentIsPending } =
     useMutation({
       mutationFn: async () => {
@@ -291,6 +490,7 @@ export const DriverProfile: React.FC<{ driverInfo: DriverEntity | null }> = ({
             </div>
           </Banner>
         )}
+      {/* <Card> className="lg:col-span-2"> */}
       <Card>
         <h5 className="mb-4 text-xl font-bold">Personal Information</h5>
         <div className="mb-6 flex flex-col sm:flex-row">
@@ -301,6 +501,9 @@ export const DriverProfile: React.FC<{ driverInfo: DriverEntity | null }> = ({
               size="xl"
               rounded
             />
+            {/* <Button size="xs" className="mt-2 w-full">
+                    Change Photo
+                  </Button> */}
           </div>
           <div className="flex-1 space-y-4">
             <div>
@@ -331,58 +534,121 @@ export const DriverProfile: React.FC<{ driverInfo: DriverEntity | null }> = ({
         </div>
         {/* Driver License Information */}
         <div className="mt-4 border-t border-gray-200 pt-4">
-          <div className="flex flex-col items-start justify-between md:flex-row">
+          <div className="flex items-start justify-between">
             <h5 className="mb-3 text-lg font-bold">
-              Identity Verification Status
+              Driver License Information
             </h5>
-            <div className="inline-flex items-center">
+            <div>
               {getVerificationBadge(
                 driverInfo.driverLicenseVerificationStatus || "failed",
-              )}
-              {driverInfo.driverLicenseVerificationStatus === "failed" && (
-                <SecondaryButton
-                  color="light"
-                  onClick={() => handleUploadLicense()}
-                  className="ml-2 inline-flex cursor-pointer flex-row items-center justify-center gap-1 overflow-hidden rounded-lg border-none bg-white px-1 py-1 text-xs text-primary-900 shadow-md shadow-primary-900"
-                  isLoading={handleUploadLicenseIsPending}
-                >
-                  <MdRestartAlt className="inline text-2xl" /> Retry
-                </SecondaryButton>
               )}
             </div>
           </div>
           <div className="rounded-lg bg-primary-50">
-            {driverInfo.driverLicenseVerificationStatus === "failed" && (
-              <div className="mt-3 border-l-4 border-red-400 bg-red-50 p-4">
-                <div className="flex">
-                  <div className="ml-3">
-                    <h3 className="text-sm font-medium text-red-800">
-                      Verification Issues
-                    </h3>
-                    <div className="mt-2 text-sm text-red-700">
-                      <ul className="list-disc space-y-1 pl-5">
-                        {driverInfo.driverLicenseVerificationIssues?.map(
-                          (issue, index) => (
-                            <li key={index} className="hyphens-auto break-all">
-                              {issue}
-                            </li>
-                          ),
-                        )}
-                      </ul>
+            <form
+              onSubmit={handleUploadLicense}
+              className="mb-3 flex flex-col items-center"
+            >
+              <div className="flex flex-col items-center gap-2 sm:flex-row sm:items-start sm:justify-stretch">
+                <div className="relative">
+                  <AppImage
+                    fallback={<CiImageOff className="h-40 w-40" />}
+                    src={
+                      (driverLicenseIdFront &&
+                        URL.createObjectURL(driverLicenseIdFront)) ||
+                      driverLicenseFrontUrl
+                    }
+                    alt="driver license front"
+                    className="flex h-auto max-w-[80vw] rounded-md sm:w-full"
+                  />
+                  {driverInfo.driverLicenseVerificationStatus !==
+                    "verified" && (
+                    <label className="absolute bottom-2 right-2 ml-2 inline-flex h-8 w-8 cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-white shadow-md shadow-primary-900">
+                      <MdRestartAlt className="text-2xl" />
+                      <input
+                        type="file"
+                        name="driverLicenseFront"
+                        accept=".png,.jpg,.jpeg"
+                        multiple={false}
+                        ref={driverLicenseIdFrontInputRef}
+                        required
+                        onChange={(e) =>
+                          onFileInputChanged(e, setDriverLicenseIdFront)
+                        }
+                        className="absolute left-0 top-0 z-[-1] h-8 w-8 opacity-0"
+                      />
+                    </label>
+                  )}
+                </div>
+                <div className="relative">
+                  <AppImage
+                    fallback={<CiImageOff className="h-40 w-40" />}
+                    src={
+                      (driverLicenseIdBack &&
+                        URL.createObjectURL(driverLicenseIdBack)) ||
+                      driverLicenseBackUrl
+                    }
+                    alt="driver license back"
+                    className="h-auto max-w-[80vw] rounded-md sm:w-full"
+                  />
+                  {driverInfo.driverLicenseVerificationStatus !==
+                    "verified" && (
+                    <label className="absolute bottom-2 right-2 ml-2 inline-flex h-8 w-8 cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-white shadow-md shadow-primary-900">
+                      <MdRestartAlt className="text-2xl" />
+                      <input
+                        type="file"
+                        name="driverLicenseBack"
+                        accept=".png,.jpg,.jpeg"
+                        ref={driverLicenseIdBackInputRef}
+                        onChange={(e) =>
+                          onFileInputChanged(e, setDriverLicenseIdBack)
+                        }
+                        multiple={false}
+                        required
+                        className="absolute left-0 top-0 z-[-1] h-8 w-8 opacity-0"
+                      />
+                    </label>
+                  )}
+                </div>
+              </div>
+              {driverInfo.driverLicenseVerificationStatus === "failed" && (
+                <div className="mt-3 border-l-4 border-red-400 bg-red-50 p-4">
+                  <div className="flex">
+                    <div className="ml-3">
+                      <h3 className="text-sm font-medium text-red-800">
+                        Verification Issues
+                      </h3>
+                      <div className="mt-2 text-sm text-red-700">
+                        <ul className="list-disc space-y-1 pl-5">
+                          {driverInfo.driverLicenseVerificationIssues?.map(
+                            (issue, index) => <li key={index}>{issue}</li>,
+                          )}
+                        </ul>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
-            {certificateUploadError && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="text-red-500"
-              >
-                {certificateUploadError}
-              </motion.div>
-            )}
+              )}
+              {certificateUploadError && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="text-red-500"
+                >
+                  {certificateUploadError}
+                </motion.div>
+              )}
+              {driverInfo.driverLicenseVerificationStatus !== "verified" && (
+                <SecondaryButton
+                  type="submit"
+                  color="light"
+                  className="mt-5 bg-white py-2"
+                  isLoading={handleUploadLicenseIsPending}
+                >
+                  Upload New License
+                </SecondaryButton>
+              )}
+            </form>
           </div>
         </div>
 
