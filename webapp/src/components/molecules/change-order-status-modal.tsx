@@ -251,7 +251,6 @@ const GetNextActionButton = ({
         onError(positionError) {
           if (positionError) {
             console.error("Geolocation error:", positionError);
-            setError(`Geolocation error: ${positionError.message}`);
           }
         },
       });
