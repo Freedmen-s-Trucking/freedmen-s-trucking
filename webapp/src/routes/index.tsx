@@ -106,7 +106,25 @@ function Index() {
         animate="visible"
         variants={containerVariants}
       >
-        <Container className="flex h-screen w-screen flex-col items-center gap-1 px-4 transition-colors duration-300 sm:gap-3 sm:p-12 sm:px-8 md:gap-8 md:p-16 lg:gap-12">
+        <Container className="flex h-screen w-screen flex-col items-center gap-1 p-4 transition-colors duration-300 sm:gap-3 sm:p-12 sm:px-8 md:gap-8 md:p-16 lg:gap-12">
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={welcomeBackVariants}
+            className="flex justify-between text-sm font-medium text-gray-500"
+          >
+            Already have an account?&nbsp;
+            <button
+              onClick={() =>
+                dispatch(setRequestedAuthAction({ type: "login" }))
+              }
+              className="font-bold text-secondary-950 hover:underline"
+            >
+              <Badge className="inline border border-primary-800 bg-primary-100 text-xs text-primary-900">
+                Login
+              </Badge>
+            </button>
+          </motion.div>
           <motion.div
             initial="hidden"
             animate="visible"
