@@ -9,7 +9,7 @@ const isFunctionEmulator = process.env.FUNCTIONS_EMULATOR === "true";
 /**
  * Extracts text from an image using Google Cloud Vision API.
  * @param path - The path to the image file in Google Cloud Storage.
- * @returns The extracted text from the image or null if extraction fails.
+ * @return The extracted text from the image or null if extraction fails.
  */
 const extractTextFromImage = async (path: string) => {
   if (isFunctionEmulator) {
@@ -159,7 +159,7 @@ const verifyDriverInsurance = async (
 
     const driverLicenseDetails = extractedDriverLicenseDetails(JSON.parse(rawExtractedDriverLicenseDetails));
     if (driverLicenseDetails instanceof type.errors) {
-      console.warn("Failed to extract driver license details", {driverId: driverSnapshot.id});
+      console.warn("Failed to extract driver license details", {driverId: driverSnapshot.id, driverLicenseDetails});
       // TODO:: send email
       await driverCollection.doc(driverSnapshot.id).update({
         driverInsuranceVerificationIssues: driverLicenseDetails.map((error) => error.message),
@@ -170,7 +170,7 @@ const verifyDriverInsurance = async (
 
     const expirationDate = new Date(driverLicenseDetails.policy_expiration_date);
     if (expirationDate < new Date()) {
-      console.warn("Driver's insurance has expired", {driverId: driverSnapshot.id});
+      console.warn("Driver's insurance has expired", {driverId: driverSnapshot.id, driverLicenseDetails});
       await driverCollection.doc(driverSnapshot.id).update({
         driverInsuranceVerificationIssues: ["Insurance has expired"],
         driverInsuranceVerificationStatus: "failed",

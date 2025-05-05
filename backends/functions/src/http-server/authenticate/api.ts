@@ -143,7 +143,7 @@ router.post("/process-identity-verification", async (c) => {
       ? driverBirthDate
       : typeof driverBirthDate === "string"
         ? new Date(driverBirthDate)
-        : !!driverBirthDate
+        : driverBirthDate
           ? new Timestamp(driverBirthDate.seconds, driverBirthDate.nanoseconds).toDate()
           : null;
 
