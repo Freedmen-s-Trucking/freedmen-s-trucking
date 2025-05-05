@@ -1,0 +1,20 @@
+{
+  "name": "Freedmen's Trucking",
+  "short_name": "Freedmen's Trucking",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFCFA",
+  "theme_color": "#382114",
+  "icons": [
+    {
+      "src": "/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

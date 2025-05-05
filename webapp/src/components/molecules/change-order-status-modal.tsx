@@ -337,7 +337,7 @@ const GetNextActionButton = ({
       onError: (error) => {
         console.error("Failed to update order status:", error);
         setIsLoading(false);
-        setShowStatusChangeModal(false);
+        // setShowStatusChangeModal(false);
       },
     });
 
