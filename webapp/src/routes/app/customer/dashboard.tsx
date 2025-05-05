@@ -207,6 +207,7 @@ const CustomerDashboard = () => {
       <Tabs
         theme={tabTheme}
         variant="underline"
+        className="[&>div]:scrollbar-hide mb-4 [&>div]:flex-row [&>div]:flex-nowrap [&>div]:overflow-x-auto"
         onActiveTabChange={(tab) => setActiveTab(tabs[tab])}
       >
         <Tabs.Item

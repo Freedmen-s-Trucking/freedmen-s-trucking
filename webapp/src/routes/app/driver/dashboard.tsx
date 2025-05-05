@@ -307,7 +307,7 @@ const DriverDashboard = () => {
         variant="underline"
         theme={tabTheme}
         onActiveTabChange={(tab) => setActiveTab(tabs[tab])}
-        className="focus:[&>button]:outline-none focus:[&>button]:ring-0"
+        className="[&>div]:scrollbar-hide mb-4 focus:[&>button]:outline-none focus:[&>button]:ring-0 [&>div]:flex-row [&>div]:flex-nowrap [&>div]:overflow-x-auto"
       >
         <Tabs.Item
           active={activeTab === "overview"}

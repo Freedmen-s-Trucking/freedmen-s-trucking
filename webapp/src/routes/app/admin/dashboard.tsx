@@ -74,7 +74,7 @@ const AdminDashboard: React.FC = () => {
           theme={tabTheme}
           aria-label="Admin Dashboard Tabs"
           variant="underline"
-          className="mb-4"
+          className="[&>div]:scrollbar-hide mb-4 [&>div]:flex-row [&>div]:flex-nowrap [&>div]:overflow-x-auto"
           onActiveTabChange={onActiveTabChange}
         >
           <Tabs.Item
