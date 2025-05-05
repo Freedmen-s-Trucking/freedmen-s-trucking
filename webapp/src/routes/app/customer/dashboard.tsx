@@ -49,6 +49,7 @@ const CustomerDashboard = () => {
   const navigate = useNavigate();
   const logOut = async () => {
     await signOut();
+    window.location.href = "/";
   };
 
   const { data: activeOrders, isLoading: activeOrdersLoading } = useQuery({

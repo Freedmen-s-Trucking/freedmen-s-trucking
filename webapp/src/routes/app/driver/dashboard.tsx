@@ -183,6 +183,7 @@ const DriverDashboard = () => {
   const navigate = useNavigate();
   const logOut = async () => {
     await signOut();
+    window.location.href = "/";
   };
 
   const [driverInfo, setDriverInfo] = useState<DriverEntity | null>(null);

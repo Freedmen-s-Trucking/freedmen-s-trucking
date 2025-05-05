@@ -22,6 +22,10 @@ const ProfileDropdown: React.FC = () => {
   };
   const { user, signOut } = useAuth();
 
+  const logOut = async () => {
+    await signOut();
+    window.location.href = "/";
+  };
   const onSignInComplete = () => {
     setAuthAction(null);
   };
@@ -100,7 +104,7 @@ const ProfileDropdown: React.FC = () => {
             Customer Dashboard
           </Dropdown.Item>
           <Dropdown.Divider />
-          <Dropdown.Item icon={HiLogout} onClick={signOut}>
+          <Dropdown.Item icon={HiLogout} onClick={logOut}>
             Sign out
           </Dropdown.Item>
         </Dropdown>

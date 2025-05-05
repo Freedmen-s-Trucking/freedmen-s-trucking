@@ -116,7 +116,12 @@ function Index() {
             Already have an account?&nbsp;
             <button
               onClick={() =>
-                dispatch(setRequestedAuthAction({ type: "login" }))
+                dispatch(
+                  setRequestedAuthAction({
+                    type: "login",
+                    redirectToDashboard: true,
+                  }),
+                )
               }
               className="font-bold text-secondary-950 hover:underline"
             >

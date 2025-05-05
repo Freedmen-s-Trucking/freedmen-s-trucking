@@ -15,6 +15,7 @@ import { APP_ENV } from "~/utils/envs";
 import { useFCM } from "~/hooks/use-fcm";
 import { useMutation } from "@tanstack/react-query";
 import { useServerRequest } from "~/hooks/use-server-request";
+import { differenceInMinutes } from "date-fns";
 
 const Component: React.FC = () => {
   const { user } = useAuth();
@@ -44,8 +45,18 @@ const Component: React.FC = () => {
 
   const { mutate: updateFCMToken } = useMutation({
     mutationFn: async () => {
-      if (!sessionStorage.getItem("updateFCMTokenRunning")) return;
-      sessionStorage.setItem("updateFCMTokenRunning", "true");
+      const updateFCMToken = JSON.parse(
+        localStorage.getItem("updateFCMToken") || "{}",
+      );
+      if (updateFCMToken.running) return;
+      if (updateFCMToken.lastRun) {
+        const lastRun = new Date(updateFCMToken.lastRun);
+        const now = new Date();
+        const diff = differenceInMinutes(now, lastRun);
+        if (diff < 5) return;
+      }
+      updateFCMToken.running = true;
+      localStorage.setItem("updateFCMToken", JSON.stringify(updateFCMToken));
       const token = await requestNotificationPermission();
       if (!token) return;
       await serverRequest("/user/update-fcm-token", {
@@ -53,9 +64,21 @@ const Component: React.FC = () => {
         body: JSON.stringify({ token }),
       });
     },
-    onError(error, variables, context) {
-      console.error(error, variables, context);
-      sessionStorage.removeItem("updateFCMTokenRunning");
+    onSuccess() {
+      const updateFCMToken = JSON.parse(
+        localStorage.getItem("updateFCMToken") || "{}",
+      );
+      updateFCMToken.running = false;
+      updateFCMToken.lastRun = new Date().toISOString();
+      localStorage.setItem("updateFCMToken", JSON.stringify(updateFCMToken));
+    },
+    onError() {
+      const updateFCMToken = JSON.parse(
+        localStorage.getItem("updateFCMToken") || "{}",
+      );
+      updateFCMToken.running = false;
+      updateFCMToken.lastRun = new Date().toISOString();
+      localStorage.setItem("updateFCMToken", JSON.stringify(updateFCMToken));
     },
   });
 

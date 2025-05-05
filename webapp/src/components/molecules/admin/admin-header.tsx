@@ -12,6 +12,7 @@ const AdminHeader: React.FC = () => {
   const navigate = useNavigate();
   const logOut = async () => {
     await signOut();
+    window.location.href = "/";
   };
 
   return (
