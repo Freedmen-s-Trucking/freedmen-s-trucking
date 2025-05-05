@@ -346,12 +346,14 @@ const GetNextActionButton = ({
       setError(null);
       ev.preventDefault();
       if (!needsDeliveryPhotoAndCode) {
+        alert(`Delivery code is not required`);
         moveToNextStatus({ deliveryCode: "" });
         return;
       }
       const fd = new FormData(ev.currentTarget || ev.target);
       const deliveryCode = fd.get("deliveryCode");
       if (deliveryCode instanceof File || !deliveryCode) {
+        alert("Please enter a valid delivery code");
         setError("Please enter a valid delivery code");
         return;
       }
@@ -367,14 +369,23 @@ const GetNextActionButton = ({
           },
         );
         if (deliveryVerified.success) {
+          alert("Delivery code verified successfully");
           moveToNextStatus({ deliveryCode });
+          return;
         }
+        alert("Delivery code verification failed");
+        setError("Delivery code verification failed");
+        return;
       } catch (err) {
         if (isResponseError(err)) {
+          alert(`Code check failed: ${err.data?.error || "Unknown error"}`);
           console.error("Failed to verify delivery code:", err);
           setError(`Code check failed: ${err.data?.error || "Unknown error"}`);
           return;
         }
+        alert(`Failed to verify delivery code ${JSON.stringify(err)}`);
+        setError(`Failed to verify delivery code ${JSON.stringify(err)}`);
+        return;
       }
     };
 
