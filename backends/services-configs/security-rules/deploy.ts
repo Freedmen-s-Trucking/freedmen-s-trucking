@@ -19,7 +19,8 @@ const rawStorageRules = fs.readFileSync(
   "utf8",
 );
 
-const projectId = admin.app().options.projectId;
+const projectId =
+  process.env.FIREBASE_PROJECT_ID || admin.app().options.projectId;
 if (!projectId) {
   throw new Error("Could not determine project ID");
 }
