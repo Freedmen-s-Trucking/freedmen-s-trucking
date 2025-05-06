@@ -9,9 +9,10 @@ import { AppUser } from "~/stores/controllers/auth-ctrl";
 import { RouteProviders } from "~/provider/providers";
 import { useEffect } from "react";
 import { useAuth } from "~/hooks/use-auth";
-import { Flowbite } from "flowbite-react";
+import { Badge, Flowbite } from "flowbite-react";
 import { getFlowbiteTheme } from "~/utils/functions";
 import { APP_ENV } from "~/utils/envs";
+import { motion } from "motion/react";
 
 const Component: React.FC = () => {
   const { user } = useAuth();
@@ -38,6 +39,22 @@ const Component: React.FC = () => {
 
   return (
     <>
+      {APP_ENV !== "prod" && (
+        <motion.div
+          className="fixed right-5 top-3 z-50 translate-x-1/2 rotate-[52deg]"
+          initial={{ opacity: 0, scale: 0.7, rotate: 52, translateX: "50%" }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: "spring", stiffness: 100 }}
+        >
+          <Badge
+            color="warning"
+            className="flex w-32 flex-col items-center justify-center"
+          >
+            <span className="block text-center text-[9px]">mode</span>
+            <span className="block text-center">{APP_ENV.toUpperCase()}</span>
+          </Badge>
+        </motion.div>
+      )}
       <RouteProviders>
         <Flowbite theme={{ mode: "light", theme: getFlowbiteTheme() }}>
           <div>
