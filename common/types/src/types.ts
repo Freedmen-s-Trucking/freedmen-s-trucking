@@ -89,7 +89,7 @@ export type AccountType = typeof accountTypeType.infer;
 export type EntityWithPath<T> = { path: string; data: T };
 export type EntityWithID<T> = { id: string; data: T };
 
-export const extractedDriverLicenseDetails = type({
+export const extractedDriverInsuranceDetails = type({
   driver_full_name: "string",
   driver_address: "string | null ?",
   vehicle_year_make_model: "string",
@@ -107,7 +107,7 @@ export const extractedDriverLicenseDetails = type({
   coverage_limits_liability: "string | null ?",
 });
 
-export type ExtractedDriverLicenseDetails =
-  typeof extractedDriverLicenseDetails.infer;
-export const ExtractedDriverLicenseDetailsSchema =
-  extractedDriverLicenseDetails.toJsonSchema();
+export type ExtractedDriverInsuranceDetails =
+  typeof extractedDriverInsuranceDetails.infer;
+export const ExtractedDriverInsuranceDetailsSchema =
+  extractedDriverInsuranceDetails.toJsonSchema();

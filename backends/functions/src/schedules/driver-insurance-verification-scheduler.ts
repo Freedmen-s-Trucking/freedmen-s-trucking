@@ -1,9 +1,10 @@
 import {onSchedule} from "firebase-functions/v2/scheduler";
 import {CollectionReference, Filter, getFirestore, QueryDocumentSnapshot} from "firebase-admin/firestore";
-import {CollectionName, DriverEntity, extractedDriverLicenseDetails, type} from "@freedmen-s-trucking/types";
+import {CollectionName, DriverEntity, extractedDriverInsuranceDetails, type} from "@freedmen-s-trucking/types";
 import {ImageAnnotatorClient} from "@google-cloud/vision";
-import {parseRawTextExtractedFromDriverLicense} from "~src/services/ai-agent/extract-driver-license-details";
+import {parseRawTextExtractedFromDriverInsurance} from "~src/services/ai-agent/extract-driver-insurance-details";
 import {getStorage, getDownloadURL} from "firebase-admin/storage";
+import {sendDocumentVerificationMail} from "~src/services/mails/sendgrid";
 
 const isFunctionEmulator = process.env.FUNCTIONS_EMULATOR === "true";
 
@@ -84,8 +85,8 @@ export const scheduleDriverInsuranceVerification = onSchedule("*/5 * * * *", asy
  * If the driver has not uploaded an insurance image, the function will update the driver's insurance verification status to "failed".
  * If the driver has uploaded an insurance image, the function will extract the relevant text from the image and check if the driver's name is present in the text.
  * If the driver's name is not present in the text, the function will update the driver's insurance verification status to "failed".
- * If the driver's name is present in the text, the function will extract the relevant text from the image and check if the driver's license details are present in the text.
- * If the driver's license details are present in the text, the function will update the driver's insurance verification status to "verified".
+ * If the driver's name is present in the text, the function will extract the relevant text from the image and check if the driver's insurance details are present in the text.
+ * If the driver's insurance details are present in the text, the function will update the driver's insurance verification status to "verified".
  */
 const verifyDriverInsurance = async (
   driverSnapshot: QueryDocumentSnapshot<DriverEntity>,
@@ -94,15 +95,32 @@ const verifyDriverInsurance = async (
   const driver = driverSnapshot.data();
 
   if (driver.driverLicenseVerificationStatus !== "verified") {
-    return; // Driver has not verified their license: Skipping
+    // Do not verify insurance if driver's license is not verified.
+    return;
   }
 
   if (!driver.driverInsuranceStoragePath) {
-    await driverCollection.doc(driverSnapshot.id).update({
-      driverInsuranceVerificationIssues: ["No insurance uploaded. Please upload your insurance card."],
-      driverInsuranceVerificationStatus: "failed",
-    });
-    return; // Driver has no insurance storage path: Skipping
+    const issues = ["No insurance uploaded. Please upload your insurance card."];
+    await Promise.all([
+      driverCollection.doc(driverSnapshot.id).update({
+        driverInsuranceVerificationIssues: issues,
+        driverInsuranceVerificationStatus: "failed",
+      }),
+      ...(driver.email
+        ? [
+            sendDocumentVerificationMail({
+              email: driver.email,
+              status: "failed",
+              title: "Action Required: Insurance Verification",
+              message: issues.join(", "),
+              driverName: `${driver.firstName} ${driver.lastName}`,
+              documentType: "proof of insurance",
+              expirationDate: new Date(0).toISOString(),
+            }),
+          ]
+        : []),
+    ]);
+    return;
   }
 
   try {
@@ -110,12 +128,28 @@ const verifyDriverInsurance = async (
     const extractedDriverInsuranceText = await extractTextFromImage(tempDownloadUrl);
     if (!extractedDriverInsuranceText) {
       console.warn("Failed to call extractTextFromImage", {driverId: driverSnapshot.id});
-      await driverCollection.doc(driverSnapshot.id).update({
-        driverInsuranceVerificationIssues: [
-          "Failed to extract any text from the insurance uploaded. Please upload a clear image of your insurance card.",
-        ],
-        driverInsuranceVerificationStatus: "failed",
-      });
+      const issues = [
+        "Failed to extract any text from the insurance uploaded. Please upload a clear image of your insurance card.",
+      ];
+      await Promise.all([
+        driverCollection.doc(driverSnapshot.id).update({
+          driverInsuranceVerificationIssues: issues,
+          driverInsuranceVerificationStatus: "failed",
+        }),
+        ...(driver.email
+          ? [
+              sendDocumentVerificationMail({
+                email: driver.email,
+                status: "failed",
+                title: "Action Required: Insurance Verification",
+                message: issues.join(", "),
+                driverName: `${driver.firstName} ${driver.lastName}`,
+                documentType: "proof of insurance",
+                expirationDate: new Date(0).toISOString(),
+              }),
+            ]
+          : []),
+      ]);
       return;
     }
 
@@ -128,67 +162,144 @@ const verifyDriverInsurance = async (
         missingNames,
         extractedDriverInsuranceText,
       });
-      // TODO:: send email
-      await driverCollection.doc(driverSnapshot.id).update({
-        driverInsuranceVerificationIssues: [
-          "Driver name not found in insurance text. Please upload a clear image of your insurance card.",
-          `Missing Names: [${missingNames.join(", ")}]`,
-        ],
-        driverInsuranceVerificationStatus: "failed",
-      });
+      const issues = [
+        "Driver name not found in insurance text. Please upload a clear image of your insurance card.",
+        `Missing Names: [${missingNames.join(", ")}]`,
+      ];
+      await Promise.all([
+        driverCollection.doc(driverSnapshot.id).update({
+          driverInsuranceVerificationIssues: issues,
+          driverInsuranceVerificationStatus: "failed",
+        }),
+        ...(driver.email
+          ? [
+              sendDocumentVerificationMail({
+                email: driver.email,
+                status: "failed",
+                title: "Action Required: Insurance Verification",
+                message: issues.join(", "),
+                driverName: `${driver.firstName} ${driver.lastName}`,
+                documentType: "proof of insurance",
+                expirationDate: new Date(0).toISOString(),
+              }),
+            ]
+          : []),
+      ]);
       return;
     }
 
-    const parsedDriverLicenseDetailsText = await parseRawTextExtractedFromDriverLicense(extractedDriverInsuranceText);
-    if (!parsedDriverLicenseDetailsText) {
-      console.error("Failed to parse driver license ocr data with OpenAI", {
+    const parsedDriverInsuranceDetailsText =
+      await parseRawTextExtractedFromDriverInsurance(extractedDriverInsuranceText);
+    if (!parsedDriverInsuranceDetailsText) {
+      console.error("Failed to parse driver insurance ocr data with OpenAI", {
         driverId: driverSnapshot.id,
         extractedDriverInsuranceText,
       });
-      // TODO:: send email
-      await driverCollection.doc(driverSnapshot.id).update({
-        driverInsuranceVerificationIssues: [
-          "Failed to extract driver license details. Please upload a clear image of your insurance card.",
-        ],
-        driverInsuranceVerificationStatus: "failed",
-      });
+      const issues = [
+        "Failed to extract driver insurance details. Please upload a clear image of your insurance card.",
+      ];
+      await Promise.all([
+        driverCollection.doc(driverSnapshot.id).update({
+          driverInsuranceVerificationIssues: issues,
+          driverInsuranceVerificationStatus: "failed",
+        }),
+        ...(driver.email
+          ? [
+              sendDocumentVerificationMail({
+                email: driver.email,
+                status: "failed",
+                title: "Action Required: Insurance Verification",
+                message: issues.join(", "),
+                driverName: `${driver.firstName} ${driver.lastName}`,
+                documentType: "proof of insurance",
+                expirationDate: new Date(0).toISOString(),
+              }),
+            ]
+          : []),
+      ]);
       return;
     }
 
-    const driverLicenseDetails = extractedDriverLicenseDetails(JSON.parse(parsedDriverLicenseDetailsText));
-    if (driverLicenseDetails instanceof type.errors) {
-      console.error("Failed to extract driver license details", {
+    const driverInsuranceDetails = extractedDriverInsuranceDetails(JSON.parse(parsedDriverInsuranceDetailsText));
+    if (driverInsuranceDetails instanceof type.errors) {
+      console.warn("Failed to extract driver insurance details", {
         driverId: driverSnapshot.id,
-        openAiResponse: parsedDriverLicenseDetailsText,
-        error: driverLicenseDetails,
+        openAiResponse: parsedDriverInsuranceDetailsText,
+        error: driverInsuranceDetails,
       });
-      // TODO:: send email
-      await driverCollection.doc(driverSnapshot.id).update({
-        driverInsuranceVerificationIssues: driverLicenseDetails.map((error) => error.message),
-        driverInsuranceVerificationStatus: "failed",
-      });
+      const issues = driverInsuranceDetails.map((error) => error.message);
+      await Promise.all([
+        driverCollection.doc(driverSnapshot.id).update({
+          driverInsuranceVerificationIssues: issues,
+          driverInsuranceVerificationStatus: "failed",
+        }),
+        ...(driver.email
+          ? [
+              sendDocumentVerificationMail({
+                email: driver.email,
+                status: "failed",
+                title: "Action Required: Insurance Verification",
+                message: issues.join(", "),
+                driverName: `${driver.firstName} ${driver.lastName}`,
+                documentType: "proof of insurance",
+                expirationDate: new Date(0).toISOString(),
+              }),
+            ]
+          : []),
+      ]);
       return;
     }
 
-    const expirationDate = new Date(driverLicenseDetails.policy_expiration_date);
+    const expirationDate = new Date(driverInsuranceDetails.policy_expiration_date);
     if (expirationDate < new Date()) {
-      console.error("Driver's insurance has expired", {
+      console.warn("Driver's insurance has expired", {
         driverId: driverSnapshot.id,
         extractedDriverInsuranceText,
-        driverLicenseDetails,
-        openAiResponse: parsedDriverLicenseDetailsText,
+        driverInsuranceDetails,
+        openAiResponse: parsedDriverInsuranceDetailsText,
       });
-      await driverCollection.doc(driverSnapshot.id).update({
-        driverInsuranceVerificationIssues: ["Insurance has expired"],
-        driverInsuranceVerificationStatus: "failed",
-      });
+      const issues = ["Insurance has expired"];
+      await Promise.all([
+        driverCollection.doc(driverSnapshot.id).update({
+          driverInsuranceVerificationIssues: issues,
+          driverInsuranceVerificationStatus: "failed",
+        }),
+        ...(driver.email
+          ? [
+              sendDocumentVerificationMail({
+                email: driver.email,
+                status: "failed",
+                title: "Action Required: Insurance Verification",
+                message: issues.join(", "),
+                driverName: `${driver.firstName} ${driver.lastName}`,
+                documentType: "proof of insurance",
+                expirationDate: new Date(0).toISOString(),
+              }),
+            ]
+          : []),
+      ]);
       return;
     }
 
-    await driverCollection.doc(driverSnapshot.id).update({
-      driverInsuranceVerificationStatus: "verified",
-      driverInsuranceVerificationIssues: [],
-    });
+    await Promise.all([
+      driverCollection.doc(driverSnapshot.id).update({
+        driverInsuranceVerificationStatus: "verified",
+        driverInsuranceVerificationIssues: [],
+      }),
+      ...(driver.email
+        ? [
+            sendDocumentVerificationMail({
+              email: driver.email,
+              status: "verified",
+              title: "Driver insurance details verified",
+              message: "Your driver insurance details have been verified.",
+              driverName: `${driver.firstName} ${driver.lastName}`,
+              documentType: "proof of insurance",
+              expirationDate: expirationDate.toISOString(),
+            }),
+          ]
+        : []),
+    ]);
   } catch (error) {
     console.error("Failed to verify driver insurance", error);
   }

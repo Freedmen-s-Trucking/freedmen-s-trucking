@@ -1,7 +1,7 @@
 import {openAiClient} from "./config";
-import {ExtractedDriverLicenseDetailsSchema} from "@freedmen-s-trucking/types";
+import {ExtractedDriverInsuranceDetailsSchema} from "@freedmen-s-trucking/types";
 
-export const parseRawTextExtractedFromDriverLicense = async (text: string) => {
+export const parseRawTextExtractedFromDriverInsurance = async (text: string) => {
   const response = await openAiClient.chat.completions.create({
     model: "gpt-4o",
     messages: [
@@ -15,7 +15,7 @@ export const parseRawTextExtractedFromDriverLicense = async (text: string) => {
         name: "DriverLicenseDetails",
         description: "Driver license details",
         // strict: true,
-        schema: ExtractedDriverLicenseDetailsSchema as Record<string, unknown>,
+        schema: ExtractedDriverInsuranceDetailsSchema as Record<string, unknown>,
       },
     },
   });
@@ -24,7 +24,7 @@ export const parseRawTextExtractedFromDriverLicense = async (text: string) => {
 
 const driverLicenseDetailsExtractionSystemPrompt = `
 Extract the following fields from this insurance card OCR text. Return ONLY JSON with these keys (use "" for missing fields):  
-${JSON.stringify(ExtractedDriverLicenseDetailsSchema)}
+${JSON.stringify(ExtractedDriverInsuranceDetailsSchema)}
 
 ### Rules:  
 1. **Name**: Capitalize properly (e.g., "Kwasi Sinnette").  

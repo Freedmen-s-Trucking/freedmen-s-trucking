@@ -234,17 +234,18 @@ router.post("/webhook", async (c) => {
 
       // Send notification about newly assigned order
       for (const driver of drivers) {
-        if (!driver.fcmToken) {
+        const tokens = Object.values(driver.fcmTokenMap || {});
+        if (!tokens.length) {
           continue;
         }
 
         getMessaging()
-          .send({
+          .sendEachForMulticast({
             notification: {
               title: "New Order!",
               body: "You have a new order",
             },
-            token: driver.fcmToken,
+            tokens: tokens,
           })
           .then((response) => {
             console.log("Successfully sent message:", response);

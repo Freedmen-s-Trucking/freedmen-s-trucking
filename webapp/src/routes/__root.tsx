@@ -12,10 +12,6 @@ import { useAuth } from "~/hooks/use-auth";
 import { Flowbite } from "flowbite-react";
 import { getFlowbiteTheme } from "~/utils/functions";
 import { APP_ENV } from "~/utils/envs";
-import { useFCM } from "~/hooks/use-fcm";
-import { useMutation } from "@tanstack/react-query";
-import { useServerRequest } from "~/hooks/use-server-request";
-import { differenceInMinutes } from "date-fns";
 
 const Component: React.FC = () => {
   const { user } = useAuth();
@@ -39,64 +35,6 @@ const Component: React.FC = () => {
       window.location.href = "/";
     }
   }, [user, routeState]);
-
-  const { requestNotificationPermission } = useFCM();
-  const serverRequest = useServerRequest();
-
-  const { mutate: updateFCMToken } = useMutation({
-    mutationFn: async () => {
-      const updateFCMToken = JSON.parse(
-        localStorage.getItem("updateFCMToken") || "{}",
-      );
-      if (updateFCMToken.running) return;
-      if (updateFCMToken.lastRun) {
-        const lastRun = new Date(updateFCMToken.lastRun);
-        const now = new Date();
-        const diff = differenceInMinutes(now, lastRun);
-        if (diff < 5) return;
-      }
-      updateFCMToken.running = true;
-      localStorage.setItem("updateFCMToken", JSON.stringify(updateFCMToken));
-      const token = await requestNotificationPermission();
-      if (!token) return;
-      await serverRequest("/user/update-fcm-token", {
-        method: "POST",
-        body: JSON.stringify({ token }),
-      });
-    },
-    onSuccess() {
-      const updateFCMToken = JSON.parse(
-        localStorage.getItem("updateFCMToken") || "{}",
-      );
-      updateFCMToken.running = false;
-      updateFCMToken.lastRun = new Date().toISOString();
-      localStorage.setItem("updateFCMToken", JSON.stringify(updateFCMToken));
-    },
-    onError() {
-      const updateFCMToken = JSON.parse(
-        localStorage.getItem("updateFCMToken") || "{}",
-      );
-      updateFCMToken.running = false;
-      updateFCMToken.lastRun = new Date().toISOString();
-      localStorage.setItem("updateFCMToken", JSON.stringify(updateFCMToken));
-    },
-  });
-
-  // Request notification permission
-  useEffect(() => {
-    if (!user || user.isAnonymous || user.info.fcmToken) return;
-    updateFCMToken();
-
-    // In your main app code (e.g., React component)
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.ready.then((registration) => {
-        // Ask for notification permission via Service Worker
-        registration.active?.postMessage({
-          action: "requestNotificationPermission",
-        });
-      });
-    }
-  }, [updateFCMToken, user]);
 
   return (
     <>

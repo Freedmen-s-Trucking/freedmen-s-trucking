@@ -26,7 +26,6 @@ export const userEntity = type({
   lastName: "string",
   email: "string | null",
   phoneNumber: "string | null",
-  fcmToken: "string | null?",
   photoURL: "string | null",
   birthDate: dateStringOrTimestampType.optional(),
   uploadedProfileStoragePath: type("string | null").optional(),
@@ -37,6 +36,7 @@ export const userEntity = type({
   authMethods: authMethodType.array(),
   createdAt: dateStringOrTimestampType.optional(),
   updatedAt: dateStringOrTimestampType.optional(),
+  fcmTokenMap: type("Record<string, string>").optional(),
 });
 export type UserEntity = typeof userEntity.infer;
 

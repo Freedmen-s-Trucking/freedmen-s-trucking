@@ -43,21 +43,19 @@ export const RootProviders: React.FC<{
         <QueryClientProvider client={queryClient}>
           <FirebaseProvider>
             <PerformanceMonitoringProvider>
-              <MessagingProvider>
-                <StorageProvider>
-                  <FireStoreProvider>
-                    <RemoteConfigProvider>
-                      <Provider store={store}>
-                        <PersistGate loading={null} persistor={persistor}>
-                          <AuthProvider>
-                            <LoadingProviders>{children}</LoadingProviders>
-                          </AuthProvider>
-                        </PersistGate>
-                      </Provider>
-                    </RemoteConfigProvider>
-                  </FireStoreProvider>
-                </StorageProvider>
-              </MessagingProvider>
+              <StorageProvider>
+                <FireStoreProvider>
+                  <RemoteConfigProvider>
+                    <Provider store={store}>
+                      <PersistGate loading={null} persistor={persistor}>
+                        <AuthProvider>
+                          <LoadingProviders>{children}</LoadingProviders>
+                        </AuthProvider>
+                      </PersistGate>
+                    </Provider>
+                  </RemoteConfigProvider>
+                </FireStoreProvider>
+              </StorageProvider>
             </PerformanceMonitoringProvider>
           </FirebaseProvider>
           {isDevMode && (
@@ -75,7 +73,9 @@ export const RouteProviders: React.FC<{
   return (
     <>
       <AnalyticsProvider>
-        <AuthWrapper>{children}</AuthWrapper>
+        <MessagingProvider>
+          <AuthWrapper>{children}</AuthWrapper>
+        </MessagingProvider>
       </AnalyticsProvider>
     </>
   );

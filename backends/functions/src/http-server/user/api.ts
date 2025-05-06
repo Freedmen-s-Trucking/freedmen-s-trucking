@@ -7,6 +7,7 @@ const router = new Hono<{Variables: Variables}>();
 
 const apiReqUpdateFCMToken = type({
   token: "string",
+  deviceFingerprint: "string",
 });
 
 router.post("/update-fcm-token", async (c) => {
@@ -25,7 +26,7 @@ router.post("/update-fcm-token", async (c) => {
   );
 
   await userRef.update({
-    fcmToken: token,
+    [`fcmTokenMaps.${req.deviceFingerprint}` as const]: token,
   });
 
   const driverRef = (
@@ -35,7 +36,7 @@ router.post("/update-fcm-token", async (c) => {
   const driver = await driverRef.get();
   if (driver.exists) {
     await driverRef.update({
-      fcmToken: token,
+      [`fcmTokenMap.${req.deviceFingerprint}` as const]: token,
     });
   }
 
