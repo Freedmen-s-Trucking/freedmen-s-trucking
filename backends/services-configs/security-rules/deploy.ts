@@ -19,16 +19,18 @@ const rawStorageRules = fs.readFileSync(
   "utf8",
 );
 
-const storageBuckets = ["users", "drivers-certifications", "orders"];
-const storageReleaseTasks = storageBuckets.map((bucket) =>
-  admin
-    .securityRules()
-    .releaseStorageRulesetFromSource(rawStorageRules, bucket),
-);
+const projectId = admin.app().options.projectId;
+if (!projectId) {
+  throw new Error("Could not determine project ID");
+}
+
+const storageReleaseTask = admin
+  .securityRules()
+  .releaseStorageRulesetFromSource(rawStorageRules, `${projectId}.appspot.com`);
 
 // Wait for both releases to complete
 try {
-  await Promise.all([firestoreReleaseTask, ...storageReleaseTasks]);
+  await Promise.all([firestoreReleaseTask, storageReleaseTask]);
   console.log("Security rules deployed successfully");
   process.exit(0);
 } catch (error) {

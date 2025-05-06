@@ -106,10 +106,7 @@ const verifyDriverInsurance = async (
   }
 
   try {
-    const [bucket] = driver.driverInsuranceStoragePath.split("/", 1);
-    const filePath = driver.driverInsuranceStoragePath.substring(bucket.length + 1);
-    const tempDownloadUrl = await getDownloadURL(getStorage().bucket(bucket).file(filePath));
-
+    const tempDownloadUrl = await getDownloadURL(getStorage().bucket().file(driver.driverInsuranceStoragePath));
     const extractedDriverInsuranceText = await extractTextFromImage(tempDownloadUrl);
     if (!extractedDriverInsuranceText) {
       console.warn("Failed to call extractTextFromImage", {driverId: driverSnapshot.id});
