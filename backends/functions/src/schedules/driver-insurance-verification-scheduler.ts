@@ -1,5 +1,5 @@
 import {onSchedule} from "firebase-functions/v2/scheduler";
-import {CollectionReference, getFirestore, QueryDocumentSnapshot} from "firebase-admin/firestore";
+import {CollectionReference, Filter, getFirestore, QueryDocumentSnapshot} from "firebase-admin/firestore";
 import {CollectionName, DriverEntity, extractedDriverLicenseDetails, type} from "@freedmen-s-trucking/types";
 import {ImageAnnotatorClient} from "@google-cloud/vision";
 import {parseRawTextExtractedFromDriverLicense} from "~src/services/ai-agent/extract-driver-license-details";
@@ -62,27 +62,17 @@ export const scheduleDriverInsuranceVerification = onSchedule("*/5 * * * *", asy
     DriverEntity,
     DriverEntity
   >;
-  const driverInsurancePending = await driverCollection
-    .where("driverInsuranceVerificationStatus" satisfies keyof DriverEntity, "==", "pending")
+  const driverSnapshots = await driverCollection
+    .where(
+      Filter.or(
+        Filter.where("driverInsuranceVerificationStatus" satisfies keyof DriverEntity, "==", "pending"),
+        Filter.where("driverInsuranceStoragePath" satisfies keyof DriverEntity, "==", null),
+      ),
+    )
     .get();
-
-  const driverWithoutInsurance = await driverCollection
-    .where("driverInsuranceStoragePath" satisfies keyof DriverEntity, "==", null)
-    .get();
-
-  // Using a Set for better performance with large result sets
-  const uniqueDocs: QueryDocumentSnapshot<DriverEntity>[] = [];
-  const seenIds = new Set();
-
-  for (const doc of [...driverInsurancePending.docs, ...driverWithoutInsurance.docs]) {
-    if (!seenIds.has(doc.id)) {
-      seenIds.add(doc.id);
-      uniqueDocs.push(doc);
-    }
-  }
 
   const tasks: Promise<void>[] = [];
-  for (const driverSnapshot of uniqueDocs) {
+  for (const driverSnapshot of driverSnapshots.docs) {
     tasks.push(verifyDriverInsurance(driverSnapshot, driverCollection));
   }
   await Promise.all(tasks);
