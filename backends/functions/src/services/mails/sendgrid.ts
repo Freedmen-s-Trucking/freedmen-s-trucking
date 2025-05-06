@@ -177,63 +177,8 @@ const DOCUMENT_VERIFICATION_EMAIL_TEMPLATE = `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Freedmen Delivery - Verification Status</title>
+    <title>Freedmen's Trucking - Verification Status</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #333333;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .header {
-            background-color: #382114;
-            padding: 20px;
-            text-align: center;
-        }
-        .logo {
-            max-width: 150px;
-        }
-        .content {
-            padding: 20px;
-            background-color: #FFFCFA;
-        }
-        .footer {
-            background-color: #FFFCFA;
-            padding: 15px;
-            text-align: center;
-            font-size: 12px;
-            color: #666666;
-        }
-        .button {
-            display: inline-block;
-            background-color: #4CAF50;
-            color: white;
-            padding: 12px 20px;
-            text-decoration: none;
-            border-radius: 4px;
-            font-weight: bold;
-            margin: 20px 0;
-        }
-        .status {
-            font-weight: bold;
-            font-size: 18px;
-            margin: 15px 0;
-        }
-        .approved {
-            color: #4CAF50;
-        }
-        .pending {
-            color: #FFA500;
-        }
-        .rejected {
-            color: #FF0000;
-        }
         .info-box {
             background-color: #F2E7D8;
             padding: 15px;
@@ -242,14 +187,14 @@ const DOCUMENT_VERIFICATION_EMAIL_TEMPLATE = `
         }
     </style>
 </head>
-<body>
-  <div class="container">
-    <div class="header">
-      <img src="${ENV_PUBLIC_WEBAPP_URL}/favicon.ico" alt="Freedmen's Trucking Logo" class="logo">
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333333; margin: 0; padding: 0;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="background-color: #382114; padding: 20px; text-align: center;">
+      <img src="${ENV_PUBLIC_WEBAPP_URL}/favicon.ico" alt="Freedmen's Trucking Logo" style="max-width: 150px;">
       <h1 style="color: #ffffff;">Freedmen's Trucking</h1>
     </div>
     
-    <div class="content">
+    <div style="padding: 20px; background-color: #FFFCFA;">
       <h2>Verification Status Update</h2>
         
       <p>Hello {DRIVER_NAME},</p>
@@ -263,7 +208,7 @@ const DOCUMENT_VERIFICATION_EMAIL_TEMPLATE = `
         The Freedmen's Trucking Team</p>
     </div>
     
-    <div class="footer">
+    <div style="background-color: #F2E7D8; padding: 15px; text-align: center; font-size: 12px; color: #666666;">
       <p>© ${new Date().getFullYear()} Freedmen Delivery. All rights reserved.</p>
     </div>
   </div>
@@ -273,8 +218,8 @@ const DOCUMENT_VERIFICATION_EMAIL_TEMPLATE = `
 
 // const PENDING_DOCUMENT_VERIFICATION_MAIL_TEMPLATE = `
 // <!-- For Pending Status -->
-// <div class="info-box">
-//   <p class="status pending">⏱ PENDING VERIFICATION</p>
+// <div style="background-color: #F2E7D8; padding: 15px; border-radius: 5px; margin: 15px 0;">
+//     <p style="font-weight: bold; font-size: 18px; margin: 15px 0; color: #FFA500;">⏱ PENDING VERIFICATION</p>
 //   <p>We've received your {DOCUMENT_TYPE} and our team is currently reviewing it. This process typically takes 1-2 business days.</p>
 //   <p>Verification details:</p>
 //   <ul>
@@ -283,14 +228,14 @@ const DOCUMENT_VERIFICATION_EMAIL_TEMPLATE = `
 //     <li><strong>Estimated Completion:</strong> {ESTIMATED_COMPLETION}</li>
 //   </ul>
 //   <p>You will receive another email once the verification process is complete.</p>
-//   <a href="{DASHBOARD_LINK}" class="button">CHECK STATUS</a>
+//   <a href="{DASHBOARD_LINK}" style="display: inline-block; background-color: #4CAF50; color: white; padding: 12px 20px; text-decoration: none; border-radius: 4px; font-weight: bold; margin: 20px 0;">CHECK STATUS</a>
 // </div>
 // `;
 
 const APPROVED_DOCUMENT_VERIFICATION_MAIL_TEMPLATE = `
 <!-- For Approved Status -->
-<div class="info-box">
-  <p class="status approved">✓ APPROVED</p>
+<div style="background-color: #F2E7D8; padding: 15px; border-radius: 5px; margin: 15px 0;">
+    <p style="font-weight: bold; font-size: 18px; margin: 15px 0; color: #4CAF50;">✓ APPROVED</p>
   <p>Your {DOCUMENT_TYPE} has been successfully verified. You are now ready to start delivering with Freedmen!</p>
   <p>Verification details:</p>
   <ul>
@@ -299,19 +244,19 @@ const APPROVED_DOCUMENT_VERIFICATION_MAIL_TEMPLATE = `
     <li><strong>Valid Until:</strong> {VALID_UNTIL_DATE}</li>
   </ul>
   <p>We'll send you a reminder when it's time to renew your documentation.</p>
-  <a href="{DASHBOARD_LINK}" class="button">GO TO DASHBOARD</a>
+  <a href="{DASHBOARD_LINK}" style="display: inline-block; background-color: #4CAF50; color: white; padding: 12px 20px; text-decoration: none; border-radius: 4px; font-weight: bold; margin: 20px 0;">GO TO DASHBOARD</a>
 </div>
 `;
 
 const ACTION_REQUIRED_DOCUMENT_VERIFICATION_MAIL_TEMPLATE = `
 <!-- For Rejected Status -->
-<div class="info-box">
-  <p class="status rejected">✗ ACTION REQUIRED</p>
+<div style="background-color: #F2E7D8; padding: 15px; border-radius: 5px; margin: 15px 0;">
+    <p style="font-weight: bold; font-size: 18px; margin: 15px 0; color: #FF0000;">✗ ACTION REQUIRED</p>
   <p>Unfortunately, we couldn't verify your {DOCUMENT_TYPE} due to the following reason(s):</p>
   <ul>
     <li>{MESSAGE}</li>
   </ul>
   <p>Please update your information and resubmit your documentation as soon as possible to continue with the onboarding process.</p>
-  <a href="{DASHBOARD_LINK}" class="button">GO TO DASHBOARD TO RESUBMIT DOCUMENTS</a>
+  <a href="{DASHBOARD_LINK}" style="display: inline-block; background-color: #4CAF50; color: white; padding: 12px 20px; text-decoration: none; border-radius: 4px; font-weight: bold; margin: 20px 0;">GO TO DASHBOARD</a>
 </div>
 `;
