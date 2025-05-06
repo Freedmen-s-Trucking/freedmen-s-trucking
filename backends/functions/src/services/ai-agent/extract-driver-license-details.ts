@@ -1,7 +1,7 @@
 import {openAiClient} from "./config";
 import {ExtractedDriverLicenseDetailsSchema} from "@freedmen-s-trucking/types";
 
-export const extractDriverLicenseDetailsFromText = async (text: string) => {
+export const parseRawTextExtractedFromDriverLicense = async (text: string) => {
   const response = await openAiClient.chat.completions.create({
     model: "gpt-4o",
     messages: [

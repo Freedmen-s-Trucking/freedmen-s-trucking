@@ -2,16 +2,17 @@ import {onSchedule} from "firebase-functions/v2/scheduler";
 import {CollectionReference, getFirestore, QueryDocumentSnapshot} from "firebase-admin/firestore";
 import {CollectionName, DriverEntity, extractedDriverLicenseDetails, type} from "@freedmen-s-trucking/types";
 import {ImageAnnotatorClient} from "@google-cloud/vision";
-import {extractDriverLicenseDetailsFromText} from "~src/services/ai-agent/extract-driver-license-details";
+import {parseRawTextExtractedFromDriverLicense} from "~src/services/ai-agent/extract-driver-license-details";
+import {getStorage, getDownloadURL} from "firebase-admin/storage";
 
 const isFunctionEmulator = process.env.FUNCTIONS_EMULATOR === "true";
 
 /**
  * Extracts text from an image using Google Cloud Vision API.
- * @param path - The path to the image file in Google Cloud Storage.
+ * @param downloadUrl - The download URL of the image file in Google Cloud Storage.
  * @return The extracted text from the image or null if extraction fails.
  */
-const extractTextFromImage = async (path: string) => {
+const extractTextFromImage = async (downloadUrl: string) => {
   if (isFunctionEmulator) {
     return `8:12
 Temporary Washington DC
@@ -40,12 +41,13 @@ You're in good hands.`;
   try {
     const client = new ImageAnnotatorClient();
 
-    const [result] = await client.textDetection(`gs://${path}`);
-    const text = result.fullTextAnnotation?.text;
+    const [result] = await client.textDetection(downloadUrl);
+    const detections = result.textAnnotations || [];
+    const text = detections[0]?.description || "";
 
     return text;
   } catch (error) {
-    console.error(error);
+    console.error("Error caught while calling extractTextFromImage", error);
     return null;
   }
 };
@@ -114,7 +116,11 @@ const verifyDriverInsurance = async (
   }
 
   try {
-    const extractedDriverInsuranceText = await extractTextFromImage(driver.driverInsuranceStoragePath);
+    const [bucket] = driver.driverInsuranceStoragePath.split("/", 1);
+    const filePath = driver.driverInsuranceStoragePath.substring(bucket.length + 1);
+    const tempDownloadUrl = await getDownloadURL(getStorage().bucket(bucket).file(filePath));
+
+    const extractedDriverInsuranceText = await extractTextFromImage(tempDownloadUrl);
     if (!extractedDriverInsuranceText) {
       console.warn("Failed to call extractTextFromImage", {driverId: driverSnapshot.id});
       await driverCollection.doc(driverSnapshot.id).update({
@@ -130,7 +136,11 @@ const verifyDriverInsurance = async (
     const driverNames = `${driver.firstName} ${driver.lastName}`.split(" ");
     const missingNames = driverNames.filter((name) => !extractedDriverInsuranceTextLC.includes(name.toLowerCase()));
     if (missingNames.length > 0) {
-      console.warn("Driver name not found in insurance text", {driverId: driverSnapshot.id, missingNames});
+      console.error("Driver name not found in insurance text", {
+        driverId: driverSnapshot.id,
+        missingNames,
+        extractedDriverInsuranceText,
+      });
       // TODO:: send email
       await driverCollection.doc(driverSnapshot.id).update({
         driverInsuranceVerificationIssues: [
@@ -142,10 +152,11 @@ const verifyDriverInsurance = async (
       return;
     }
 
-    const rawExtractedDriverLicenseDetails = await extractDriverLicenseDetailsFromText(extractedDriverInsuranceText);
-    if (!rawExtractedDriverLicenseDetails) {
-      console.warn("Failed extract relevant text from driver license row with OpenAI", {
+    const parsedDriverLicenseDetailsText = await parseRawTextExtractedFromDriverLicense(extractedDriverInsuranceText);
+    if (!parsedDriverLicenseDetailsText) {
+      console.error("Failed to parse driver license ocr data with OpenAI", {
         driverId: driverSnapshot.id,
+        extractedDriverInsuranceText,
       });
       // TODO:: send email
       await driverCollection.doc(driverSnapshot.id).update({
@@ -157,9 +168,13 @@ const verifyDriverInsurance = async (
       return;
     }
 
-    const driverLicenseDetails = extractedDriverLicenseDetails(JSON.parse(rawExtractedDriverLicenseDetails));
+    const driverLicenseDetails = extractedDriverLicenseDetails(JSON.parse(parsedDriverLicenseDetailsText));
     if (driverLicenseDetails instanceof type.errors) {
-      console.warn("Failed to extract driver license details", {driverId: driverSnapshot.id, driverLicenseDetails});
+      console.error("Failed to extract driver license details", {
+        driverId: driverSnapshot.id,
+        openAiResponse: parsedDriverLicenseDetailsText,
+        error: driverLicenseDetails,
+      });
       // TODO:: send email
       await driverCollection.doc(driverSnapshot.id).update({
         driverInsuranceVerificationIssues: driverLicenseDetails.map((error) => error.message),
@@ -170,7 +185,12 @@ const verifyDriverInsurance = async (
 
     const expirationDate = new Date(driverLicenseDetails.policy_expiration_date);
     if (expirationDate < new Date()) {
-      console.warn("Driver's insurance has expired", {driverId: driverSnapshot.id, driverLicenseDetails});
+      console.error("Driver's insurance has expired", {
+        driverId: driverSnapshot.id,
+        extractedDriverInsuranceText,
+        driverLicenseDetails,
+        openAiResponse: parsedDriverLicenseDetailsText,
+      });
       await driverCollection.doc(driverSnapshot.id).update({
         driverInsuranceVerificationIssues: ["Insurance has expired"],
         driverInsuranceVerificationStatus: "failed",
