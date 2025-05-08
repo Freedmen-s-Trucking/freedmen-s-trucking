@@ -26,6 +26,10 @@ export const scheduleBackgroundCheck = onSchedule("*/5 * * * *", async () => {
       console.warn("Driver has no authentication access code", {driverId: driverSnapshot.id});
       continue;
     }
+    if (driver.driverLicenseVerificationStatus !== "verified") {
+      // Verify the driver license before running background check.
+      continue;
+    }
     if (["clear", "recordFound"].includes(driver.sevenYearBackgroundCheck || "")) {
       continue;
     }
