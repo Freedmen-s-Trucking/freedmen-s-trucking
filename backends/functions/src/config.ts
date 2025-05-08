@@ -23,6 +23,9 @@ global.console = {
   },
   error: async (message: any, ...optionalParams: any[]) => {
     defaultConsole.error(message, ...optionalParams);
+    if (optionalParams.length === 0 && typeof message === "object") {
+      optionalParams.push(message);
+    }
 
     let prettyParams = JSON.stringify(optionalParams, null, 2);
     // Remove quotes around property names (basic safe version)
