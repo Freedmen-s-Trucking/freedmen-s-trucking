@@ -2,6 +2,7 @@ import {onSchedule} from "firebase-functions/v2/scheduler";
 import {CollectionReference, getFirestore} from "firebase-admin/firestore";
 import {CollectionName, DriverEntity} from "@freedmen-s-trucking/types";
 import {sevenYearCriminalReport} from "~src/http-server/authenticate/service";
+import {isResponseError} from "~node_modules/up-fetch/dist";
 
 /**
  * Runs every 5mins to check for drivers with pending background checks
@@ -44,6 +45,13 @@ export const scheduleBackgroundCheck = onSchedule("*/5 * * * *", async () => {
             res.result.Candidates.Message === "No Criminal Records Found" ? "clear" : "recordFound",
         });
     } catch (error) {
+      if (
+        isResponseError(error) &&
+        error.data.errorMessage === "Please verify the identity of the user to proceed with this request."
+      ) {
+        // Identity verification is pending.
+        continue;
+      }
       console.error(error);
     }
   }
