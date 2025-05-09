@@ -2,7 +2,7 @@ import {onSchedule} from "firebase-functions/v2/scheduler";
 import {CollectionReference, getFirestore} from "firebase-admin/firestore";
 import {CollectionName, DriverEntity} from "@freedmen-s-trucking/types";
 import {sevenYearCriminalReport} from "~src/http-server/authenticate/service";
-import {ResponseError} from "up-fetch";
+import {isResponseError, ResponseError} from "up-fetch";
 
 /**
  * Runs every 5mins to check for drivers with pending background checks
@@ -46,7 +46,7 @@ export const scheduleBackgroundCheck = onSchedule("*/5 * * * *", async () => {
         });
     } catch (error) {
       if (
-        // isResponseError(error) &&
+        isResponseError(error) &&
         (error as ResponseError)?.status === 400 &&
         (error as ResponseError)?.data?.errorMessage ===
           "Please verify the identity of the user to proceed with this request."
