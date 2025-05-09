@@ -47,10 +47,9 @@ export const scheduleBackgroundCheck = onSchedule("*/5 * * * *", async () => {
     } catch (error) {
       if (
         // isResponseError(error) &&
-        (error as ResponseError)?.status === 400 // &&
-        // error.data?.errorMessage
-        //   ?.toLowerCase()
-        //   .startsWith("please verify the identity of the user to proceed with this request.")
+        (error as ResponseError)?.status === 400 &&
+        (error as ResponseError)?.data?.errorMessage ===
+          "Please verify the identity of the user to proceed with this request."
       ) {
         // Identity verification is pending.
         continue;
