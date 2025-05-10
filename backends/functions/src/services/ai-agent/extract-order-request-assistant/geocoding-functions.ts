@@ -85,23 +85,6 @@ const fetchPlacesFromGoogleResult = type({
 });
 type FetchPlacesFromGoogleResult = typeof fetchPlacesFromGoogleResult.infer;
 
-// export type CustomOSMSearchResult = {
-//   place_id: string;
-//   latitude?: number;
-//   longitude?: number;
-//   display_name: string;
-//   viewport?: {
-//     low: {
-//       latitude: number;
-//       longitude: number;
-//     };
-//     high: {
-//       latitude: number;
-//       longitude: number;
-//     };
-//   };
-// };
-
 const fetchPlacesFromOSRM = async (query: string) => {
   const fetcher = up(fetch, () => ({
     retry: {
