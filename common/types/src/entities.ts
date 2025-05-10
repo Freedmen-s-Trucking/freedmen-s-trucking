@@ -153,6 +153,59 @@ export enum OrderPriority {
 export enum DistanceMeasurement {
   OSRM_FASTEST_ROUTE = "osrm-fastest-route",
 }
+
+export enum TempOrderEntityFields {
+  authId = "authId",
+  history = "history",
+}
+
+const chatCompletionContent = type({
+  type: "'text'",
+  text: "string",
+})
+  .array()
+  .or("string");
+export const tempOrderEntity = type({
+  // [TempOrderEntityFields.authId]: "string",
+  [TempOrderEntityFields.history]: type({
+    role: "'developer' | 'user'",
+    name: "string?",
+    content: chatCompletionContent,
+  })
+    .or({
+      role: "'tool'",
+      tool_call_id: "string",
+      content: chatCompletionContent,
+    })
+    .or({
+      role: "'assistant'",
+      audio: type("null").or({ id: "string" }).optional(),
+      name: "string?",
+      tool_calls: type({
+        type: "'function'",
+        id: "string",
+        function: type({
+          name: "string",
+          arguments: "string",
+        }),
+      })
+        .array()
+        .optional(),
+      refusal: type("string | null").optional(),
+      content: chatCompletionContent
+        .or(
+          type({
+            type: "'refusal'",
+            refusal: "string",
+          }).array()
+        )
+        .or("null")
+        .optional(),
+    })
+    .array(),
+});
+export type TempOrderEntity = typeof tempOrderEntity.infer;
+
 export enum OrderPrivateDetailsEntityFields {
   deliveryCode = "deliveryCode",
 }

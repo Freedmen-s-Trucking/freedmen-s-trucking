@@ -42,22 +42,61 @@ export type ApiResSetupConnectedAccount =
   typeof apiResSetupConnectedAccount.infer;
 
 export const apiReqExtractOrderRequestFromText = type({
-  text: type("string").atLeastLength(4),
+  text: type("string").atLeastLength(1),
+  threadId: "string | null?",
+  chatId: "string | null?",
 });
 
 export type ApiReqExtractOrderRequestFromText =
   typeof apiReqExtractOrderRequestFromText.infer;
 
 export const apiResExtractOrderRequestFromText = type({
-  pickupLocation: "string",
-  dropoffLocation: "string",
-  items: productWithQuantityType.array().atLeastLength(1),
-  urgencyLevel: type.valueOf(OrderPriority),
-  deliveryTime: "string",
+  data: {
+    order: type({
+      pickupLocation: {
+        address: "string",
+        placeId: "string",
+      },
+      dropoffLocation: {
+        address: "string",
+        placeId: "string",
+      },
+      items: type({
+        name: "string",
+        estimatedDimensions: {
+          widthInInches: "number",
+          heightInInches: "number",
+          lengthInInches: "number",
+        },
+        estimatedWeightInLbsPerUnit: "number",
+        quantity: "number",
+      }).array(),
+      urgencyLevel: type.valueOf(OrderPriority).or("''"),
+      deliveryTime: "string | ''",
+    }).partial(),
+    onboarding: {
+      status: "'in_progress' | 'completed'",
+      pendingQuestion: type({
+        type: "'open_text' | 'boolean' | 'select'",
+        field: "string",
+        question: "string",
+        exampleAnswer: "string?",
+        boolean_options: type("string[]").optional(),
+        options: type({
+          id: "string",
+          displayValue: "string",
+        })
+          .array()
+          .optional(),
+      }).optional(),
+      answeredFields: "string[]",
+      systemNotes: "string?",
+    },
+  },
+  chatId: "string",
+  threadId: "string",
 });
 
-export const ApiResExtractOrderRequestFromTextSchema =
-  apiResExtractOrderRequestFromText.toJsonSchema();
 export type ApiResExtractOrderRequestFromText =
   typeof apiResExtractOrderRequestFromText.infer;
 

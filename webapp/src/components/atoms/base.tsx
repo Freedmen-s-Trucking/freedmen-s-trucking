@@ -1,5 +1,5 @@
 import { HTMLMotionProps, motion } from "motion/react";
-import React, { useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 
 // Primary Color #553A26;
 // Secondary Color #F2E7D8;
@@ -199,59 +199,76 @@ export const TextArea = React.forwardRef<
     className?: string;
     rows?: number;
     maxLength?: number;
+    onEnter?: () => void;
     resize?: "none";
   } & React.ComponentPropsWithoutRef<"textarea">
->(({ className = "", maxLength, resize = "none", ...textAreaProps }, ref) => {
-  const internalRef = useRef<HTMLTextAreaElement | null>(null);
-  const combinedRef = (node: HTMLTextAreaElement) => {
-    internalRef.current = node;
-    if (typeof ref === "function") ref(node);
-    else if (ref)
-      (ref as React.MutableRefObject<HTMLTextAreaElement | null>).current =
-        node;
-  };
+>(
+  (
+    {
+      rows,
+      className = "",
+      onEnter,
+      maxLength,
+      resize = "none",
+      ...textAreaProps
+    },
+    ref,
+  ) => {
+    const internalRef = useRef<HTMLTextAreaElement | null>(null);
+    const combinedRef = (node: HTMLTextAreaElement) => {
+      internalRef.current = node;
+      if (typeof ref === "function") ref(node);
+      else if (ref)
+        (ref as React.MutableRefObject<HTMLTextAreaElement | null>).current =
+          node;
+    };
 
-  const handleInput = () => {
-    const el = internalRef.current;
-    if (!el) return;
+    const handleInput = useCallback(() => {
+      const el = internalRef.current;
+      if (!el) return;
 
-    el.style.minHeight = "auto";
-    el.style.minHeight = `${Math.min(el.scrollHeight, 3 * 24)}px`; // limit to 3 rows (assuming ~24px line-height)
-  };
+      el.style.minHeight = "auto";
+      el.style.minHeight = `${Math.min(el.scrollHeight, (rows || 1) * 24)}px`; // limit to 3 rows (assuming ~24px line-height)
+    }, [rows]);
 
-  useEffect(() => {
-    handleInput();
-  }, []);
+    useEffect(() => {
+      handleInput();
+    }, [handleInput]);
 
-  return (
-    <textarea
-      {...textAreaProps}
-      ref={combinedRef}
-      rows={1}
-      maxLength={maxLength}
-      onInput={handleInput}
-      className={`block w-full resize-none overflow-hidden rounded-lg border border-gray-300 bg-primary-50 p-1 text-sm text-secondary-950 focus:border-secondary-500 focus:ring-secondary-500 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
-      style={{ resize }}
-      onKeyDown={(e) => {
-        if (e.key === "Enter") {
-          e.preventDefault();
-          const form = e.currentTarget.form;
-          if (!form) return;
-          const index = Array.from(form).indexOf(e.currentTarget);
-          const nextElement = form.elements[index + 1];
-          if (nextElement) {
-            (nextElement as { focus?: () => void }).focus?.();
-          } else {
-            console.log("No next element");
-            form.dispatchEvent(
-              new Event("submit", { bubbles: true, cancelable: true }),
-            );
+    return (
+      <textarea
+        {...textAreaProps}
+        ref={combinedRef}
+        rows={rows || 1}
+        maxLength={maxLength}
+        onInput={handleInput}
+        className={`block w-full resize-none overflow-hidden rounded-lg border border-gray-300 bg-primary-50 p-1 text-sm text-secondary-950 focus:border-secondary-500 focus:ring-secondary-500 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+        style={{ resize, ...textAreaProps.style }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            if (onEnter) {
+              onEnter();
+              return;
+            }
+            const form = e.currentTarget.form;
+            if (!form) return;
+            const index = Array.from(form).indexOf(e.currentTarget);
+            const nextElement = form.elements[index + 1];
+            if (nextElement) {
+              (nextElement as { focus?: () => void }).focus?.();
+            } else {
+              console.log("No next element");
+              form.dispatchEvent(
+                new Event("submit", { bubbles: true, cancelable: true }),
+              );
+            }
           }
-        }
-      }}
-    />
-  );
-});
+        }}
+      />
+    );
+  },
+);
 
 // export const TextArea = React.forwardRef<
 //   HTMLTextAreaElement,

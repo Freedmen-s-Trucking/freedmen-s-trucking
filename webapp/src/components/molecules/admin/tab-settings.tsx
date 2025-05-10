@@ -161,7 +161,7 @@ const AddCityBtn: React.FC<{ cities: PlaceLocation[] }> = ({ cities }) => {
               <AddressSearchInput
                 primaryTypes={[
                   "administrative_area_level_1",
-                  "administrative_area_level_2",
+                  // "administrative_area_level_2",
                 ]}
                 onAddressChanged={(params) => setCurrentCity(params.place)}
               />

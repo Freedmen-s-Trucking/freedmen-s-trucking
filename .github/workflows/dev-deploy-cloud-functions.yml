@@ -58,6 +58,7 @@ jobs:
           echo "SLACK_ALERT_CHANNEL_WEBHOOK_URL=${{ secrets.SLACK_ALERT_CHANNEL_WEBHOOK_URL_DEV }}" >> .env
           echo "SEND_GRID_API_KEY=${{ secrets.SEND_GRID_API_KEY_DEV }}" >> .env
           echo "PUBLIC_WEBAPP_URL=${{ vars.PUBLIC_WEBAPP_URL_DEV }}" >> .env
+          echo "GOOGLE_MAPS_API_KEY_BACKEND=${{ secrets.GOOGLE_MAPS_API_KEY_BACKEND_DEV }}" >> .env
 
       # Deploy Cloud Functions.
       # The double --force is not a mistake — the second one applies to artifact policy setup.

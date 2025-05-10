@@ -14,6 +14,7 @@ export type OnAddressChangedParams = {
 export type AddressSearchInputProps = {
   onAddressChanged: (params: OnAddressChangedParams) => void;
   restrictedGMARecBounds?: PlaceLocation["viewPort"][];
+  // Primary types can be found here: https://developers.google.com/maps/documentation/places/web-service/place-types
   primaryTypes?: string[];
   geocodingType?: "OSRM" | "GMAP";
 } & Omit<

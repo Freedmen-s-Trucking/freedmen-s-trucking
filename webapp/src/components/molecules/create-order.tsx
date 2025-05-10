@@ -1,51 +1,29 @@
 import {
-  ApiReqScheduleDeliveryIntent,
-  ApiResExtractOrderRequestFromText,
-  apiResExtractOrderRequestFromText,
-  DistanceMeasurement,
   LATEST_PLATFORM_SETTINGS_PATH,
-  Location,
   OrderPriority,
   PlaceLocation,
   PlatformSettingsEntity,
   ProductWithQuantity,
-  RequiredVehicleEntity,
 } from "@freedmen-s-trucking/types";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { add, formatDuration, intervalToDuration } from "date-fns";
-import { Badge, Dropdown, Modal, Tabs } from "flowbite-react";
+import { Dropdown, Modal, Tabs } from "flowbite-react";
 import { motion } from "motion/react";
-import React, { useCallback, useState } from "react";
+import React, { useState } from "react";
 import { FaTrash } from "react-icons/fa6";
 import {
   AddressSearchInput,
-  Heading2,
   OnAddressChangedParams,
-  PrimaryButton,
   SecondaryButton,
   TextInput,
 } from "~/components/atoms";
-import StripePayment from "~/components/molecules/stripe-payment";
-import { useAuth } from "~/hooks/use-auth";
 import { useDbOperations } from "~/hooks/use-firestore";
-import {
-  fetchPlaceDetails,
-  fetchPlacesFromGoogle,
-} from "~/hooks/use-geocoding";
 import { useComputeDeliveryEstimation } from "~/hooks/use-price-calculator";
 import { useGetRemoteConfig } from "~/hooks/use-remote-config";
-import { useServerRequest } from "~/hooks/use-server-request";
-import { setRequestedAuthAction } from "~/stores/controllers/app-ctrl";
-import { useAppDispatch } from "~/stores/hooks";
 import { RemoteConfigKeys } from "~/utils/constants";
 import { formatPrice } from "~/utils/functions";
-import { TextArea } from "../atoms/base";
-import { ArrowRight } from "lucide-react";
-import { IoCarOutline } from "react-icons/io5";
-import { TbCarSuv } from "react-icons/tb";
-import { PiVanBold } from "react-icons/pi";
-import { GiTruck } from "react-icons/gi";
-import { BsTrainFreightFront } from "react-icons/bs";
+import { AIAssistedForm } from "./ai-assisted-form";
+import { PaymentButton } from "./new-order-payment-button";
 
 const tabTheme = {
   tablist: {
@@ -90,11 +68,27 @@ export const CreateOrder: React.FC<{
   };
   if (showInModal) {
     return (
-      <Modal show={showModal} onClose={onCloseModal} size={"lg"}>
-        <Modal.Header>
-          <span className="text-lg font-medium">Schedule Delivery</span>
+      <Modal show={showModal} onClose={onCloseModal} size={"lg"} className="">
+        <Modal.Header className="p-3 [&>button]:rounded-full [&>button]:bg-accent-400 [&>button]:p-[1px] [&>button]:text-primary-100 [&>button]:transition-all [&>button]:duration-300 hover:[&>button]:scale-110 hover:[&>button]:text-primary-950">
+          <motion.span
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: { opacity: 0 },
+              visible: {
+                opacity: 1,
+                transition: {
+                  duration: 0.5,
+                  ease: "easeIn",
+                },
+              },
+            }}
+            className="text-lg font-medium"
+          >
+            Schedule Delivery
+          </motion.span>
         </Modal.Header>
-        <Modal.Body className="max-h-[80vh] overflow-y-auto p-4">
+        <Modal.Body className="contents max-h-[80vh] flex-row overflow-hidden p-0">
           <CreateOrderForm
             brightness={brightness}
             className="border-none"
@@ -485,413 +479,6 @@ const ManualForm: React.FC<{
           estimations={estimations || null}
         />
       </form>
-    </div>
-  );
-};
-const DisplayRequiredVehicles: React.FC<{
-  vehicles: RequiredVehicleEntity[] | undefined;
-}> = ({ vehicles }) => {
-  const vehicleIcons: Record<RequiredVehicleEntity["type"], React.ReactNode> = {
-    SEDAN: <IoCarOutline size={24} className="inline" />,
-    SUV: <TbCarSuv size={24} className="inline" />,
-    VAN: <PiVanBold size={24} className="inline" />,
-    TRUCK: <GiTruck size={24} className="inline" />,
-    FREIGHT: <BsTrainFreightFront size={24} className="inline" />,
-  };
-  return (
-    <div className="flex items-center gap-2">
-      {(vehicles || []).map((vehicle) => (
-        <span key={vehicle.type} className="flex items-center">
-          {vehicle.quantity > 1 && (
-            <span className="text-sm">{vehicle.quantity}&nbsp;*&nbsp;</span>
-          )}
-          {vehicleIcons[vehicle.type]}-
-          {vehicle.quantity <= 1 && (
-            <span className="text-sm">{vehicle.type}</span>
-          )}
-        </span>
-      ))}
-    </div>
-  );
-};
-
-const PriorityBadge: React.FC<{ priority: OrderPriority }> = ({ priority }) => {
-  switch (priority) {
-    case OrderPriority.URGENT:
-      return (
-        <Badge className="inline" color="red">
-          Urgent
-        </Badge>
-      );
-    case OrderPriority.EXPEDITED:
-      return (
-        <Badge className="inline" color="yellow">
-          Expedited
-        </Badge>
-      );
-    case OrderPriority.STANDARD:
-      return (
-        <Badge className="inline" color="blue">
-          Standard
-        </Badge>
-      );
-    default:
-      return (
-        <Badge className="inline" color="gray">
-          Unknown
-        </Badge>
-      );
-  }
-};
-
-const PaymentButton: React.FC<{
-  isLoading: boolean;
-  onOrderCreated?: () => void;
-  pickupLocation: Location | null;
-  deliveryLocation: Location | null;
-  deliveryPriority: OrderPriority | null;
-  packages: ProductWithQuantity[];
-  disabled: boolean;
-  estimations: {
-    distanceInMiles?: number | undefined;
-    durationInSeconds?: number | undefined;
-    distanceMeasurement?: DistanceMeasurement | undefined;
-    vehicles: RequiredVehicleEntity[];
-    fees: number;
-  } | null;
-}> = ({
-  isLoading,
-  onOrderCreated,
-  estimations,
-  disabled,
-  pickupLocation,
-  deliveryLocation,
-  deliveryPriority,
-  packages,
-}) => {
-  const { user } = useAuth();
-  const [isScheduling, setIsScheduling] = useState(false);
-  const [processPayment, setProcessPayment] = useState<
-    ApiReqScheduleDeliveryIntent["metadata"] | null
-  >(null);
-
-  const onPaymentComplete = () => {
-    setProcessPayment(null);
-    if (onOrderCreated) {
-      onOrderCreated();
-    }
-  };
-  const dispatch = useAppDispatch();
-  const requestSignIn = useCallback(
-    () =>
-      dispatch(
-        setRequestedAuthAction({ type: "login", targetAccount: "customer" }),
-      ),
-    [dispatch],
-  );
-
-  const handleScheduleDelivery = useCallback(async () => {
-    console.log("handleScheduleDelivery");
-    if (isScheduling) {
-      return;
-    }
-    if (
-      !pickupLocation ||
-      !deliveryLocation ||
-      !deliveryPriority ||
-      !packages?.length ||
-      !estimations
-    ) {
-      return;
-    }
-    if (!user || user.isAnonymous) {
-      requestSignIn();
-      return;
-    }
-    setIsScheduling(true);
-    try {
-      setProcessPayment({
-        distanceInMiles: estimations.distanceInMiles || 0,
-        distanceMeasurement: estimations.distanceMeasurement!,
-        pickupLocation: {
-          address: pickupLocation?.address || "",
-          latitude: +pickupLocation.latitude || 0,
-          longitude: +pickupLocation.longitude || 0,
-        },
-        deliveryLocation: {
-          address: deliveryLocation?.address || "",
-          latitude: +deliveryLocation.latitude || 0,
-          longitude: +deliveryLocation.longitude || 0,
-        },
-        products: packages,
-        priority: deliveryPriority || "standard",
-        priceInUSD: +estimations.fees,
-        requiredVehicles: estimations.vehicles,
-      });
-    } catch (error) {
-      console.error("Error creating order:", error);
-    } finally {
-      setIsScheduling(false);
-    }
-  }, [
-    pickupLocation,
-    deliveryLocation,
-    user,
-    requestSignIn,
-    deliveryPriority,
-    packages,
-    estimations,
-    isScheduling,
-  ]);
-
-  const validEstimations =
-    estimations?.fees !== undefined &&
-    estimations?.vehicles?.length > 0 &&
-    estimations?.distanceInMiles !== undefined &&
-    estimations?.durationInSeconds !== undefined;
-
-  if (!user || user.isAnonymous) {
-    return (
-      <PrimaryButton onClick={requestSignIn}>Sign In To Continue</PrimaryButton>
-    );
-  }
-  return (
-    <>
-      {estimations && processPayment && (
-        <StripePayment
-          showInModal
-          price={estimations.fees}
-          order={processPayment}
-          onComplete={onPaymentComplete}
-        />
-      )}
-      <PrimaryButton
-        disabled={disabled}
-        className="py-2"
-        type={validEstimations ? "button" : "submit"}
-        onClick={validEstimations ? handleScheduleDelivery : undefined}
-        isLoading={isLoading || isScheduling}
-      >
-        {isScheduling || isLoading
-          ? "Scheduling..."
-          : estimations?.fees
-            ? `✓ Confirm + Pay`
-            : "Estimate Delivery"}
-      </PrimaryButton>
-    </>
-  );
-};
-
-const AIAssistedForm: React.FC<{
-  brightness: "dark" | "light";
-  className?: string;
-  onOrderCreated?: () => void;
-}> = ({ brightness, className, onOrderCreated }) => {
-  const { fetchPlatformSettings } = useDbOperations();
-
-  const { data: availableCities } = useQuery({
-    initialData: null,
-    queryKey: [LATEST_PLATFORM_SETTINGS_PATH],
-    queryFn: fetchPlatformSettings,
-    select: (result) => {
-      return (
-        (
-          result?.data || ({ availableCities: [] } as PlatformSettingsEntity)
-        ).availableCities?.map((city) => city.viewPort) || []
-      );
-    },
-  });
-
-  type RequestInfo = Partial<
-    Omit<
-      ApiResExtractOrderRequestFromText,
-      "pickupLocation" | "dropoffLocation"
-    >
-  > & {
-    pickupLocation?: Location;
-    dropoffLocation?: Location;
-  };
-  const [reqInfo, setReqInfo] = useState<RequestInfo>({});
-
-  const serverRequest = useServerRequest();
-  const { mutate: autoDetectRequestAndEstimateFees, isPending } = useMutation({
-    mutationKey: ["auto-detect-request-and-estimate-fees", availableCities],
-    mutationFn: async (ev: React.FormEvent<HTMLFormElement>) => {
-      ev.preventDefault();
-      // WARNING: e.currentTarget is null for unknown reason that is why we use the target instead.
-      const formData = new FormData(ev.currentTarget || ev.target);
-      const requestDAO: Record<string, unknown> = {};
-      formData.forEach((value, key) => {
-        requestDAO[key] = value;
-      });
-
-      const res = await serverRequest("/ai-agent/extract-order-request", {
-        method: "POST",
-        body: requestDAO,
-        schema: apiResExtractOrderRequestFromText,
-      });
-
-      const pickupLocationsSuggestions = await fetchPlacesFromGoogle(
-        res.pickupLocation,
-        {
-          viewPort: availableCities[0],
-        },
-      );
-      const rowPickupLocation = pickupLocationsSuggestions.suggestions?.[0];
-      if (!rowPickupLocation) {
-        throw new Error(`Pickup location not found for ${res.pickupLocation}`);
-      }
-      const pickupLocation = await fetchPlaceDetails({
-        placeId: rowPickupLocation.placePrediction.placeId,
-        address: rowPickupLocation.placePrediction.text.text,
-      });
-
-      const dropoffLocationsSuggestions = await fetchPlacesFromGoogle(
-        res.dropoffLocation,
-        {
-          viewPort: availableCities[0],
-        },
-      );
-      const rowDropoffLocation = dropoffLocationsSuggestions.suggestions?.[0];
-      if (!rowDropoffLocation) {
-        throw new Error(
-          `Dropoff location not found for ${res.dropoffLocation}`,
-        );
-      }
-      const dropoffLocation = await fetchPlaceDetails({
-        placeId: rowDropoffLocation.placePrediction.placeId,
-        address: rowDropoffLocation.placePrediction.text.text,
-      });
-
-      return {
-        ...res,
-        pickupLocation,
-        dropoffLocation,
-      };
-    },
-    onSuccess(data, variables, context) {
-      console.log({ data, variables, context });
-      setReqInfo(data);
-    },
-    onError(error, variables, context) {
-      console.error({ error, variables, context });
-    },
-  });
-
-  const {
-    error,
-    isFetching,
-    result: estimations,
-  } = useComputeDeliveryEstimation({
-    products: reqInfo.items,
-    deliveryLocation: reqInfo.dropoffLocation,
-    pickupLocation: reqInfo.pickupLocation,
-    priority: reqInfo.urgencyLevel,
-  });
-
-  return (
-    <div
-      className={`flex flex-col items-center gap-4 rounded-3xl border pb-8 ${brightness === "dark" ? "border-white bg-white/20" : ""} ${className}`}
-    >
-      <form
-        onSubmit={autoDetectRequestAndEstimateFees}
-        className="flex flex-col items-center gap-4"
-      >
-        <Heading2 className="text-center font-serif">
-          Describe What You Need Delivered - We'll Handle The Rest
-        </Heading2>
-        <TextArea
-          name="text"
-          required
-          className={`word-spacing-tight block h-11 w-full rounded-xl border p-[8px] text-xs tracking-tight text-black placeholder:text-xs focus:border-red-400 focus:outline-none focus:ring-transparent md:h-auto md:w-11/12 ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
-          placeholder="e.g. 4 tires from Waldorf to Baltimore - need by 3PM"
-        />
-        {/* <PrimaryButton
-          type="submit"
-          className="py-2"
-          loadingIcon=
-        >
-          Estimate Delivery
-        </PrimaryButton> */}
-        {estimations && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.5 }}
-            className={`flex w-full flex-col gap-1 text-wrap rounded-xl border p-3 text-sm  shadow-md focus:outline-none  focus:ring-transparent sm:text-[16px] md:w-11/12 ${brightness === "dark" ? "border-gray-300 text-white focus:border-red-400" : " bg-primary-50 text-secondary-900 focus:border-red-900"}`}
-          >
-            <span className="block text-xs">
-              Order:{" "}
-              <span className="font-bold">
-                {reqInfo?.items?.[0]?.name}
-                {(reqInfo?.items?.[0]?.quantity || 0) > 1
-                  ? ` x ${reqInfo?.items?.[0]?.quantity}`
-                  : ""}
-              </span>
-            </span>
-            <div className="flex items-center">
-              <span className="inline flex-1 text-start text-sm">
-                {reqInfo.pickupLocation?.address}
-              </span>
-              <span className="inline">
-                <ArrowRight className="inline" />
-              </span>
-              <span className="inline flex-1 text-end text-sm">
-                {reqInfo.dropoffLocation?.address}
-              </span>
-            </div>
-            <span className="block text-xs">
-              <PriorityBadge
-                priority={reqInfo.urgencyLevel || OrderPriority.STANDARD}
-              />
-            </span>
-            <div className="flex items-center">
-              <DisplayRequiredVehicles vehicles={estimations?.vehicles} />
-            </div>
-            <span className="block pt-2 text-xl font-bold text-primary-900">
-              {estimations?.fees !== undefined
-                ? formatPrice(estimations.fees)
-                : "N/A"}
-            </span>
-          </motion.div>
-        )}
-        {error && (
-          <motion.div
-            initial={{ opacity: 0, scaleY: 0, scaleX: 0.8 }}
-            animate={{
-              opacity: 1,
-              scaleY: 1,
-              scaleX: 1,
-              transition: { duration: 0.2, type: "spring", stiffness: 300 },
-            }}
-            className={`inline-block w-full rounded-lg p-1 text-center text-red-500 transition-all duration-500 ${error ? "" : "hidden"} ${brightness === "dark" ? "bg-white " : ""}`}
-          >
-            {error.message}
-          </motion.div>
-        )}
-      </form>
-      {(isPending || isFetching) && !estimations && (
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          className="flex w-full flex-row items-center justify-evenly gap-2"
-          transition={{ type: "spring", stiffness: 100 }}
-        >
-          <span className="inline-block h-7 w-7 animate-spin rounded-full border-4 border-primary-100/10 border-t-primary-900" />
-        </motion.div>
-      )}
-      {estimations && (
-        <PaymentButton
-          disabled={!!error}
-          isLoading={isPending || isFetching}
-          estimations={estimations || null}
-          pickupLocation={reqInfo.pickupLocation || null}
-          deliveryLocation={reqInfo.dropoffLocation || null}
-          deliveryPriority={reqInfo.urgencyLevel || null}
-          packages={reqInfo.items || []}
-          onOrderCreated={onOrderCreated}
-        />
-      )}
     </div>
   );
 };

@@ -45,3 +45,11 @@ export const ENV_SEND_GRID_API_KEY = (() => {
   }
   return key;
 })();
+
+export const ENV_GOOGLE_MAPS_API_KEY_BACKEND = (() => {
+  const key = process.env.GOOGLE_MAPS_API_KEY_BACKEND;
+  if (!key) {
+    throw new Error("GOOGLE_MAPS_API_KEY_BACKEND not found, check your environment variables");
+  }
+  return key;
+})();

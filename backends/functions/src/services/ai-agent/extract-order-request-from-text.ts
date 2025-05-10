@@ -1,6 +1,7 @@
-import {ApiResExtractOrderRequestFromTextSchema} from "@freedmen-s-trucking/types";
+import {apiResExtractOrderRequestFromText} from "@freedmen-s-trucking/types";
 import {openAiClient} from "./config";
 
+const ApiResExtractOrderRequestFromTextSchema = apiResExtractOrderRequestFromText.toJsonSchema();
 export const extractOrderRequestFromText = async (text: string) => {
   const response = await openAiClient.chat.completions.create({
     model: "gpt-4o",
