@@ -71,9 +71,11 @@ export const apiResExtractOrderRequestFromText = type({
         estimatedWeightInLbsPerUnit: "number",
         quantity: "number",
       }).array(),
-      urgencyLevel: type.valueOf(OrderPriority).or("''"),
+      urgencyLevel: type.valueOf(OrderPriority).or("''").or("null"),
       deliveryTime: "string | ''",
-    }).partial(),
+    })
+      .partial()
+      .or("null"),
     onboarding: {
       status: "'in_progress' | 'completed'",
       pendingQuestion: type({
@@ -81,14 +83,17 @@ export const apiResExtractOrderRequestFromText = type({
         field: "string",
         question: "string",
         exampleAnswer: "string?",
-        boolean_options: type("string[]").optional(),
+        boolean_options: type("string[]").or("null").optional(),
         options: type({
           id: "string",
           displayValue: "string",
         })
           .array()
+          .or("null")
           .optional(),
-      }).optional(),
+      })
+        .or("null")
+        .optional(),
       answeredFields: "string[]",
       systemNotes: "string?",
     },

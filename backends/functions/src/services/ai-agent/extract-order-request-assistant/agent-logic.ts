@@ -285,6 +285,7 @@ Important:
 * Think smartly: based on the current state, always ask the next best question needed to place the order.
 * Be consistent: don't ask the same question twice.
 * Stay helpful. Make it easy for the user to complete their delivery request.
+* Always return a valid JSON response.
 `;
 
 const orderDataExtractionDeveloperPrompt = `

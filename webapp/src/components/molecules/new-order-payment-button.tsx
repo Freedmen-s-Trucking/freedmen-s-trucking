@@ -23,7 +23,7 @@ export const PaymentButton: React.FC<{
   disabled: boolean;
   estimations: {
     distanceInMiles?: number | undefined;
-    durationInSeconds?: number | undefined;
+    durationInSeconds?: number | null;
     distanceMeasurement?: DistanceMeasurement | undefined;
     vehicles: RequiredVehicleEntity[];
     fees: number;

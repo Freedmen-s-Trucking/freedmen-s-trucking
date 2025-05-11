@@ -43,7 +43,6 @@ const googlePlaceResult = type({
     text: {
       text: "string",
     },
-    // types: type("string").array(),
   },
 });
 

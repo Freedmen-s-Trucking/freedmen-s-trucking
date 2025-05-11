@@ -16,7 +16,8 @@ router.post("/extract-order-request", async (c) => {
     {role: "user", content: req.text, messageId: req.chatId || null},
     {reset: !req.threadId, threadId: c.get("user").uid},
   );
-  const serializedData = JSON.parse(res.response || "{}");
+  console.log(res.response);
+  const serializedData: any = JSON.parse(res.response || "{}");
   if (serializedData?.onboarding?.status !== "completed") {
     return c.json(
       {data: {order: {}, onboarding: serializedData.onboarding}, threadId: res.threadId, chatId: res.chatId},

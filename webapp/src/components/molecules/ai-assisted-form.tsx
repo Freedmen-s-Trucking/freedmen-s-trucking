@@ -27,7 +27,6 @@ import { useServerRequest } from "~/hooks/use-server-request";
 import { formatPrice } from "~/utils/functions";
 import { TextArea, TextInput } from "../atoms/base";
 import { PaymentButton } from "./new-order-payment-button";
-import { isResponseError } from "up-fetch";
 
 export const AIAssistedForm: React.FC<{
   brightness: "dark" | "light";
@@ -51,7 +50,7 @@ export const AIAssistedForm: React.FC<{
 
   type RequestInfo = Partial<
     Omit<
-      ApiResExtractOrderRequestFromText["data"]["order"],
+      Exclude<ApiResExtractOrderRequestFromText["data"]["order"], null>,
       "pickupLocation" | "dropoffLocation"
     >
   > & {
@@ -63,9 +62,12 @@ export const AIAssistedForm: React.FC<{
   const [qas, setQAs] = useState<
     {
       chatId: string | null;
-      question: Required<
-        ApiResExtractOrderRequestFromText["data"]["onboarding"]
-      >["pendingQuestion"];
+      question: Exclude<
+        Required<
+          ApiResExtractOrderRequestFromText["data"]["onboarding"]
+        >["pendingQuestion"],
+        null
+      >;
       answer: string | number | undefined;
     }[]
   >([
@@ -150,6 +152,7 @@ export const AIAssistedForm: React.FC<{
       const orderType = apiResExtractOrderRequestFromText
         .get("data")
         .get("order")
+        .exclude("null")
         .required();
 
       const order = orderType(res.data.order);
@@ -191,10 +194,17 @@ export const AIAssistedForm: React.FC<{
     },
     onError(error, variables, context) {
       console.error({ error, variables, context });
-      if (isResponseError(error)) {
-        setError(new Error("Something went wrong Please try again"));
-      } else {
+      if (error instanceof Error) {
         setError(error);
+        serverRequest("/log", {
+          method: "POST",
+          body: {
+            error,
+            variables,
+            context,
+          },
+        });
+        setError(new Error("Something went wrong Please try again"));
       }
     },
   });

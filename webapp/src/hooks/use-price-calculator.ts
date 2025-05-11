@@ -20,6 +20,7 @@ import {
   ProductWithQuantity,
   vehiclesInfoList,
 } from "@freedmen-s-trucking/types";
+import { GOOGLE_MAPS_API_KEY } from "~/utils/envs";
 
 function getPackageVolumeInCubicFeet(pkg: ProductWithQuantity): number {
   return (
@@ -209,14 +210,18 @@ function findVehicleIdBasedOnVolume(cuFeet: number): {
 }
 
 /**
- * Get the distance between two points from OSRM
+ * Get the distance between two points from Google Maps
  * @param startingPoint The starting point
  * @param endPoint The end point
  * @returns The distance in meters
  */
-const getDistance = (startingPoint: Coordinate, endPoint: Coordinate) => {
-  const url = `https://router.project-osrm.org/route/v1/driving/${endPoint.longitude},${endPoint.latitude};${startingPoint.longitude},${startingPoint.latitude}`;
-  const fetcher = up(fetch, () => ({
+const getDistanceFromGoogle = (
+  startingPoint: Coordinate,
+  endPoint: Coordinate,
+) => {
+  const distanceApiRequest = up(fetch, () => ({
+    baseUrl: "https://routes.googleapis.com",
+    headers: { "X-Goog-Api-Key": GOOGLE_MAPS_API_KEY },
     retry: {
       attempts: 2,
       delay: 1000,
@@ -225,24 +230,89 @@ const getDistance = (startingPoint: Coordinate, endPoint: Coordinate) => {
         if (ctx.error) return (ctx.error as Error).name === "TimeoutError";
         // Retry on 429 server errors
         if (ctx.response) return ctx.response.status === 429;
+
         return false;
       },
     },
   }));
-  return fetcher(url, {
+  return distanceApiRequest("/distanceMatrix/v2:computeRouteMatrix", {
+    method: "POST",
+    headers: {
+      "X-Goog-Api-Key": GOOGLE_MAPS_API_KEY,
+      "X-Goog-FieldMask": "duration,distanceMeters,condition,",
+    },
+    body: {
+      origins: [
+        {
+          waypoint: {
+            location: {
+              latLng: {
+                latitude: startingPoint.latitude,
+                longitude: startingPoint.longitude,
+              },
+            },
+          },
+          routeModifiers: { avoid_ferries: true },
+        },
+      ],
+      destinations: [
+        {
+          waypoint: {
+            location: {
+              latLng: {
+                latitude: endPoint.latitude,
+                longitude: endPoint.longitude,
+              },
+            },
+          },
+        },
+      ],
+      travelMode: "DRIVE",
+      routingPreference: "TRAFFIC_AWARE",
+    },
     schema: type({
-      code: "string | 'Ok'",
-      routes: type({
-        distance: "number",
-        duration: "number",
-        legs: type({
-          distance: "number",
-          duration: "number",
-        }).array(),
-      }).array(),
-    }),
+      distanceMeters: "number",
+      duration: "string",
+      condition: "string",
+    }).array(),
   });
 };
+
+// /**
+//  * Get the distance between two points from OSRM
+//  * @param startingPoint The starting point
+//  * @param endPoint The end point
+//  * @returns The distance in meters
+//  */
+// const getDistance = (startingPoint: Coordinate, endPoint: Coordinate) => {
+//   const url = `https://router.project-osrm.org/route/v1/driving/${endPoint.longitude},${endPoint.latitude};${startingPoint.longitude},${startingPoint.latitude}`;
+//   const fetcher = up(fetch, () => ({
+//     retry: {
+//       attempts: 2,
+//       delay: 1000,
+//       when: (ctx) => {
+//         // Retry on timeout errors
+//         if (ctx.error) return (ctx.error as Error).name === "TimeoutError";
+//         // Retry on 429 server errors
+//         if (ctx.response) return ctx.response.status === 429;
+//         return false;
+//       },
+//     },
+//   }));
+//   return fetcher(url, {
+//     schema: type({
+//       code: "string | 'Ok'",
+//       routes: type({
+//         distance: "number",
+//         duration: "number",
+//         legs: type({
+//           distance: "number",
+//           duration: "number",
+//         }).array(),
+//       }).array(),
+//     }),
+//   });
+// };
 
 export function metersToMiles(meters: number): number {
   return meters / 1609.34;
@@ -270,13 +340,14 @@ export const useComputeDeliveryEstimation = (
       deliveryLocation?.latitude,
       deliveryLocation?.longitude,
     ],
-    queryFn: () => getDistance(pickupLocation!, deliveryLocation!),
+    queryFn: () => getDistanceFromGoogle(pickupLocation!, deliveryLocation!),
     select(data) {
-      const route = data.routes[0];
+      const route = data[0];
+      const durationInSeconds = parseInt(route.duration);
       return {
         distanceMeasurement: DistanceMeasurement.OSRM_FASTEST_ROUTE,
-        distanceInMiles: metersToMiles(route.distance),
-        durationInSeconds: route.duration,
+        distanceInMiles: metersToMiles(route.distanceMeters),
+        durationInSeconds: isNaN(durationInSeconds) ? null : durationInSeconds,
       };
     },
   });
