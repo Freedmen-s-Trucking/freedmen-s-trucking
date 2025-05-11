@@ -11,6 +11,7 @@ import userApiRouter from "./user/api";
 import {bearerAuth} from "hono/bearer-auth";
 import {getAuth} from "firebase-admin/auth";
 import {Variables} from "../utils/types";
+import {slackNotify} from "~src/utils/slack-notification";
 
 export const customLogger = (message: string, ...rest: string[]) => {
   console.log(message, ...rest);
@@ -44,6 +45,11 @@ apiV1Route.route("/ai-agent", aiAgentApiRouter);
 apiV1Route.route("/authenticate", authenticateApiRouter);
 apiV1Route.route("/order", orderApiRouter);
 apiV1Route.route("/user", userApiRouter);
+apiV1Route.post("/logs", async (c) => {
+  const body = await c.req.json();
+  slackNotify("frontend", body);
+  return c.json({}, 200);
+});
 
 apiV1Route.notFound((c) => {
   return c.json({error: "404 Not Found"}, 404);

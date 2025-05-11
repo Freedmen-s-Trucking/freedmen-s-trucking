@@ -17,6 +17,36 @@ import {
 import {CollectionReference, DocumentSnapshot, getFirestore} from "firebase-admin/firestore";
 import {fetchPlacesFromGoogle} from "./geocoding-functions";
 
+const caches: {
+  platformSettingsCache: PlatformSettingsEntity | null;
+  platformSettingsLastFetched: number;
+  historyCache: {
+    [threadId: string]: {
+      history: Message[];
+      lastUpdated: number;
+    };
+  };
+} = {
+  platformSettingsCache: null,
+  platformSettingsLastFetched: 0,
+  historyCache: {},
+};
+
+const FIVE_MINUTES_MILLIS = 5 * 60 * 1000;
+
+const placeSearchResponseType = type({
+  status: '"success" | "not_found"',
+  query: "string",
+  zonesChecked: "string[]",
+  availableZones: type({
+    zone: "string",
+    locations: type({
+      address: "string",
+      placeId: "string",
+    }).array(),
+  }).array(),
+});
+
 export const deliveryOrder = apiResExtractOrderRequestFromText.get("data");
 
 const DeliveryOrderSchema = deliveryOrder.toJsonSchema();
@@ -42,19 +72,21 @@ export const sendMessage = async (
       : [{role: "developer", content: orderDataExtractionSystemPrompt}];
 
   // Load history from DB if needed.
-  if (!config.reset) {
-    if (!_internal_history || !_internal_history.length) {
+  if (!config.reset && (!_internal_history || _internal_history.length === 0)) {
+    let tempOrderHistory: Message[] = caches.historyCache[config.threadId]?.history || [];
+    if (!tempOrderHistory.length) {
       const tempOrderCollectionRef = getFirestore().collection(CollectionName.TMP_ORDERS) as CollectionReference<
         TempOrderEntity,
         TempOrderEntity
       >;
       const tempOrderSnapshot = await tempOrderCollectionRef.doc(config.threadId).get();
-      const tempOrder = tempOrderSnapshot.data();
-      for (const m of tempOrder?.history || []) {
-        messages.push(m);
-        if ((m as Message).messageId === message.messageId) {
-          break;
-        }
+      tempOrderHistory = tempOrderSnapshot.data()?.history || [];
+      caches.historyCache[config.threadId] = {history: tempOrderHistory, lastUpdated: Date.now()};
+    }
+    for (const m of tempOrderHistory) {
+      messages.push(m);
+      if ((m as Message).messageId === message.messageId) {
+        break;
       }
     }
   }
@@ -133,48 +165,53 @@ export const sendMessage = async (
 
   // Save history to DB
   if (config.threadId) {
-    const tempOrderCollectionRef = getFirestore().collection(CollectionName.TMP_ORDERS) as CollectionReference<
-      TempOrderEntity,
-      TempOrderEntity
-    >;
+    caches.historyCache[config.threadId] ??= {history: [], lastUpdated: 0};
+    caches.historyCache[config.threadId].history = messages.slice(1) as unknown as TempOrderEntity["history"];
+    const diff = Date.now() - caches.historyCache[config.threadId].lastUpdated;
+    if (diff > FIVE_MINUTES_MILLIS) {
+      caches.historyCache[config.threadId].lastUpdated = Date.now();
+      const tempOrderCollectionRef = getFirestore().collection(CollectionName.TMP_ORDERS) as CollectionReference<
+        TempOrderEntity,
+        TempOrderEntity
+      >;
 
-    // Remove the system prompt
-    await tempOrderCollectionRef.doc(config.threadId).set({
-      history: messages.slice(1) as unknown as TempOrderEntity["history"],
-    });
-  } else {
-    const tempOrderCollectionRef = getFirestore().collection(CollectionName.TMP_ORDERS) as CollectionReference<
-      TempOrderEntity,
-      TempOrderEntity
-    >;
-    // Remove the system prompt
-    const res = await tempOrderCollectionRef.add({
-      history: messages.slice(1) as unknown as TempOrderEntity["history"],
-    });
-    return {response: responseMessage.content, threadId: res.id, chatId: response.id};
+      // Remove the system prompt
+      void tempOrderCollectionRef.doc(config.threadId).set({
+        history: messages.slice(1) as unknown as TempOrderEntity["history"],
+      });
+    }
   }
   return {response: responseMessage.content, threadId: config.threadId, chatId: response.id};
 };
 
-const placeSearchResponse = type({
-  status: '"success" | "not_found"',
-  query: "string",
-  zonesChecked: "string[]",
-  availableZones: type({
-    zone: "string",
-    locations: type({
-      address: "string",
-      placeId: "string",
-    }).array(),
-  }).array(),
-});
+/**
+ * Get platform settings from Firestore cache or database.
+ * Caches the result for 5 minutes to avoid repeated database queries.
+ */
+async function getPlatformSettings() {
+  const now = Date.now();
+  if (caches.platformSettingsCache && now - caches.platformSettingsLastFetched < FIVE_MINUTES_MILLIS) {
+    // 5 minutes
+    return caches.platformSettingsCache;
+  }
 
-async function placeSearch(query: string): Promise<typeof placeSearchResponse.infer> {
   const platformSettingsSnapshot = (await getFirestore()
     .doc(LATEST_PLATFORM_SETTINGS_PATH)
     .get()) as DocumentSnapshot<PlatformSettingsEntity>;
 
-  const platformSettings = platformSettingsSnapshot.data();
+  caches.platformSettingsCache = platformSettingsSnapshot.data() || null;
+  caches.platformSettingsLastFetched = now;
+  return caches.platformSettingsCache;
+}
+
+/**
+ * Search for a pickup or dropoff location by user-provided address.
+ *
+ * @param query - The address to search for.
+ * @returns Promise that resolves to the search results.
+ */
+async function placeSearch(query: string): Promise<typeof placeSearchResponseType.infer> {
+  const platformSettings = await getPlatformSettings();
   const restrictedZones: {address: PlaceLocation["address"]; viewPort?: PlaceLocation["viewPort"]}[] =
     platformSettings?.availableCities || [];
 
@@ -184,9 +221,9 @@ async function placeSearch(query: string): Promise<typeof placeSearchResponse.in
 
   const preferredPlacesType = ["street_address", "premise", "establishment", "store", "restaurant"];
 
-  const results: (typeof placeSearchResponse.infer)["availableZones"] = [];
+  const results: (typeof placeSearchResponseType.infer)["availableZones"] = [];
 
-  for (const restrictedZone of restrictedZones) {
+  const fetches = restrictedZones.map(async (restrictedZone) => {
     const res = await fetchPlacesFromGoogle(query, {
       primaryTypes: preferredPlacesType,
       viewPort: restrictedZone.viewPort,
@@ -199,7 +236,9 @@ async function placeSearch(query: string): Promise<typeof placeSearchResponse.in
           placeId: suggestion.placePrediction.placeId,
         })) || [],
     });
-  }
+  });
+
+  await Promise.all(fetches);
 
   const totalLocations = results.reduce((sum, zone) => sum + zone.locations.length, 0);
 
@@ -286,6 +325,7 @@ Important:
 * Be consistent: don't ask the same question twice.
 * Stay helpful. Make it easy for the user to complete their delivery request.
 * Always return a valid JSON response.
+* Always call the 'search_place' tool if you don't have a place id.
 `;
 
 const orderDataExtractionDeveloperPrompt = `

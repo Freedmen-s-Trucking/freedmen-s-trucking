@@ -87,20 +87,6 @@ export const AIAssistedForm: React.FC<{
   const setError = errorState[1];
   let error = errorState[0];
 
-  // Inside your AIAssistedForm component:
-  const formContainerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    // Scroll to bottom whenever qas changes
-    console.log(formContainerRef.current);
-    if (formContainerRef.current) {
-      formContainerRef.current.scrollTo({
-        top: formContainerRef.current.scrollHeight,
-        behavior: "smooth",
-      });
-    }
-  }, [qas]); // Only run when qas.length changes
-
   const serverRequest = useServerRequest();
   const { mutate: autoDetectRequestAndEstimateFees, isPending } = useMutation({
     mutationKey: ["auto-detect-request-and-estimate-fees", availableCities],
@@ -115,7 +101,7 @@ export const AIAssistedForm: React.FC<{
       setError(null);
       setReqInfo({});
 
-      const pos = id || qas.length - 1;
+      const pos = typeof id === "number" ? id : qas.length - 1;
       setQAs([...qas.slice(0, pos + 1)]);
       const lastQa = qas[pos];
       let reqText: string;
@@ -196,7 +182,7 @@ export const AIAssistedForm: React.FC<{
       console.error({ error, variables, context });
       if (error instanceof Error) {
         setError(error);
-        serverRequest("/log", {
+        serverRequest("/logs", {
           method: "POST",
           body: {
             error,
@@ -217,7 +203,21 @@ export const AIAssistedForm: React.FC<{
   });
   const { isFetching, result: estimations } = estimation;
   error ??= estimation.error;
-  console.log({ estimations, error, qas });
+
+  // Inside your AIAssistedForm component:
+  const formContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Scroll to bottom whenever qas changes
+    console.log(formContainerRef.current);
+    if (formContainerRef.current) {
+      formContainerRef.current.scrollTo({
+        top: formContainerRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+    }
+  }, [qas.length, estimations]); // Only run when qas.length changes
+
   return (
     <div
       className="h-full overflow-y-auto overflow-x-hidden"
