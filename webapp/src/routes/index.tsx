@@ -14,6 +14,14 @@ import { useAppDispatch } from "~/stores/hooks";
 import { setRequestedAuthAction } from "~/stores/controllers/app-ctrl";
 import { CreateOrder } from "~/components/molecules/create-order";
 import { Badge } from "flowbite-react";
+import {
+  DollarSignIcon,
+  LockIcon,
+  MapIcon,
+  ServerIcon,
+  ShieldCheckIcon,
+} from "lucide-react";
+import { HiLockClosed } from "react-icons/hi";
 
 // Welcome back animation
 const welcomeBackVariants: Variants = {
@@ -56,6 +64,46 @@ const itemVariants: Variants = {
     transition: { duration: 0.5, ease: "easeOut" },
   },
 };
+
+// Animation for footer
+const footerVariants: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: "easeOut", delay: 1.2 },
+  },
+};
+
+// Animation for trust symbols
+const trustSymbolVariants: Variants = {
+  hidden: { opacity: 0, scale: 0.8 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: {
+      duration: 0.4,
+      ease: "easeOut",
+    },
+  },
+};
+
+// Component for Trust Symbol
+const TrustSymbol = ({
+  icon,
+  text,
+}: {
+  icon: React.ReactNode;
+  text: string;
+}) => (
+  <motion.div
+    variants={trustSymbolVariants}
+    className="flex flex-col items-center px-2 py-1"
+  >
+    <div className="mb-1 text-primary-800">{icon}</div>
+    <span className="text-center text-xs text-gray-600">{text}</span>
+  </motion.div>
+);
 
 export const Route = createFileRoute("/")({
   beforeLoad({ context }) {
@@ -105,13 +153,14 @@ function Index() {
         initial="hidden"
         animate="visible"
         variants={containerVariants}
+        className="flex h-screen w-screen flex-col overflow-y-auto"
       >
-        <Container className="flex h-screen w-screen flex-col items-center gap-1 p-4 transition-colors duration-300 sm:gap-3 sm:p-12 sm:px-8 md:gap-8 md:p-16 lg:gap-12">
+        <Container className="flex flex-1 flex-col items-center gap-1 p-4 transition-colors duration-300 sm:gap-3 sm:p-12 sm:px-8 md:gap-8 md:p-16 lg:gap-12">
           <motion.div
             initial="hidden"
             animate="visible"
             variants={welcomeBackVariants}
-            className="flex justify-between text-sm font-medium text-gray-500"
+            className="mb-4 flex justify-between text-sm font-medium text-gray-500"
           >
             Already have an account?&nbsp;
             <button
@@ -183,15 +232,76 @@ function Index() {
               </BodyText>
             </motion.div>
           </motion.div>
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={welcomeBackVariants}
-            className="flex justify-between text-sm font-medium text-gray-500"
-          >
-            SSL Secured | DOT Compliant | Stripe Verified
-          </motion.div>
         </Container>
+
+        {/* Footer with Trust Symbols */}
+        <motion.footer
+          className="w-full bg-transparent px-6 py-4 shadow-inner"
+          variants={footerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <motion.div
+            className="mx-auto max-w-6xl"
+            variants={containerVariants}
+          >
+            {/* Trust Symbols */}
+            <motion.div
+              className="flex flex-wrap justify-evenly gap-2 border-b border-gray-200 pb-4"
+              variants={containerVariants}
+            >
+              <TrustSymbol
+                icon={<HiLockClosed className="h-6 w-6" />}
+                text="Secure Payments via Stripe"
+              />
+              <TrustSymbol
+                icon={<ShieldCheckIcon className="h-6 w-6" />}
+                text="Drivers Verified by Authenticate.com"
+              />
+              <TrustSymbol
+                icon={<LockIcon className="h-6 w-6" />}
+                text="SSL Secured"
+              />
+              <TrustSymbol
+                icon={<DollarSignIcon className="h-6 w-6" />}
+                text="100% Tip Goes to Driver"
+              />
+              <TrustSymbol
+                icon={<MapIcon className="h-6 w-6" />}
+                text="Powered by Google Maps"
+              />
+              <TrustSymbol
+                icon={<ServerIcon className="h-6 w-6" />}
+                text="Firebase Technology"
+              />
+            </motion.div>
+
+            {/* Contact & Legal */}
+            <div className="mt-4 flex flex-col justify-between gap-4 text-center text-xs text-gray-500 md:flex-row md:text-left">
+              <div className="flex flex-col items-center gap-2 md:flex-row">
+                <span className="font-medium">Contact Us:</span>
+                <a
+                  href="mailto:roland@FreedmensTrucking.net"
+                  className="text-primary-800 hover:underline"
+                >
+                  roland@FreedmensTrucking.net
+                </a>
+              </div>
+
+              <div className="flex flex-col items-center gap-2 md:flex-row">
+                <a href="/privacy" className="hover:underline">
+                  Privacy Policy
+                </a>
+                <span className="hidden md:inline">•</span>
+                <a href="/terms" className="hover:underline">
+                  Terms of Use
+                </a>
+                <span className="hidden md:inline">•</span>
+                <span>© {new Date().getFullYear()} Freedmen's Trucking</span>
+              </div>
+            </div>
+          </motion.div>
+        </motion.footer>
       </motion.div>
       {isSchedulingDelivery && (
         <CreateOrder
