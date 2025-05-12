@@ -144,21 +144,21 @@ function Index() {
   };
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden">
+    <div className="relative h-full w-full">
       <BackgroundBalls />
 
       <motion.div
         initial="hidden"
         animate="visible"
         variants={containerVariants}
-        className="flex h-screen w-screen flex-col"
+        className="flex min-h-dvh w-full flex-col"
       >
-        <Container className="flex flex-1 flex-col items-center gap-1 p-4 transition-colors duration-300 sm:gap-3 sm:p-12 sm:px-8 md:gap-8 md:p-16 lg:gap-12">
+        <Container className="flex min-h-fit flex-1 flex-col items-center gap-1 p-4 transition-colors duration-300 sm:gap-3 sm:p-12 sm:px-8 md:gap-8 md:p-16 lg:gap-12">
           <motion.div
             initial="hidden"
             animate="visible"
             variants={welcomeBackVariants}
-            className="flex justify-between text-sm font-medium text-gray-500"
+            className="mb-4 flex justify-between text-sm font-medium text-gray-500"
           >
             Already have an account?&nbsp;
             <button
