@@ -47,7 +47,7 @@ apiV1Route.route("/order", orderApiRouter);
 apiV1Route.route("/user", userApiRouter);
 apiV1Route.post("/logs", async (c) => {
   const body = await c.req.json();
-  slackNotify("frontend", body);
+  slackNotify("frontend", body, body);
   return c.json({}, 200);
 });
 

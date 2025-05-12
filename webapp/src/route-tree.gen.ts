@@ -11,6 +11,8 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as TermsImport } from './routes/terms'
+import { Route as PrivacyImport } from './routes/privacy'
 import { Route as IndexImport } from './routes/index'
 import { Route as PreviewIndexImport } from './routes/preview/index'
 import { Route as PreviewTrackingImport } from './routes/preview/tracking'
@@ -65,6 +67,18 @@ import { Route as AppAdminDashboardImport } from './routes/app/admin/dashboard'
 import { Route as AppUserDeliveryDetailsDeliveryIdImport } from './routes/app/user/delivery-details.$deliveryId'
 
 // Create/Update Routes
+
+const TermsRoute = TermsImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const PrivacyRoute = PrivacyImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const IndexRoute = IndexImport.update({
   id: '/',
@@ -392,6 +406,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyImport
+      parentRoute: typeof rootRoute
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsImport
       parentRoute: typeof rootRoute
     }
     '/preview/about': {
@@ -773,6 +801,8 @@ const AppUserDeliveryDetailsRouteWithChildren =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/preview/about': typeof PreviewAboutRoute
   '/preview/contact': typeof PreviewContactRoute
   '/preview/schedule-delivery': typeof PreviewScheduleDeliveryRoute
@@ -828,6 +858,8 @@ export interface FileRoutesByFullPath {
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/preview/about': typeof PreviewAboutRoute
   '/preview/contact': typeof PreviewContactRoute
   '/preview/schedule-delivery': typeof PreviewScheduleDeliveryRoute
@@ -884,6 +916,8 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/preview/about': typeof PreviewAboutRoute
   '/preview/contact': typeof PreviewContactRoute
   '/preview/schedule-delivery': typeof PreviewScheduleDeliveryRoute
@@ -941,6 +975,8 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/privacy'
+    | '/terms'
     | '/preview/about'
     | '/preview/contact'
     | '/preview/schedule-delivery'
@@ -995,6 +1031,8 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/privacy'
+    | '/terms'
     | '/preview/about'
     | '/preview/contact'
     | '/preview/schedule-delivery'
@@ -1049,6 +1087,8 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/privacy'
+    | '/terms'
     | '/preview/about'
     | '/preview/contact'
     | '/preview/schedule-delivery'
@@ -1105,6 +1145,8 @@ export interface FileRouteTypes {
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  PrivacyRoute: typeof PrivacyRoute
+  TermsRoute: typeof TermsRoute
   PreviewAboutRoute: typeof PreviewAboutRoute
   PreviewContactRoute: typeof PreviewContactRoute
   PreviewScheduleDeliveryRoute: typeof PreviewScheduleDeliveryRoute
@@ -1159,6 +1201,8 @@ export interface RootRouteChildren {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  PrivacyRoute: PrivacyRoute,
+  TermsRoute: TermsRoute,
   PreviewAboutRoute: PreviewAboutRoute,
   PreviewContactRoute: PreviewContactRoute,
   PreviewScheduleDeliveryRoute: PreviewScheduleDeliveryRoute,
@@ -1222,6 +1266,8 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/privacy",
+        "/terms",
         "/preview/about",
         "/preview/contact",
         "/preview/schedule-delivery",
@@ -1276,6 +1322,12 @@ export const routeTree = rootRoute
     },
     "/": {
       "filePath": "index.tsx"
+    },
+    "/privacy": {
+      "filePath": "privacy.tsx"
+    },
+    "/terms": {
+      "filePath": "terms.tsx"
     },
     "/preview/about": {
       "filePath": "preview/about.tsx"
