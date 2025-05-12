@@ -13,7 +13,7 @@ const TermsOfUse = () => {
     {
       id: "registration",
       title: "Registration",
-      content: `You agree to provide accurate information regarding your phone number, email address and any other additional information, whilst registering for our App. Should any of your details change, you shall immediately adjourn your data and notify us via email at roland@FreedmensTrucking.net. You agree to receive for security reasons text messages and phone calls (from us or our third-party providers) with codes to register for our App.`,
+      content: `You agree to provide accurate information regarding your phone number, email address and any other additional information, whilst registering for our App. Should any of your details change, you shall immediately adjourn your data and notify us via email at Roland@FreedmensTrucking.net. You agree to receive for security reasons text messages and phone calls (from us or our third-party providers) with codes to register for our App.`,
     },
     {
       id: "age",
@@ -48,7 +48,7 @@ const TermsOfUse = () => {
     {
       id: "dispute",
       title: "Dispute Resolution",
-      content: `In compliance with the EU-US Privacy Shield Principles and the Swiss-US Privacy Shield Principles, we commit to resolve complaints about your privacy and our collection or use of your personal information. European Union, United Kingdom, or Swiss individuals with inquiries or complaints regarding this terms of service should contact us by email at roland@FreedmensTrucking.net or by any other available method available in the CONTACT US section. Freedmen's Trucking has further committed to refer unresolved privacy complaints under the EU-US Privacy Shield Principles and the Swiss-US Privacy Shield Principles to an independent dispute resolution mechanism, the BBB EU PRIVACY SHIELD, operated by BBB National Programs. If you do not receive timely acknowledgment of your complaint, or if your complaint is not satisfactorily addressed, please visit https://bbbprograms.org/privacy-shield-complaints/ for more information and to file a complaint. This service is provided at no cost to you. Please do not submit GDPR complaints to BBB EU Privacy Shield. If your EU-US Privacy Shield complaint cannot be resolved through these described channels, under certain conditions, you may invoke binding arbitration for some residual claims not resolved by other redress mechanisms. To learn more, please view the Privacy Shield Annex 1 at https://www.privacyshield.gov/article?id=ANNEX-I-introduction.`,
+      content: `In compliance with the EU-US Privacy Shield Principles and the Swiss-US Privacy Shield Principles, we commit to resolve complaints about your privacy and our collection or use of your personal information. European Union, United Kingdom, or Swiss individuals with inquiries or complaints regarding this terms of service should contact us by email at Roland@FreedmensTrucking.net or by any other available method available in the CONTACT US section. Freedmen's Trucking has further committed to refer unresolved privacy complaints under the EU-US Privacy Shield Principles and the Swiss-US Privacy Shield Principles to an independent dispute resolution mechanism, the BBB EU PRIVACY SHIELD, operated by BBB National Programs. If you do not receive timely acknowledgment of your complaint, or if your complaint is not satisfactorily addressed, please visit https://bbbprograms.org/privacy-shield-complaints/ for more information and to file a complaint. This service is provided at no cost to you. Please do not submit GDPR complaints to BBB EU Privacy Shield. If your EU-US Privacy Shield complaint cannot be resolved through these described channels, under certain conditions, you may invoke binding arbitration for some residual claims not resolved by other redress mechanisms. To learn more, please view the Privacy Shield Annex 1 at https://www.privacyshield.gov/article?id=ANNEX-I-introduction.`,
     },
     {
       id: "warranty",
@@ -162,7 +162,7 @@ const TermsOfUse = () => {
             <h2 className="text-xl font-semibold text-gray-800">
               {section.title}
             </h2>
-            {expandedSections[section.id] ? (
+            {!expandedSections[section.id] ? (
               <ChevronUpIcon className="h-5 w-5 text-gray-500" />
             ) : (
               <ChevronDownIcon className="h-5 w-5 text-gray-500" />
@@ -172,7 +172,7 @@ const TermsOfUse = () => {
           <motion.div
             variants={contentVariants}
             initial="hidden"
-            animate={expandedSections[section.id] ? "visible" : "hidden"}
+            animate={!expandedSections[section.id] ? "visible" : "hidden"}
             className="overflow-hidden"
           >
             <div className="pb-2 pt-4 leading-relaxed text-gray-600">
@@ -193,7 +193,7 @@ const TermsOfUse = () => {
           href="mailto:roland@FreedmensTrucking.net"
           className="mt-2 inline-block text-primary-600 hover:underline"
         >
-          roland@FreedmensTrucking.net
+          Roland@FreedmensTrucking.net
         </a>
       </motion.div>
     </motion.div>
