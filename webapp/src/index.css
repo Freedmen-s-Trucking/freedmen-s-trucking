@@ -8,10 +8,15 @@
 
 
 :root {
-  background-color: #FFFCFA;
-  font-family: "Poppins", sans-serif;
+  /* background-color: #FFFCFA; */
+   --hero-gradient: linear-gradient(135deg, #fffaf6 0%, #fffdf9 50%, #ffeef3 100%);
+  background: var(--hero-gradient);
+  font-family: "Poppins", Ideal Sans, system-ui, sans-serif;
 }
 
-body {
+#root, body {
+  background: var(--hero-gradient);
+  height: 100dvh;
+  width: 100dvw;
+  font-weight: 500;
 }
-  

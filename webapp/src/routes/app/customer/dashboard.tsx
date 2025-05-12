@@ -1,36 +1,23 @@
-import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
-import { CiMenuKebab } from "react-icons/ci";
-import React, { useState } from "react";
-import {
-  Tabs,
-  Badge,
-  Button,
-  Card,
-  Avatar,
-  Tooltip,
-  Spinner,
-  Dropdown,
-} from "flowbite-react";
-import {
-  HiAdjustments,
-  HiClipboardList,
-  HiEye,
-  HiEyeOff,
-  HiLogout,
-} from "react-icons/hi";
-import { useAuth } from "~/hooks/use-auth";
-import { useStorageOperations } from "~/hooks/use-storage";
 import { useQuery } from "@tanstack/react-query";
-import { useDbOperations } from "~/hooks/use-firestore";
-import { setUser } from "~/stores/controllers/auth-ctrl";
-import { OrderStatus } from "../../../../../common/types/src";
-import { useAppDispatch } from "~/stores/hooks";
-import { TbLayoutDashboard } from "react-icons/tb";
-import { PiPlus } from "react-icons/pi";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { Avatar, Badge, Card, Spinner, Tabs, Tooltip } from "flowbite-react";
+import React, { useState } from "react";
+import { BsBicycle } from "react-icons/bs";
+import { HiAdjustments, HiClipboardList } from "react-icons/hi";
+import { IoLogOutOutline } from "react-icons/io5";
 import { MdOutlineEdit } from "react-icons/md";
+import { PiPlus } from "react-icons/pi";
+import { TbLayoutDashboard } from "react-icons/tb";
+import { PrimaryButton, SecondaryButton } from "~/components/atoms";
 import { CreateOrder } from "~/components/molecules/create-order";
-import { tabTheme } from "~/utils/constants";
 import { Order } from "~/components/molecules/order-details";
+import { useAuth } from "~/hooks/use-auth";
+import { useDbOperations } from "~/hooks/use-firestore";
+import { useStorageOperations } from "~/hooks/use-storage";
+import { setUser } from "~/stores/controllers/auth-ctrl";
+import { useAppDispatch } from "~/stores/hooks";
+import { tabTheme } from "~/utils/constants";
+import { OrderStatus } from "../../../../../common/types/src";
 
 const tabs = ["active-orders", "history"] as const;
 
@@ -42,7 +29,6 @@ const CustomerDashboard = () => {
     "active-orders",
   );
   const [isCreateOrderModalOpen, setIsCreateOrderModalOpen] = useState(false);
-  const [showCustomerId, setShowCustomerId] = useState(false);
   const { user, signOut } = useAuth();
   const dispatch = useAppDispatch();
 
@@ -117,12 +103,12 @@ const CustomerDashboard = () => {
   };
 
   return (
-    <div className="mx-auto max-w-5xl p-4">
+    <div className="mx-auto w-full max-w-5xl p-4">
       {/* Driver Header */}
       <div className="mb-6 flex flex-col items-center rounded-lg bg-white p-4 shadow md:flex-row">
-        <div className="relative mb-4 md:mb-0 md:mr-6">
+        <div className="relative mb-4 text-center md:mb-0 md:mr-6">
           <Avatar
-            placeholderInitials={user.info.displayName}
+            placeholderInitials={user.info.displayName.trim().charAt(0)}
             img={user.info.photoURL || customerProfileUrl}
             rounded
             size="lg"
@@ -144,62 +130,44 @@ const CustomerDashboard = () => {
           <h1 className="text-2xl font-bold">{user.info.displayName}</h1>
           <p className="text-gray-600">{user.info.email}</p>
           <div className="mt-1 flex items-center justify-center">
-            <span className="mr-2">Customer ID:</span>
-            {showCustomerId ? (
-              <span className="contents font-mono text-sm">
-                {user.info.uid}
-              </span>
-            ) : (
-              <span className="contents font-mono text-sm">
-                {user.info.uid.slice(0, 4)}-****-****
-              </span>
-            )}
-            <Button
-              color="light"
-              size="xs"
-              className="ml-2 "
-              onClick={() => setShowCustomerId(!showCustomerId)}
-            >
-              {showCustomerId ? (
-                <HiEyeOff className="h-4 w-4" />
-              ) : (
-                <HiEye className="h-4 w-4" />
-              )}
-            </Button>
+            <span className="mr-2 font-light opacity-70">
+              #{user.info.uid.slice(0, 6)}
+            </span>
           </div>
         </div>
 
-        <div className="flex flex-1 flex-col items-end justify-end md:flex-row">
-          <Dropdown
-            trigger="hover"
-            renderTrigger={() => (
-              <span className="inline-block items-center rounded-3xl border border-gray-300 bg-white p-2 text-sm font-medium text-secondary-950 hover:border-primary-700 hover:text-primary-700 focus:border-primary-700 focus:text-primary-700 disabled:pointer-events-none disabled:opacity-50">
-                <CiMenuKebab className="h-8 w-8" />
-              </span>
-            )}
-            label=""
-          >
-            {user.info.isAdmin && (
-              <Dropdown.Item
-                icon={TbLayoutDashboard}
-                onClick={() => navigate({ to: "/app/admin/dashboard" })}
-              >
+        <div className="flex flex-1 flex-row items-center justify-center gap-2 sm:flex-col sm:items-end sm:justify-end">
+          {user.info.isAdmin && (
+            <SecondaryButton
+              className="border-none bg-transparent px-2 py-2 underline xs:shadow-none"
+              onClick={() => navigate({ to: "/app/admin/dashboard" })}
+            >
+              <TbLayoutDashboard className="text-lg text-primary-900 md:text-2xl" />
+              <span className="hidden text-xs text-primary-900 xs:block md:text-sm">
                 Admin Dashboard
-              </Dropdown.Item>
-            )}
-            {user.driverInfo && (
-              <Dropdown.Item
-                icon={TbLayoutDashboard}
-                onClick={() => navigate({ to: "/app/driver/dashboard" })}
-              >
+              </span>
+            </SecondaryButton>
+          )}
+          {user.driverInfo && (
+            <SecondaryButton
+              className="border-none bg-transparent px-2 py-2 underline xs:shadow-none"
+              onClick={() => navigate({ to: "/app/driver/dashboard" })}
+            >
+              <BsBicycle className="text-lg text-primary-900 md:text-2xl" />
+              <span className="hidden text-xs text-primary-900 xs:block md:text-sm">
                 Driver Dashboard
-              </Dropdown.Item>
-            )}
-            <Dropdown.Divider />
-            <Dropdown.Item icon={HiLogout} onClick={logOut}>
+              </span>
+            </SecondaryButton>
+          )}
+          <SecondaryButton
+            className="border-none bg-transparent px-2 py-2 underline xs:shadow-none"
+            onClick={logOut}
+          >
+            <IoLogOutOutline className="text-lg text-orange-800 md:text-2xl" />
+            <span className="hidden text-xs text-orange-800 xs:block md:text-sm">
               Sign out
-            </Dropdown.Item>
-          </Dropdown>
+            </span>
+          </SecondaryButton>
         </div>
       </div>
 
@@ -253,14 +221,14 @@ const CustomerDashboard = () => {
                   <p className="text-gray-500">
                     No active orders at the moment.
                   </p>
-                  <button
+                  <PrimaryButton
                     onClick={() => setIsCreateOrderModalOpen(true)}
-                    className="inline-flex items-center rounded-lg border border-gray-300 bg-primary-800 p-3 text-sm font-medium text-gray-200 hover:border-secondary-800 hover:bg-secondary-800 hover:text-white focus:border-secondary-800 focus:bg-secondary-800 focus:text-white disabled:pointer-events-none disabled:opacity-50"
+                    className="inline-flex items-center"
                   >
                     {historyOrders.length > 0
                       ? "Create New Order"
                       : "Create Your First Order"}
-                  </button>
+                  </PrimaryButton>
                 </div>
               </Card>
             )}

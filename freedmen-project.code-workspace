@@ -23,6 +23,8 @@
       "**/node_modules/**": true,
       "**/route-tree.gen.ts": true,
       "**/*.lock": true,
+      "src/routes/app/user/**": true,
+      "src/routes/app/agents/**": true,
     },
   },
   "extensions": {

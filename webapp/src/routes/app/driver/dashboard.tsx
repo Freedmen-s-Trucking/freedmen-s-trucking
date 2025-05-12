@@ -3,30 +3,20 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { differenceInMinutes } from "date-fns";
 import { Timestamp } from "firebase/firestore";
-import {
-  Avatar,
-  Badge,
-  Button,
-  Card,
-  Dropdown,
-  Spinner,
-  Tabs,
-  Tooltip,
-} from "flowbite-react";
+import { Avatar, Badge, Card, Spinner, Tabs, Tooltip } from "flowbite-react";
 import { motion } from "motion/react";
 import React, { useEffect, useState } from "react";
 import { useGeolocated } from "react-geolocated";
-import { CiMenuKebab } from "react-icons/ci";
 import {
   HiAdjustments,
   HiClipboardList,
-  HiEye,
-  HiEyeOff,
-  HiLogout,
+  HiUser,
   HiUserCircle,
   HiViewGrid,
 } from "react-icons/hi";
+import { IoLogOutOutline } from "react-icons/io5";
 import { TbLayoutDashboard } from "react-icons/tb";
+import { SecondaryButton } from "~/components/atoms";
 import { DriverProfile } from "~/components/molecules/driver/tab-profile";
 import { Order } from "~/components/molecules/order-details";
 import { useAuth } from "~/hooks/use-auth";
@@ -178,7 +168,6 @@ const DriverDashboard = () => {
     "overview",
   );
 
-  const [showDriverId, setShowDriverId] = useState(false);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const logOut = async () => {
@@ -229,9 +218,9 @@ const DriverDashboard = () => {
       <WatchLocation />
       {/* Driver Header */}
       <div className="mb-6 flex flex-col items-center rounded-lg bg-white p-4 shadow md:flex-row">
-        <div className="relative mb-4 md:mb-0 md:mr-6">
+        <div className="relative mb-4 text-center md:mb-0 md:mr-6">
           <Avatar
-            placeholderInitials={user.info.displayName}
+            placeholderInitials={user.info.displayName.trim().charAt(0)}
             img={user.info.photoURL || ""}
             rounded
             size="lg"
@@ -246,59 +235,43 @@ const DriverDashboard = () => {
         <div className="text-center md:text-left">
           <h1 className="text-2xl font-bold">{user.info.displayName}</h1>
           <p className="text-gray-600">{user.info.email}</p>
-          <div className="mt-1 flex items-center">
-            <span className="mr-2">Driver ID:</span>
-            {showDriverId ? (
-              <span className="font-mono">{user.info.uid}</span>
-            ) : (
-              <span className="font-mono">
-                {user.info.uid.slice(0, 4)}-****-****
-              </span>
-            )}
-            <Button
-              color="light"
-              size="xs"
-              className="ml-2"
-              onClick={() => setShowDriverId(!showDriverId)}
-            >
-              {showDriverId ? (
-                <HiEyeOff className="h-4 w-4" />
-              ) : (
-                <HiEye className="h-4 w-4" />
-              )}
-            </Button>
+          <div className="mt-1 flex items-center justify-center">
+            <span className="mr-2 font-light opacity-70">
+              #{user.info.uid.slice(0, 6)}
+            </span>
           </div>
         </div>
 
-        <div className="flex flex-1 flex-col items-end justify-end md:flex-row">
-          <Dropdown
-            trigger="hover"
-            renderTrigger={() => (
-              <span className="inline-block items-center rounded-3xl border border-gray-300 bg-white p-2 text-sm font-medium text-secondary-950 hover:border-primary-700 hover:text-primary-700 focus:border-primary-700 focus:text-primary-700 disabled:pointer-events-none disabled:opacity-50">
-                <CiMenuKebab className="h-8 w-8" />
-              </span>
-            )}
-            label=""
-          >
-            {user.info.isAdmin && (
-              <Dropdown.Item
-                icon={TbLayoutDashboard}
-                onClick={() => navigate({ to: "/app/admin/dashboard" })}
-              >
-                Admin Dashboard
-              </Dropdown.Item>
-            )}
-            <Dropdown.Item
-              icon={TbLayoutDashboard}
-              onClick={() => navigate({ to: "/app/customer/dashboard" })}
+        <div className="flex flex-1 flex-row items-center justify-center gap-2 sm:flex-col sm:items-end sm:justify-end">
+          {user.info.isAdmin && (
+            <SecondaryButton
+              className="border-none bg-transparent px-2 py-2 underline xs:shadow-none"
+              onClick={() => navigate({ to: "/app/admin/dashboard" })}
             >
+              <TbLayoutDashboard className="text-lg text-primary-900 md:text-2xl" />
+              <span className="hidden text-xs text-primary-900 xs:block md:text-sm">
+                Admin Dashboard
+              </span>
+            </SecondaryButton>
+          )}
+          <SecondaryButton
+            className="border-none bg-transparent px-2 py-2 underline xs:shadow-none"
+            onClick={() => navigate({ to: "/app/customer/dashboard" })}
+          >
+            <HiUser className="text-lg text-primary-900 md:text-2xl" />
+            <span className="hidden text-xs text-primary-900 xs:block md:text-sm">
               Customer Dashboard
-            </Dropdown.Item>
-            <Dropdown.Divider />
-            <Dropdown.Item icon={HiLogout} onClick={logOut}>
+            </span>
+          </SecondaryButton>
+          <SecondaryButton
+            className="border-none bg-transparent px-2 py-2 underline xs:shadow-none"
+            onClick={logOut}
+          >
+            <IoLogOutOutline className="text-lg text-orange-800 md:text-2xl" />
+            <span className="hidden text-xs text-orange-800 xs:block md:text-sm">
               Sign out
-            </Dropdown.Item>
-          </Dropdown>
+            </span>
+          </SecondaryButton>
         </div>
       </div>
 

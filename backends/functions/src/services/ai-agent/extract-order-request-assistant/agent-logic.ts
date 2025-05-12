@@ -1,6 +1,5 @@
 import {
   apiResExtractOrderRequestFromText,
-  CollectionName,
   LATEST_PLATFORM_SETTINGS_PATH,
   PlaceLocation,
   PlatformSettingsEntity,
@@ -14,7 +13,7 @@ import {
   ChatCompletionToolMessageParam,
   ChatCompletionUserMessageParam,
 } from "openai/resources/chat";
-import {CollectionReference, DocumentSnapshot, getFirestore} from "firebase-admin/firestore";
+import {DocumentSnapshot, getFirestore} from "firebase-admin/firestore";
 import {fetchPlacesFromGoogle} from "./geocoding-functions";
 
 const caches: {
@@ -32,7 +31,7 @@ const caches: {
   historyCache: {},
 };
 
-const FIVE_MINUTES_MILLIS = 5 * 60 * 1000;
+const TEN_MINUTES_MILLIS = 10 * 60 * 1000;
 
 const placeSearchResponseType = type({
   status: '"success" | "not_found"',
@@ -73,16 +72,7 @@ export const sendMessage = async (
 
   // Load history from DB if needed.
   if (!config.reset && (!_internal_history || _internal_history.length === 0)) {
-    let tempOrderHistory: Message[] = caches.historyCache[config.threadId]?.history || [];
-    if (!tempOrderHistory.length) {
-      const tempOrderCollectionRef = getFirestore().collection(CollectionName.TMP_ORDERS) as CollectionReference<
-        TempOrderEntity,
-        TempOrderEntity
-      >;
-      const tempOrderSnapshot = await tempOrderCollectionRef.doc(config.threadId).get();
-      tempOrderHistory = tempOrderSnapshot.data()?.history || [];
-      caches.historyCache[config.threadId] = {history: tempOrderHistory, lastUpdated: Date.now()};
-    }
+    const tempOrderHistory: Message[] = caches.historyCache[config.threadId]?.history || [];
     for (const m of tempOrderHistory) {
       messages.push(m);
       if ((m as Message).messageId === message.messageId) {
@@ -167,18 +157,12 @@ export const sendMessage = async (
   if (config.threadId) {
     caches.historyCache[config.threadId] ??= {history: [], lastUpdated: 0};
     caches.historyCache[config.threadId].history = messages.slice(1) as unknown as TempOrderEntity["history"];
-    const diff = Date.now() - caches.historyCache[config.threadId].lastUpdated;
-    if (diff > FIVE_MINUTES_MILLIS) {
-      caches.historyCache[config.threadId].lastUpdated = Date.now();
-      const tempOrderCollectionRef = getFirestore().collection(CollectionName.TMP_ORDERS) as CollectionReference<
-        TempOrderEntity,
-        TempOrderEntity
-      >;
-
-      // Remove the system prompt
-      void tempOrderCollectionRef.doc(config.threadId).set({
-        history: messages.slice(1) as unknown as TempOrderEntity["history"],
-      });
+    caches.historyCache[config.threadId].lastUpdated = Date.now();
+    // remove old history older than 5 minutes
+    for (const {lastUpdated} of Object.values(caches.historyCache)) {
+      if (Date.now() - lastUpdated > TEN_MINUTES_MILLIS) {
+        delete caches.historyCache[config.threadId];
+      }
     }
   }
   return {response: responseMessage.content, threadId: config.threadId, chatId: response.id};
@@ -190,7 +174,7 @@ export const sendMessage = async (
  */
 async function getPlatformSettings() {
   const now = Date.now();
-  if (caches.platformSettingsCache && now - caches.platformSettingsLastFetched < FIVE_MINUTES_MILLIS) {
+  if (caches.platformSettingsCache && now - caches.platformSettingsLastFetched < TEN_MINUTES_MILLIS) {
     // 5 minutes
     return caches.platformSettingsCache;
   }
@@ -277,6 +261,7 @@ You MUST follow these rules carefully:
    * If a pickup location is detected, process and confirm it before asking about the delivery location.
    * If items are detected, record them immediately.
    * Never ask for new information until you have processed existing information.
+   * The placeId field must not be empty or null. Make sure to call the 'search_place' tool if you don't have a place id or placeId is empty.
 
 4. Tool Usage:
 
@@ -325,7 +310,6 @@ Important:
 * Be consistent: don't ask the same question twice.
 * Stay helpful. Make it easy for the user to complete their delivery request.
 * Always return a valid JSON response.
-* Always call the 'search_place' tool if you don't have a place id.
 `;
 
 const orderDataExtractionDeveloperPrompt = `

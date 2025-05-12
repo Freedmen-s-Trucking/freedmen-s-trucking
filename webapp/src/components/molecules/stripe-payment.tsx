@@ -25,7 +25,7 @@ const appearance = {
     colorBackground: "#FFFCFA",
     colorText: "#001829",
     colorDanger: "#df1b41",
-    fontFamily: "Ideal Sans, system-ui, sans-serif",
+    fontFamily: "Poppins, Ideal Sans, system-ui, sans-serif",
     spacingUnit: "2px",
     borderRadius: "4px",
   },

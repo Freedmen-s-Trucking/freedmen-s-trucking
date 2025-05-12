@@ -13,10 +13,10 @@ export default {
         xs: "380px",
       },
       fontFamily: {
-        mobile: ['Georgia', 'serif'],
+        mobile: ["Poppins", "Ideal Sans", "system-ui", "sans-serif"],
       },
       borderRadius: {
-        mobile: '7px', // middle value between 6-8px
+        mobile: "7px", // middle value between 6-8px
       },
       height: {
         "screen-dynamic": "100dvh",
@@ -70,10 +70,10 @@ export default {
           background: "#F7E9D0",
           text: "#3B2E20",
           button: {
-            DEFAULT: "#3B2E20", 
-            text: "#FFFFFF"
-          }
-        }
+            DEFAULT: "#3B2E20",
+            text: "#FFFFFF",
+          },
+        },
       },
     },
   },

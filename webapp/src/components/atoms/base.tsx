@@ -86,7 +86,7 @@ export const PrimaryButton: React.FC<
       disabled={isDisabled}
       initial="initial"
       animate={isLoading ? "loading" : "initial"}
-      className={`flex flex-row items-center justify-center rounded-lg  p-4 font-medium text-primary-100 transition-colors duration-300 ${className} bg-primary-700 hover:bg-primary-800 disabled:bg-opacity-80 `}
+      className={`flex flex-row items-center justify-center rounded-full p-4  font-medium text-primary-100 shadow-md transition-colors duration-300 ${className} bg-primary-700 hover:bg-primary-800 disabled:bg-opacity-80 `}
     >
       {isLoading ? (
         <motion.div
@@ -148,7 +148,7 @@ export const SecondaryButton: React.FC<
       disabled={isDisabled}
       initial="initial"
       animate={isLoading ? "loading" : "initial"}
-      className={`flex flex-row items-center justify-center rounded-lg border-2 border-primary-700/80 bg-primary-100 p-4 font-medium text-primary-700 transition-colors duration-300 ${className}`}
+      className={`flex flex-row items-center justify-center rounded-full border-2 border-primary-700/80 bg-primary-100 p-4 font-medium text-primary-700 shadow-md transition-colors duration-300 ${className}`}
     >
       {isLoading ? (
         <motion.div
@@ -172,7 +172,7 @@ export const TextInput = React.forwardRef<
 >(({ className = "", ...inputProps }, ref) => (
   <input
     {...inputProps}
-    className={`block w-full rounded-lg border border-gray-300 bg-primary-50 p-2.5 py-3 text-secondary-950 focus:border-secondary-500 focus:ring-secondary-500 disabled:cursor-not-allowed disabled:opacity-50 ${className} text-sm`}
+    className={`block w-full rounded-full border border-gray-300 bg-primary-50 p-2.5 py-3 text-secondary-950 focus:border-secondary-500 focus:ring-secondary-500 disabled:cursor-not-allowed disabled:opacity-50 ${className} text-sm`}
     ref={ref}
     onKeyDown={(e) => {
       if (e.key === "Enter") {
@@ -242,7 +242,7 @@ export const TextArea = React.forwardRef<
         rows={rows || 1}
         maxLength={maxLength}
         onInput={handleInput}
-        className={`block w-full resize-none overflow-hidden rounded-lg border border-gray-300 bg-primary-50 p-1 text-sm text-secondary-950 focus:border-secondary-500 focus:ring-secondary-500 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+        className={`block w-full resize-none overflow-hidden rounded-xl border border-gray-300 bg-primary-50 p-1 text-sm text-secondary-950 focus:border-secondary-500 focus:ring-secondary-500 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
         style={{ resize, ...textAreaProps.style }}
         onKeyDown={(e) => {
           if (e.key === "Enter") {

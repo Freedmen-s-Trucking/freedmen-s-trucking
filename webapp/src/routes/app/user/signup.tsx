@@ -18,7 +18,7 @@ const SignUpScreen = () => {
   };
 
   return (
-    <div className="mx-auto flex h-screen max-w-[375px] flex-col text-mobile-text px-6 font-mobile bg-mobile-background">
+    <div className="mx-auto flex h-screen max-w-[375px] flex-col bg-mobile-background px-6 font-mobile text-mobile-text">
       {/* Logo section */}
       <div className="mt-16 flex items-center justify-center">
         {/* <img 
@@ -31,8 +31,12 @@ const SignUpScreen = () => {
 
       {/* Welcome text */}
       <div className="mt-[41px]">
-        <h1 className="text-[20px] font-semibold text-black">Let's get started</h1>
-        <p className="mt-[3px] text-[12px] text-gray-600">Please input your details</p>
+        <h1 className="text-[20px] font-semibold text-black">
+          Let's get started
+        </h1>
+        <p className="mt-[3px] text-[12px] text-gray-600">
+          Please input your details
+        </p>
       </div>
 
       {/* Sign up form */}
@@ -42,16 +46,20 @@ const SignUpScreen = () => {
           <input
             type="text"
             value={formData.firstName}
-            onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+            onChange={(e) =>
+              setFormData({ ...formData, firstName: e.target.value })
+            }
             placeholder="First name"
-            className="w-[154px] h-[50px] flex-1 rounded-lg border border-gray-200 bg-mobile-background px-4 py-3.5 text-gray-900 placeholder:text-gray-500"
+            className="h-[50px] w-[154px] flex-1 rounded-lg border border-gray-200 bg-mobile-background px-4 py-3.5 text-gray-900 placeholder:text-gray-500"
           />
           <input
             type="text"
             value={formData.lastName}
-            onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+            onChange={(e) =>
+              setFormData({ ...formData, lastName: e.target.value })
+            }
             placeholder="Last name"
-            className="w-[154px] h-[50px] flex-1 rounded-lg border border-gray-200 bg-mobile-background px-4 py-3.5 text-gray-900 placeholder:text-gray-500"
+            className="h-[50px] w-[154px] flex-1 rounded-lg border border-gray-200 bg-mobile-background px-4 py-3.5 text-gray-900 placeholder:text-gray-500"
           />
         </div>
 
@@ -67,14 +75,16 @@ const SignUpScreen = () => {
               <option value="ZA">🇿🇦</option>
               <option value="GH">🇬🇭</option>
               <option value="KE">🇰🇪</option>
-              
+
               {/* Add more country options */}
             </select>
           </div>
           <input
             type="tel"
             value={formData.phoneNumber}
-            onChange={(e) => setFormData({...formData, phoneNumber: e.target.value})}
+            onChange={(e) =>
+              setFormData({ ...formData, phoneNumber: e.target.value })
+            }
             placeholder="Your phone number"
             className="flex-1 rounded-lg  border border-gray-200 bg-mobile-background px-4 py-3.5 text-gray-900 placeholder:text-gray-500"
           />
@@ -85,9 +95,11 @@ const SignUpScreen = () => {
           <input
             type="email"
             value={formData.email}
-            onChange={(e) => setFormData({...formData, email: e.target.value})}
+            onChange={(e) =>
+              setFormData({ ...formData, email: e.target.value })
+            }
             placeholder="Your email"
-            className="w-full rounded-lg bg-mobile-background px-4 py-3.5 border border-gray-200 text-gray-900 placeholder:text-gray-500"
+            className="w-full rounded-lg border border-gray-200 bg-mobile-background px-4 py-3.5 text-gray-900 placeholder:text-gray-500"
           />
         </div>
 
@@ -96,25 +108,31 @@ const SignUpScreen = () => {
           <input
             type="password"
             value={formData.password}
-            onChange={(e) => setFormData({...formData, password: e.target.value})}
+            onChange={(e) =>
+              setFormData({ ...formData, password: e.target.value })
+            }
             placeholder="Your password"
-            className="w-full rounded-lg bg-mobile-background px-4 py-3.5 border border-gray-200 text-gray-900 placeholder:text-gray-500"
+            className="w-full rounded-lg border border-gray-200 bg-mobile-background px-4 py-3.5 text-gray-900 placeholder:text-gray-500"
           />
         </div>
 
         {/* Continue button */}
-        <MobileButton 
-          isPrimary={true} 
-          text="Continue" 
+        <MobileButton
+          isPrimary={true}
+          text="Continue"
           link="/app/user/verify"
         />
 
         {/* Terms and Privacy */}
         <p className="mb-6 text-center text-sm text-gray-600">
-          By signing up, you agree to snap{' '}
-          <Link  to="/" className="font-medium underline">Terms of Service</Link>
-          {' '}and{' '}
-          <Link to="/" className="font-medium underline">Privacy Policy</Link>
+          By signing up, you agree to snap{" "}
+          <Link to="/" className="font-medium underline">
+            Terms of Service
+          </Link>{" "}
+          and{" "}
+          <Link to="/" className="font-medium underline">
+            Privacy Policy
+          </Link>
         </p>
 
         {/* Sign in link */}

@@ -13,7 +13,7 @@ const SignInScreen = () => {
   };
 
   return (
-    <div className="mx-auto flex h-screen max-w-[375px] flex-col bg-mobile-background text-mobile-text font-mobile px-6">
+    <div className="mx-auto flex h-screen max-w-[375px] flex-col bg-mobile-background px-6 font-mobile text-mobile-text">
       {/* Logo section */}
       <div className="mt-16 flex items-center justify-center">
         {/* <img 
@@ -26,7 +26,9 @@ const SignInScreen = () => {
       {/* Welcome text */}
       <div className="mt-[41px]">
         <h1 className="text-[20px] font-semibold text-black">Welcome</h1>
-        <p className="mt-[3px] text-[12px] text-gray-600">Please input your details</p>
+        <p className="mt-[3px] text-[12px] text-gray-600">
+          Please input your details
+        </p>
       </div>
 
       {/* Sign in form */}
@@ -63,9 +65,6 @@ const SignInScreen = () => {
         <div className="mb-6 text-right">
           <Link
             to="/app/user/onboarding"
-            
-
-
             className="text-sm font-medium text-[#1a2b3c]"
           >
             Forgot Password?
@@ -74,21 +73,19 @@ const SignInScreen = () => {
 
         {/* Sign in button */}
         <Link to="/app/user/home" className="w-full">
-        <button
-          type="submit"
-          className="mb-6 w-full rounded-lg bg-mobile-button py-4 text-center text-[16px] font-semibold text-white"
-        >
-          Get Started
-        </button>
+          <button
+            type="submit"
+            className="mb-6 w-full rounded-lg bg-mobile-button py-4 text-center text-[16px] font-semibold text-white"
+          >
+            Get Started
+          </button>
         </Link>
-       
 
         {/* Sign up link */}
         <div className="text-center text-[14px]">
           <span className="text-gray-600">Need an account? </span>
           <Link
             to="/app/user/signup"
-
             className="font-semibold text-mobile-text"
           >
             Sign up
@@ -100,13 +97,13 @@ const SignInScreen = () => {
 };
 
 export const Route = createFileRoute("/app/user/signin")({
-//   beforeLoad({ context }) {
-//     // Redirect if user is already authenticated
-//     if (context.user?.isAnonymous === false) {
-//       throw redirect({
-//         to: "/app/customer/dashboard",
-//       });
-//     }
-//   },
+  //   beforeLoad({ context }) {
+  //     // Redirect if user is already authenticated
+  //     if (context.user?.isAnonymous === false) {
+  //       throw redirect({
+  //         to: "/app/customer/dashboard",
+  //       });
+  //     }
+  //   },
   component: SignInScreen,
-}); 
+});

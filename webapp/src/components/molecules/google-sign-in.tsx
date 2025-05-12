@@ -36,7 +36,7 @@ export const GoogleSignIn: React.FC<{
     <PrimaryButton
       onClick={signIn}
       isLoading={isLoading}
-      className="m-auto my-4 flex items-center justify-center gap-4 rounded-lg bg-white bg-gradient-to-r from-primary-700 via-primary-600 to-primary-500 px-5 py-3 text-center text-lg font-bold text-white transition-all duration-500 hover:bg-gradient-to-bl focus:outline-none disabled:opacity-80"
+      className="m-auto my-4 flex items-center justify-center gap-4 bg-white bg-gradient-to-r from-primary-700 via-primary-600 to-primary-500 px-5 py-3 text-center text-lg font-bold text-white transition-all duration-500 hover:bg-gradient-to-bl focus:outline-none disabled:opacity-80"
     >
       <img
         src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"

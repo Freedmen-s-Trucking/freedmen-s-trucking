@@ -246,7 +246,7 @@ export const AIAssistedForm: React.FC<{
               },
             }}
           >
-            <Heading2 className="text-center font-serif">
+            <Heading2 className="text-center">
               Describe What You Need Delivered - We'll Handle The Rest
             </Heading2>
           </motion.div>
@@ -269,7 +269,7 @@ export const AIAssistedForm: React.FC<{
                 },
               }}
               key={i}
-              className="w-full py-1"
+              className="w-full py-1 md:px-12"
             >
               {qa.question.question && (
                 <motion.p
@@ -287,7 +287,7 @@ export const AIAssistedForm: React.FC<{
                       },
                     },
                   }}
-                  className="text-xs text-black"
+                  className="pb-[2px] text-xs tracking-wide text-black"
                 >
                   {qa.question.question}
                 </motion.p>
@@ -313,8 +313,8 @@ export const AIAssistedForm: React.FC<{
                     })
                   }
                   // readOnly={i + 1 !== qas.length}
-                  rows={i < 1 ? 3 : 2}
-                  className={`word-spacing-tight block ${i < 1 ? "h-11" : "h-7"} w-full rounded-lg border px-[8px] py-1 text-xs tracking-tight text-black placeholder:text-xs focus:border-red-400 focus:outline-none focus:ring-transparent xs:py-2 sm:py-3 md:h-auto md:w-11/12 ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
+                  rows={i < 1 ? 2 : 1}
+                  className={`block ${i < 1 ? "h-11" : "h-[2.1rem]"} w-full border px-[8px] py-1 text-xs text-black placeholder:text-xs focus:border-red-400 focus:outline-none focus:ring-transparent xs:py-2 sm:py-3 md:h-auto ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
                   placeholder={qa.question.exampleAnswer}
                 />
               )}

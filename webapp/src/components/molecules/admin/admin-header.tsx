@@ -1,15 +1,15 @@
-import React, { useState } from "react";
-import { Avatar, Button, Dropdown } from "flowbite-react";
-import { useAuth } from "~/hooks/use-auth";
 import { useNavigate } from "@tanstack/react-router";
-import { HiEye, HiEyeOff, HiLogout } from "react-icons/hi";
-import { CiMenuKebab } from "react-icons/ci";
-import { TbLayoutDashboard } from "react-icons/tb";
+import { Avatar } from "flowbite-react";
+import React from "react";
+import { BsBicycle } from "react-icons/bs";
+import { HiUser } from "react-icons/hi";
+import { IoLogOutOutline } from "react-icons/io5";
+import { SecondaryButton } from "~/components/atoms";
+import { useAuth } from "~/hooks/use-auth";
 
 const AdminHeader: React.FC = () => {
-  const [showAdminId, setShowAdminId] = useState(false);
-  const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
   const logOut = async () => {
     await signOut();
     window.location.href = "/";
@@ -17,9 +17,9 @@ const AdminHeader: React.FC = () => {
 
   return (
     <div className="my-6 flex w-full max-w-3xl flex-col rounded-lg bg-white p-4 shadow sm:flex-row">
-      <div className="relative mb-4 md:mb-0 md:mr-6">
+      <div className="relative mb-4 text-center md:mb-0 md:mr-6">
         <Avatar
-          placeholderInitials={user.info.displayName}
+          placeholderInitials={user.info.displayName.trim().charAt(0)}
           img={user.info.photoURL || ""}
           rounded
           size="lg"
@@ -29,58 +29,42 @@ const AdminHeader: React.FC = () => {
         <h1 className="text-2xl font-bold">{user.info.displayName}</h1>
         <p className="text-gray-600">{user.info.email}</p>
         <div className="mt-1 flex items-center justify-center text-center">
-          <span className="mr-2">Admin ID:</span>
-          {showAdminId ? (
-            <span className="font-mono">{user.info.uid}</span>
-          ) : (
-            <span className="font-mono">
-              {user.info.uid.slice(0, 4)}-****-****
-            </span>
-          )}
-          <Button
-            color="light"
-            size="xs"
-            className="ml-2"
-            onClick={() => setShowAdminId(!showAdminId)}
-          >
-            {showAdminId ? (
-              <HiEyeOff className="h-4 w-4" />
-            ) : (
-              <HiEye className="h-4 w-4" />
-            )}
-          </Button>
+          <span className="mr-2 font-light opacity-70">
+            #{user.info.uid.slice(0, 6)}
+          </span>
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col items-center justify-end sm:flex-row">
-        <Dropdown
-          trigger="hover"
-          renderTrigger={() => (
-            <span className="inline-block items-center rounded-3xl border border-gray-300 bg-white p-2 text-sm font-medium text-secondary-950 hover:border-primary-700 hover:text-primary-700 focus:border-primary-700 focus:text-primary-700 disabled:pointer-events-none disabled:opacity-50">
-              <CiMenuKebab className="h-8 w-8" />
-            </span>
-          )}
-          label=""
-        >
-          {user.driverInfo && (
-            <Dropdown.Item
-              icon={TbLayoutDashboard}
-              onClick={() => navigate({ to: "/app/driver/dashboard" })}
-            >
-              Driver Dashboard
-            </Dropdown.Item>
-          )}
-          <Dropdown.Item
-            icon={TbLayoutDashboard}
-            onClick={() => navigate({ to: "/app/customer/dashboard" })}
+      <div className="flex flex-1 flex-row items-center justify-center gap-2 sm:flex-col sm:items-end sm:justify-end">
+        {user.driverInfo && (
+          <SecondaryButton
+            className="border-none bg-transparent px-2 py-2 underline xs:shadow-none"
+            onClick={() => navigate({ to: "/app/driver/dashboard" })}
           >
+            <BsBicycle className="text-lg text-primary-900 md:text-2xl" />
+            <span className="hidden text-xs text-primary-900 xs:block md:text-sm">
+              Driver Dashboard
+            </span>
+          </SecondaryButton>
+        )}
+        <SecondaryButton
+          className="border-none bg-transparent px-2 py-2 underline xs:shadow-none"
+          onClick={() => navigate({ to: "/app/customer/dashboard" })}
+        >
+          <HiUser className="text-lg text-primary-900 md:text-2xl" />
+          <span className="hidden text-xs text-primary-900 xs:block md:text-sm">
             Customer Dashboard
-          </Dropdown.Item>
-          <Dropdown.Divider />
-          <Dropdown.Item icon={HiLogout} onClick={logOut}>
+          </span>
+        </SecondaryButton>
+        <SecondaryButton
+          className="border-none bg-transparent px-2 py-2 underline xs:shadow-none"
+          onClick={logOut}
+        >
+          <IoLogOutOutline className="text-lg text-orange-800 md:text-2xl" />
+          <span className="hidden text-xs text-orange-800 xs:block md:text-sm">
             Sign out
-          </Dropdown.Item>
-        </Dropdown>
+          </span>
+        </SecondaryButton>
       </div>
     </div>
   );

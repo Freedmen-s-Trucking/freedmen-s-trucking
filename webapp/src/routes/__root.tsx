@@ -57,7 +57,7 @@ const Component: React.FC = () => {
       )}
       <RouteProviders>
         <Flowbite theme={{ mode: "light", theme: getFlowbiteTheme() }}>
-          <div>
+          <div className="h-full w-full overflow-auto">
             <Outlet />
           </div>
         </Flowbite>
