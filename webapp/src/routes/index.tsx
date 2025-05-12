@@ -9,19 +9,16 @@ import {
   PrimaryButton,
   SecondaryButton,
   Container,
+  AppImage,
 } from "~/components/atoms";
 import { useAppDispatch } from "~/stores/hooks";
 import { setRequestedAuthAction } from "~/stores/controllers/app-ctrl";
 import { CreateOrder } from "~/components/molecules/create-order";
 import { Badge } from "flowbite-react";
-import {
-  DollarSignIcon,
-  LockIcon,
-  MapIcon,
-  ServerIcon,
-  ShieldCheckIcon,
-} from "lucide-react";
+import { DollarSignIcon } from "lucide-react";
+import { BsStripe } from "react-icons/bs";
 import { HiLockClosed } from "react-icons/hi";
+import { IoLogoFirebase } from "react-icons/io5";
 
 // Welcome back animation
 const welcomeBackVariants: Variants = {
@@ -75,15 +72,17 @@ const footerVariants: Variants = {
   },
 };
 
-// Animation for trust symbols
-const trustSymbolVariants: Variants = {
-  hidden: { opacity: 0, scale: 0.8 },
-  visible: {
-    opacity: 1,
-    scale: 1,
+// Animation for scrolling carousel
+const carouselAnimation = {
+  animate: {
+    x: [0, -2000],
     transition: {
-      duration: 0.4,
-      ease: "easeOut",
+      x: {
+        repeat: Infinity,
+        repeatType: "loop",
+        duration: 60,
+        ease: "linear",
+      },
     },
   },
 };
@@ -96,13 +95,12 @@ const TrustSymbol = ({
   icon: React.ReactNode;
   text: string;
 }) => (
-  <motion.div
-    variants={trustSymbolVariants}
-    className="flex flex-col items-center px-2 py-1"
-  >
+  <div className="flex flex-col items-center px-6 py-1">
     <div className="mb-1 text-primary-800">{icon}</div>
-    <span className="text-center text-xs text-gray-600">{text}</span>
-  </motion.div>
+    <span className="whitespace-nowrap text-center text-xs text-gray-600">
+      {text}
+    </span>
+  </div>
 );
 
 export const Route = createFileRoute("/")({
@@ -153,14 +151,14 @@ function Index() {
         initial="hidden"
         animate="visible"
         variants={containerVariants}
-        className="flex h-screen w-screen flex-col overflow-y-auto"
+        className="flex h-screen w-screen flex-col"
       >
         <Container className="flex flex-1 flex-col items-center gap-1 p-4 transition-colors duration-300 sm:gap-3 sm:p-12 sm:px-8 md:gap-8 md:p-16 lg:gap-12">
           <motion.div
             initial="hidden"
             animate="visible"
             variants={welcomeBackVariants}
-            className="mb-4 flex justify-between text-sm font-medium text-gray-500"
+            className="flex justify-between text-sm font-medium text-gray-500"
           >
             Already have an account?&nbsp;
             <button
@@ -236,55 +234,107 @@ function Index() {
 
         {/* Footer with Trust Symbols */}
         <motion.footer
-          className="w-full bg-transparent px-6 py-4 shadow-inner"
+          className="w-full overflow-hidden bg-transparent px-0 py-4 shadow-inner"
           variants={footerVariants}
           initial="hidden"
           animate="visible"
         >
-          <motion.div
-            className="mx-auto max-w-6xl"
-            variants={containerVariants}
-          >
-            {/* Trust Symbols */}
-            <motion.div
-              className="flex flex-wrap justify-evenly gap-2 border-b border-gray-200 pb-4"
-              variants={containerVariants}
-            >
-              <TrustSymbol
-                icon={<HiLockClosed className="h-6 w-6" />}
-                text="Secure Payments via Stripe"
-              />
-              <TrustSymbol
-                icon={<ShieldCheckIcon className="h-6 w-6" />}
-                text="Drivers Verified by Authenticate.com"
-              />
-              <TrustSymbol
-                icon={<LockIcon className="h-6 w-6" />}
-                text="SSL Secured"
-              />
-              <TrustSymbol
-                icon={<DollarSignIcon className="h-6 w-6" />}
-                text="100% Tip Goes to Driver"
-              />
-              <TrustSymbol
-                icon={<MapIcon className="h-6 w-6" />}
-                text="Powered by Google Maps"
-              />
-              <TrustSymbol
-                icon={<ServerIcon className="h-6 w-6" />}
-                text="Firebase Technology"
-              />
-            </motion.div>
+          <div className="mx-auto max-w-6xl">
+            {/* Trust Symbols - Auto-scrolling carousel */}
+            <div className="relative w-full overflow-hidden border-b border-gray-200 pb-4">
+              {/* Duplicating content to create seamless loop effect */}
+              <motion.div
+                className="flex items-center"
+                animate="animate"
+                variants={carouselAnimation}
+              >
+                {/* First set of symbols */}
+                <TrustSymbol
+                  icon={<BsStripe className="h-6 w-6 text-blue-900" />}
+                  text="Secure Payments via Stripe"
+                />
+                <TrustSymbol
+                  icon={
+                    <AppImage
+                      src="/icons/authenticate.com.webp"
+                      alt="Authenticate.com"
+                      className="h-6 w-6"
+                    />
+                  }
+                  text="Drivers Verified by Authenticate.com"
+                />
+                <TrustSymbol
+                  icon={<HiLockClosed className="h-6 w-6 text-green-700" />}
+                  text="SSL Secured"
+                />
+                <TrustSymbol
+                  icon={<DollarSignIcon className="h-6 w-6" />}
+                  text="100% Tip Goes to Driver"
+                />
+                <TrustSymbol
+                  icon={
+                    <AppImage
+                      src="/icons/google-map.png"
+                      alt="Google Maps"
+                      className="h-6 w-6"
+                    />
+                  }
+                  text="Powered by Google Maps"
+                />
+                <TrustSymbol
+                  icon={<IoLogoFirebase className="h-6 w-6 text-yellow-400" />}
+                  text="Firebase Technology"
+                />
+
+                {/* Duplicate set for continuous scrolling */}
+                <TrustSymbol
+                  icon={<BsStripe className="h-6 w-6 text-blue-900" />}
+                  text="Secure Payments via Stripe"
+                />
+                <TrustSymbol
+                  icon={
+                    <AppImage
+                      src="/icons/authenticate.com.webp"
+                      alt="Authenticate.com"
+                      className="h-6 w-6"
+                    />
+                  }
+                  text="Drivers Verified by Authenticate.com"
+                />
+                <TrustSymbol
+                  icon={<HiLockClosed className="h-6 w-6 text-green-700" />}
+                  text="SSL Secured"
+                />
+                <TrustSymbol
+                  icon={<DollarSignIcon className="h-6 w-6" />}
+                  text="100% Tip Goes to Driver"
+                />
+                <TrustSymbol
+                  icon={
+                    <AppImage
+                      src="/icons/google-map.png"
+                      alt="Google Maps"
+                      className="h-6 w-6"
+                    />
+                  }
+                  text="Powered by Google Maps"
+                />
+                <TrustSymbol
+                  icon={<IoLogoFirebase className="h-6 w-6 text-yellow-400" />}
+                  text="Firebase Technology"
+                />
+              </motion.div>
+            </div>
 
             {/* Contact & Legal */}
-            <div className="mt-4 flex flex-col justify-between gap-4 text-center text-xs text-gray-500 md:flex-row md:text-left">
+            <div className="mt-4 flex flex-col justify-between gap-4 px-6 text-center text-xs text-gray-500 md:flex-row md:text-left">
               <div className="flex flex-col items-center gap-2 md:flex-row">
                 <span className="font-medium">Contact Us:</span>
                 <a
                   href="mailto:roland@FreedmensTrucking.net"
                   className="text-primary-800 hover:underline"
                 >
-                  roland@FreedmensTrucking.net
+                  Roland@FreedmensTrucking.net
                 </a>
               </div>
 
@@ -297,10 +347,10 @@ function Index() {
                   Terms of Use
                 </a>
                 <span className="hidden md:inline">•</span>
-                <span>© {new Date().getFullYear()} Freedmen's Trucking</span>
+                <span>© {new Date().getFullYear()} Freedmen's Last Mile</span>
               </div>
             </div>
-          </motion.div>
+          </div>
         </motion.footer>
       </motion.div>
       {isSchedulingDelivery && (
@@ -459,7 +509,7 @@ function BackgroundBalls() {
       {dots.map((dot) => (
         <motion.div
           key={dot.id}
-          className="absolute rounded-full bg-black"
+          className="absolute rounded-full bg-primary-800"
           style={{
             left: `${dot.x}%`,
             top: `${dot.y}%`,
@@ -472,7 +522,7 @@ function BackgroundBalls() {
           animate={{
             left: `${dot.x}%`,
             top: `${dot.y}%`,
-            opacity: 0.05,
+            opacity: 0.1,
           }}
           transition={{
             duration: 0.1,
@@ -483,3 +533,42 @@ function BackgroundBalls() {
     </>
   );
 }
+/*
+
+              <TrustSymbol
+                icon={<BsStripe className="h-6 w-6 text-blue-900" />}
+                text="Secure Payments via Stripe"
+              />
+              <TrustSymbol
+                icon={
+                  <AppImage
+                    src="/icons/authenticate.com.webp"
+                    alt="Authenticate.com"
+                    className="h-6 w-6"
+                  />
+                }
+                text="Drivers Verified by Authenticate.com"
+              />
+              <TrustSymbol
+                icon={<HiLockClosed className="h-6 w-6 text-green-700" />}
+                text="SSL Secured"
+              />
+              <TrustSymbol
+                icon={<DollarSignIcon className="h-6 w-6" />}
+                text="100% Tip Goes to Driver"
+              />
+              <TrustSymbol
+                icon={
+                  <AppImage
+                    src="/icons/google-map.png"
+                    alt="Google Maps"
+                    className="h-6 w-6"
+                  />
+                }
+                text="Powered by Google Maps"
+              />
+              <TrustSymbol
+                icon={<IoLogoFirebase className="h-6 w-6 text-yellow-400" />}
+                text="Firebase Technology"
+              />
+*/

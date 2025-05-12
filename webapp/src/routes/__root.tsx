@@ -1,5 +1,6 @@
 import {
   createRootRouteWithContext,
+  NotFoundRouteComponent,
   Outlet,
   useRouterState,
 } from "@tanstack/react-router";
@@ -14,7 +15,7 @@ import { getFlowbiteTheme } from "~/utils/functions";
 import { APP_ENV } from "~/utils/envs";
 import { motion } from "motion/react";
 
-const Component: React.FC = () => {
+const RootRouteComponent: React.FC = () => {
   const { user } = useAuth();
   const routeState = useRouterState();
 
@@ -67,6 +68,26 @@ const Component: React.FC = () => {
   );
 };
 
+const NotFoundRoute: NotFoundRouteComponent = ({ data }) => {
+  console.log({ data });
+  return (
+    <motion.div
+      className="flex h-full w-full flex-1 flex-col items-center justify-center"
+      initial={{ opacity: 0, scale: 0.7 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ type: "spring", stiffness: 100 }}
+    >
+      <span className="block text-center text-5xl">Not Found</span>
+      <button
+        className="btn btn-primary"
+        onClick={() => (window.location.href = "/")}
+      >
+        Go Home
+      </button>
+    </motion.div>
+  );
+};
+
 type AppContext = {
   user: AppUser | null;
   remoteConfigs: {
@@ -75,5 +96,6 @@ type AppContext = {
 };
 
 export const Route = createRootRouteWithContext<AppContext>()({
-  component: Component,
+  component: RootRouteComponent,
+  notFoundComponent: NotFoundRoute,
 });
