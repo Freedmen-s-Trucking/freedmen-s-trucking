@@ -174,6 +174,7 @@ function Index() {
                 onClick={scheduleDelivery}
                 className="text-md w-full px-1 sm:text-xl"
               >
+                {">"}
                 Place a Delivery
               </SecondaryButton>
               <BodyText className="mt-4 text-center text-sm sm:text-lg">
@@ -181,6 +182,14 @@ function Index() {
                 and individuals across the country.
               </BodyText>
             </motion.div>
+          </motion.div>
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={welcomeBackVariants}
+            className="flex justify-between text-sm font-medium text-gray-500"
+          >
+            SSL Secured | DOT Compliant | Stripe Verified
           </motion.div>
         </Container>
       </motion.div>
