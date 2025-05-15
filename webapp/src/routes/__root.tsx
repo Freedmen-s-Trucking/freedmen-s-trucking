@@ -44,13 +44,13 @@ const RootRouteComponent: React.FC = () => {
   // Display info bubble for 5sec on dispatch
   const { infoBubble } = useAppSelector((state) => state.appCtrl);
   const dispatch = useAppDispatch();
-  // useEffect(() => {
-  //   if (!infoBubble) return;
-  //   const timeout = setTimeout(() => {
-  //     dispatch(showInfoBubble(null));
-  //   }, 5000);
-  //   return () => clearTimeout(timeout);
-  // }, [infoBubble, dispatch]);
+  useEffect(() => {
+    if (!infoBubble) return;
+    const timeout = setTimeout(() => {
+      dispatch(showInfoBubble(null));
+    }, 10000);
+    return () => clearTimeout(timeout);
+  }, [infoBubble, dispatch]);
 
   return (
     <>
@@ -63,7 +63,7 @@ const RootRouteComponent: React.FC = () => {
             dispatch(showInfoBubble(null));
           }}
           rounded
-          className="absolute z-10 m-2"
+          className="absolute z-[60] m-2"
         >
           <span className="font-bold">{infoBubble?.title}</span>
         </Alert>

@@ -321,7 +321,7 @@ router.post("/process-identity-verification", async (c) => {
   if (isNewUser) {
     try {
       if (dbDriver.email) {
-        await sendWelcomeMail(dbDriver.email, resBody.processVerificationUrl);
+        await sendWelcomeMail(dbDriver.email, resBody.processVerificationUrl, dbDriver.firstName);
       } else {
         console.info("Unable to send the welcome mail, the driver email not found", {driverId: dbDriver.uid});
       }
