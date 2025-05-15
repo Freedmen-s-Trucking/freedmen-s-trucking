@@ -22,6 +22,18 @@ export default defineConfig({
           JSON.stringify(process.env.VITE_FIREBASE_CONFIG_JSON),
         );
         fs.writeFileSync("public/sw-env.js", swEnvContent);
+
+        let manifestContent = fs.readFileSync(
+          "public/manifest-template.json",
+          "utf-8",
+        );
+        manifestContent = manifestContent.replace(
+          /__VITE_APP_ENV__/g,
+          process.env.VITE_APP_ENV === "prod"
+            ? ""
+            : `[${process.env.VITE_APP_ENV || "local"}]`,
+        );
+        fs.writeFileSync("public/manifest.json", manifestContent);
       },
     },
   ],

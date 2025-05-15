@@ -1,6 +1,6 @@
 {
-  "name": "[local] Freedmen's Trucking",
-  "short_name": "[local] Freedmen's Trucking",
+  "name": "__VITE_APP_ENV__ Freedmen's Trucking",
+  "short_name": "__VITE_APP_ENV__ Freedmen's Trucking",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FFFCFA",
