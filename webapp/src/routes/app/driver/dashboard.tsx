@@ -217,8 +217,8 @@ const DriverDashboard = () => {
     <div className="mx-auto max-w-5xl p-4">
       <WatchLocation />
       {/* Driver Header */}
-      <div className="mb-6 flex flex-col items-center rounded-lg bg-white p-4 shadow md:flex-row">
-        <div className="relative mb-4 text-center md:mb-0 md:mr-6">
+      <div className="mb-6 flex flex-col items-center rounded-lg bg-white p-4 shadow sm:flex-row">
+        <div className="relative mb-4 text-center sm:mb-0 sm:mr-6">
           <Avatar
             placeholderInitials={user.info.displayName.trim().charAt(0)}
             img={user.info.photoURL || ""}
@@ -232,7 +232,7 @@ const DriverDashboard = () => {
             )}
           </div>
         </div>
-        <div className="text-center md:text-left">
+        <div className="flex flex-col items-center text-center sm:items-start sm:text-left">
           <h1 className="text-2xl font-bold">{user.info.displayName}</h1>
           <p className="text-gray-600">{user.info.email}</p>
           <div className="mt-1 flex items-center justify-center">

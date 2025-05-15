@@ -17,7 +17,7 @@ const AdminHeader: React.FC = () => {
 
   return (
     <div className="my-6 flex w-full max-w-3xl flex-col rounded-lg bg-white p-4 shadow sm:flex-row">
-      <div className="relative mb-4 text-center md:mb-0 md:mr-6">
+      <div className="relative mb-4 text-center sm:mb-0 sm:mr-6">
         <Avatar
           placeholderInitials={user.info.displayName.trim().charAt(0)}
           img={user.info.photoURL || ""}
@@ -25,10 +25,10 @@ const AdminHeader: React.FC = () => {
           size="lg"
         />
       </div>
-      <div className="text-center md:text-left">
+      <div className="flex flex-col items-center text-center sm:items-start sm:text-left">
         <h1 className="text-2xl font-bold">{user.info.displayName}</h1>
         <p className="text-gray-600">{user.info.email}</p>
-        <div className="mt-1 flex items-center justify-center text-center">
+        <div className="mt-1 flex items-center justify-center text-center sm:text-left">
           <span className="mr-2 font-light opacity-70">
             #{user.info.uid.slice(0, 6)}
           </span>
