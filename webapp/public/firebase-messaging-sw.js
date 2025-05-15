@@ -27,7 +27,7 @@ messaging.onBackgroundMessage((payload) => {
   });
 });
 
-self.addEventListener("notificationclick", (event) => {
+self?.addEventListener("notificationclick", (event) => {
   if (event.action === "open") {
     // Forward permission request to the client (if open)
     clients.openWindow("/");

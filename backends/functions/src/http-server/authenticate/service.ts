@@ -16,7 +16,7 @@ export const upFetch = up(fetch, () => ({
 export const verifyIdentity = (userAccessCode: string) =>
   upFetch("/identity/verify", {
     body: {
-      userAccessCode: isAuthenticateMockApi ? "2d91a19f-d07b-48f0-912f-886ed67009dd" : userAccessCode,
+      userAccessCode: isAuthenticateMockApi ? "100385a1-4308-49db-889f-9a898fa88c21" : userAccessCode,
     },
     schema: type({
       success: "boolean",
@@ -30,7 +30,7 @@ export const verifyIdentity = (userAccessCode: string) =>
 
 export const sevenYearCriminalReport = (userAccessCode: string) =>
   upFetch("/identity/request/criminal/report/seven", {
-    body: {userAccessCode},
+    body: {userAccessCode: isAuthenticateMockApi ? "100385a1-4308-49db-889f-9a898fa88c21" : userAccessCode},
     schema: type({
       result: {
         Candidates: {

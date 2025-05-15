@@ -10,10 +10,13 @@ import { AppUser } from "~/stores/controllers/auth-ctrl";
 import { RouteProviders } from "~/provider/providers";
 import { useEffect } from "react";
 import { useAuth } from "~/hooks/use-auth";
-import { Badge, Flowbite } from "flowbite-react";
+import { Alert, Badge, Flowbite } from "flowbite-react";
 import { getFlowbiteTheme } from "~/utils/functions";
 import { APP_ENV } from "~/utils/envs";
 import { motion } from "motion/react";
+import { useAppSelector, useAppDispatch } from "~/stores/hooks";
+import { HiInformationCircle } from "react-icons/hi";
+import { showInfoBubble } from "~/stores/controllers/app-ctrl";
 
 const RootRouteComponent: React.FC = () => {
   const { user } = useAuth();
@@ -38,8 +41,33 @@ const RootRouteComponent: React.FC = () => {
     }
   }, [user, routeState]);
 
+  // Display info bubble for 5sec on dispatch
+  const { infoBubble } = useAppSelector((state) => state.appCtrl);
+  const dispatch = useAppDispatch();
+  // useEffect(() => {
+  //   if (!infoBubble) return;
+  //   const timeout = setTimeout(() => {
+  //     dispatch(showInfoBubble(null));
+  //   }, 5000);
+  //   return () => clearTimeout(timeout);
+  // }, [infoBubble, dispatch]);
+
   return (
     <>
+      {infoBubble && (
+        <Alert
+          additionalContent={<p>{infoBubble?.message}</p>}
+          color={infoBubble.type}
+          icon={HiInformationCircle}
+          onDismiss={() => {
+            dispatch(showInfoBubble(null));
+          }}
+          rounded
+          className="absolute z-10 m-2"
+        >
+          <span className="font-bold">{infoBubble?.title}</span>
+        </Alert>
+      )}
       {APP_ENV !== "prod" && (
         <motion.div
           className="fixed right-5 top-3 z-50 translate-x-1/2 rotate-[52deg]"

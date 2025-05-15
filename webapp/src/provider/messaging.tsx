@@ -1,10 +1,11 @@
 import {
   getMessaging,
   getToken,
+  isSupported,
   Messaging,
   onMessage,
 } from "firebase/messaging";
-import { createContext, useCallback, useEffect, useMemo } from "react";
+import { createContext, useCallback, useEffect, useState } from "react";
 import { FCM_VAPID_KEY } from "~/utils/envs";
 import { useServerRequest } from "~/hooks/use-server-request";
 import { useMutation } from "@tanstack/react-query";
@@ -16,6 +17,7 @@ import {
   setDeviceFCMTokenLastUpdated,
   setDeviceFingerprint,
 } from "~/stores/controllers/settings-ctrl";
+import { showInfoBubble } from "~/stores/controllers/app-ctrl";
 
 // Register the service worker.
 if ("serviceWorker" in navigator) {
@@ -41,9 +43,30 @@ const MessagingCtx = createContext<{
 const MessagingProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  const messaging = useMemo(() => getMessaging(), []);
+  const [messaging, setMessaging] = useState<Messaging | null>(null);
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    async function init() {
+      const supported = await isSupported();
+      if (!supported) {
+        dispatch(
+          showInfoBubble({
+            type: "warning",
+            title: "Notification Not Supported",
+            message:
+              "This browser doesn't support the API's required to use the push notifications feature. Please use a different browser.",
+          }),
+        );
+        return null;
+      }
+      return getMessaging();
+    }
+    init().then(setMessaging);
+  }, [dispatch]);
 
   const requestNotificationPermission = useCallback(async () => {
+    if (!messaging) return null;
     try {
       const permission = await Notification.requestPermission();
       if (permission === "granted") {
@@ -67,6 +90,7 @@ const MessagingProvider: React.FC<{
   }, [messaging]);
 
   useEffect(() => {
+    if (!messaging) return;
     // Listen for messages while the app is open
     onMessage(messaging, (payload) => {
       console.log("Message received:", payload);
@@ -77,6 +101,7 @@ const MessagingProvider: React.FC<{
     });
   }, [messaging]);
 
+  if (!messaging) return children;
   return (
     <MessagingCtx.Provider value={{ messaging, requestNotificationPermission }}>
       <UpdateFCMToken
@@ -115,7 +140,15 @@ const UpdateFCMToken = ({
       }
 
       const token = await requestNotificationPermission();
-      if (!token) return;
+      if (!token) {
+        return;
+      }
+      if (
+        user.info.fcmTokenMap &&
+        user.info.fcmTokenMap[fingerprint] === token
+      ) {
+        return;
+      }
       await serverRequest("/user/update-fcm-token", {
         method: "POST",
         body: {

@@ -1,5 +1,5 @@
 import {DriverEntity, FIXED_DRIVER_SERVICE_FEE_PERCENT, NewOrder, VehicleType} from "@freedmen-s-trucking/types";
-import {QuerySnapshot} from "firebase-admin/firestore";
+import {QueryDocumentSnapshot, QuerySnapshot} from "firebase-admin/firestore";
 
 type OneTimeFindRightDriversForOrderResponse = [
   (DriverEntity & {uid: string; deliveryFees: number})[],
@@ -10,12 +10,12 @@ type OneTimeFindRightDriversForOrderResponse = [
  * One-time function to find the right drivers for an order.
  * WARN: this function must be used only once per order on creation.
  *
- * @param {QuerySnapshot<DriverEntity>} snapshot The snapshot of the drivers collection.
+ * @param {QueryDocumentSnapshot<DriverEntity>[]} snapshots The snapshots of the drivers collection.
  * @param {NewOrder} order The order to find the right drivers for.
  * @return {OneTimeFindRightDriversForOrderResponse} The right drivers for the order.
  */
 export function onetimeFindRightDriversForOrder(
-  snapshot: QuerySnapshot<DriverEntity>,
+  snapshots: QueryDocumentSnapshot<DriverEntity>[],
   order: NewOrder,
 ): OneTimeFindRightDriversForOrderResponse {
   const drivers = [] as (DriverEntity & {uid: string; deliveryFees: number})[];
@@ -24,7 +24,7 @@ export function onetimeFindRightDriversForOrder(
     quantity: v.quantity,
     deliveryFees: v.fees,
   }));
-  for (const doc of snapshot.docs) {
+  for (const doc of snapshots) {
     const driver: DriverEntity & {uid: string} = {...doc.data(), uid: doc.id};
     if (!driver.vehicles || !driver.vehicles.length) {
       continue;

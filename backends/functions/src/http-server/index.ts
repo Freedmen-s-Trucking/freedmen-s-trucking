@@ -23,7 +23,7 @@ apiV1Route.use(secureHeaders());
 apiV1Route.use(async (c, next) => {
   console.log({reqPath: c.req.path});
   // Skip bearer auth for stripe webhook
-  if (c.req.path.endsWith("/stripe/webhook")) {
+  if (c.req.path.endsWith("/stripe/webhook") || c.req.path.endsWith("/logs")) {
     await next();
   } else {
     await bearerAuth({

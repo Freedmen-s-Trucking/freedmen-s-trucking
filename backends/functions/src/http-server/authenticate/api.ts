@@ -329,6 +329,13 @@ router.post("/process-identity-verification", async (c) => {
       console.error("Unable to send the welcome mail", {driverId: dbDriver.uid, error});
     }
   }
+
+  await (getFirestore().collection(CollectionName.DRIVERS) as CollectionReference<DriverEntity, DriverEntity>)
+    .doc(dbDriver.uid)
+    .update({
+      driverLicenseVerificationStatus: "pending",
+      driverLicenseVerificationIssues: [],
+    });
   return c.json(resBody, 200);
 });
 

@@ -74,16 +74,16 @@ const footerVariants: Variants = {
 
 // Animation for beta badge
 const betaBadgeVariants: Variants = {
-  hidden: { opacity: 0, scale: 0.8 },
+  hidden: { opacity: 0, scale: 0.7 },
   visible: {
     opacity: 1,
-    scale: 1,
+    scale: 0.9,
     transition: { duration: 0.5, ease: "easeOut", delay: 1.5 },
   },
   pulse: {
-    scale: [1, 1.15, 1],
+    scale: [0.9, 1, 0.9],
     transition: {
-      duration: 2,
+      duration: 3,
       repeat: Infinity,
       repeatType: "reverse",
     },
@@ -171,7 +171,7 @@ function Index() {
         variants={containerVariants}
         className="flex min-h-dvh w-full flex-col"
       >
-        <Container className="flex min-h-fit flex-1 flex-col items-center gap-1 p-4 transition-colors duration-300 sm:gap-3 sm:p-12 sm:px-8 md:gap-8 md:p-16 lg:gap-12">
+        <Container className="flex min-h-fit w-full flex-1 flex-col items-center gap-1 p-4 transition-colors duration-300 sm:gap-3 sm:p-12 sm:px-8 md:gap-8 md:p-12 lg:gap-12">
           <motion.div
             initial="hidden"
             animate="visible"
@@ -196,24 +196,24 @@ function Index() {
             </button>
           </motion.div>
           <motion.div
-            className="flex flex-[2] flex-col justify-end text-center xs:flex-[3] md:px-12"
+            className="flex flex-[2] flex-col justify-end text-center xs:flex-[3] xs:px-12"
             variants={containerVariants}
           >
             <motion.div variants={headingVariants} className="relative">
               <Heading1 className="mb-2">
                 FREEDMEN'S <span className="inline-block">LAST MILE</span>
+                {/* Alternate beta badge placement near the title */}
+                <motion.span
+                  className="absolute bottom-11"
+                  variants={betaBadgeVariants}
+                  initial="hidden"
+                  animate={["visible", "pulse"]}
+                >
+                  <Badge color="indigo" className="inline text-sm shadow-lg">
+                    BETA
+                  </Badge>
+                </motion.span>
               </Heading1>
-              {/* Alternate beta badge placement near the title */}
-              <motion.div
-                className="absolute -right-14 top-0 transform"
-                variants={betaBadgeVariants}
-                initial="hidden"
-                animate={["visible", "pulse"]}
-              >
-                <Badge color="indigo" className="text-sm shadow-lg">
-                  BETA
-                </Badge>
-              </motion.div>
             </motion.div>
             <motion.div variants={headingVariants}>
               <Tagline className="mb-12">

@@ -2,7 +2,6 @@ import {
   apiResSetupConnectedAccount,
   CollectionName,
   DriverEntity,
-  DriverOrderStatus,
   LATEST_PLATFORM_OVERVIEW_PATH,
   newOrderEntity,
   OrderEntity,
@@ -18,13 +17,11 @@ import {
   PlatformOverviewEntity,
   type,
   UserEntity,
-  VerificationStatus,
 } from "@freedmen-s-trucking/types";
 import {
   CollectionReference,
   DocumentReference,
   FieldValue,
-  Filter,
   getFirestore,
   WithFieldValue,
 } from "firebase-admin/firestore";
@@ -33,7 +30,7 @@ import {onetimeFindRightDriversForOrder} from "~src/utils/order.js";
 import {createPaymentIntent, generateConnectedAccountSetupLink} from "./payment";
 import {handleStripeWebhookEvent} from "./webhook.js";
 import {Variables} from "../../utils/types";
-import {getMessaging} from "firebase-admin/messaging";
+// import {getMessaging} from "firebase-admin/messaging";
 
 const router = new Hono<{Variables: Variables}>();
 
@@ -105,35 +102,35 @@ router.post("/webhook", async (c) => {
 
       const firestore = getFirestore();
 
-      const driverCollection = firestore.collection(CollectionName.DRIVERS) as CollectionReference<
-        DriverEntity,
-        DriverEntity
-      >;
-      const query = driverCollection
-        .where(
-          Filter.or(
-            Filter.where(
-              "verificationStatus" satisfies keyof DriverEntity,
-              "==",
-              "verified" satisfies VerificationStatus,
-            ),
-            Filter.and(
-              Filter.where(
-                "verificationStatus" satisfies keyof DriverEntity,
-                "==",
-                "pending" satisfies VerificationStatus,
-              ),
-              Filter.where(
-                "driverLicenseVerificationStatus" satisfies keyof DriverEntity,
-                "==",
-                "verified" satisfies VerificationStatus,
-              ),
-            ),
-          ),
-        )
-        .orderBy("activeTasks", "asc");
-      const snapshot = await query.get();
-      const [drivers, unassignedVehicles] = onetimeFindRightDriversForOrder(snapshot, verifiedNewOrder);
+      // const driverCollection = firestore.collection(CollectionName.DRIVERS) as CollectionReference<
+      //   DriverEntity,
+      //   DriverEntity
+      // >;
+      // const query = driverCollection
+      //   .where(
+      //     Filter.or(
+      //       Filter.where(
+      //         "verificationStatus" satisfies keyof DriverEntity,
+      //         "==",
+      //         "verified" satisfies VerificationStatus,
+      //       ),
+      //       Filter.and(
+      //         Filter.where(
+      //           "verificationStatus" satisfies keyof DriverEntity,
+      //           "==",
+      //           "pending" satisfies VerificationStatus,
+      //         ),
+      //         Filter.where(
+      //           "driverLicenseVerificationStatus" satisfies keyof DriverEntity,
+      //           "==",
+      //           "verified" satisfies VerificationStatus,
+      //         ),
+      //       ),
+      //     ),
+      //   )
+      //   .orderBy("activeTasks", "asc");
+      // const snapshot = await query.get();
+      const [drivers, unassignedVehicles] = onetimeFindRightDriversForOrder([], verifiedNewOrder);
       const userCollection = firestore.collection("users") as CollectionReference<UserEntity, UserEntity>;
       const user = await userCollection.doc(verifiedNewOrder.ownerId).get();
 
@@ -175,30 +172,31 @@ router.post("/webhook", async (c) => {
         [OrderEntityFields.clientName]: user.data()?.displayName || "",
         [OrderEntityFields.clientEmail]: user.data()?.email || "",
         [OrderEntityFields.clientPhone]: user.data()?.phoneNumber || "",
-        [OrderEntityFields.status]:
-          unassignedVehicles.length === 0 ? OrderStatus.TASKS_ASSIGNED : OrderStatus.PAYMENT_RECEIVED,
+        [OrderEntityFields.status]: OrderStatus.PAYMENT_RECEIVED,
+        // [OrderEntityFields.status]: unassignedVehicles.length === 0 ? OrderStatus.TASKS_ASSIGNED : OrderStatus.PAYMENT_RECEIVED,
         [OrderEntityFields.unassignedVehiclesTypes]: unassignedVehicles.map(([type]) => type),
         [OrderEntityFields.unassignedVehicles]: unassignedVehicles.map(([, details]) => ({
           deliveryFees: details.deliveryFees,
         })),
-        [OrderEntityFields.assignedDriverIds]: drivers.map((d) => d.uid),
-        ...drivers.reduce(
-          (acc, driver) => {
-            acc[`task-${driver.uid}` satisfies keyof OrderEntity] = {
-              [OrderEntityFields.driverId]: driver.uid,
-              [OrderEntityFields.driverName]: driver.displayName || "",
-              [OrderEntityFields.driverEmail]: driver.email || "",
-              [OrderEntityFields.driverPhone]: driver.phoneNumber || "",
-              [OrderEntityFields.deliveryFee]: driver.deliveryFees,
-              [OrderEntityFields.driverStatus]: DriverOrderStatus.WAITING,
-              [OrderEntityFields.createdAt]: FieldValue.serverTimestamp(),
-              [OrderEntityFields.updatedAt]: FieldValue.serverTimestamp(),
-              [OrderEntityFields.deliveryScreenshotPath]: null,
-            };
-            return acc;
-          },
-          {} as Record<`task-${string}`, WithFieldValue<OrderEntity[`task-${string}`]>>,
-        ),
+        [OrderEntityFields.assignedDriverIds]: [],
+        // [OrderEntityFields.assignedDriverIds]: drivers.map((d) => d.uid),
+        // ...drivers.reduce(
+        //   (acc, driver) => {
+        //     acc[`task-${driver.uid}` satisfies keyof OrderEntity] = {
+        //       [OrderEntityFields.driverId]: driver.uid,
+        //       [OrderEntityFields.driverName]: driver.displayName || "",
+        //       [OrderEntityFields.driverEmail]: driver.email || "",
+        //       [OrderEntityFields.driverPhone]: driver.phoneNumber || "",
+        //       [OrderEntityFields.deliveryFee]: driver.deliveryFees,
+        //       [OrderEntityFields.driverStatus]: DriverOrderStatus.WAITING,
+        //       [OrderEntityFields.createdAt]: FieldValue.serverTimestamp(),
+        //       [OrderEntityFields.updatedAt]: FieldValue.serverTimestamp(),
+        //       [OrderEntityFields.deliveryScreenshotPath]: null,
+        //     };
+        //     return acc;
+        //   },
+        //   {} as Record<`task-${string}`, WithFieldValue<OrderEntity[`task-${string}`]>>,
+        // ),
         [OrderEntityFields.createdAt]: FieldValue.serverTimestamp(),
         [OrderEntityFields.updatedAt]: FieldValue.serverTimestamp(),
         [OrderEntityFields.paymentRef]: paymentDocRef.path,
@@ -222,38 +220,38 @@ router.post("/webhook", async (c) => {
         {merge: true},
       );
 
-      // Update driver's active tasks.
-      for (const driver of drivers) {
-        await driverCollection.doc(driver.uid).set(
-          {
-            activeTasks: FieldValue.increment(1),
-          },
-          {merge: true},
-        );
-      }
+      // // Update driver's active tasks.
+      // for (const driver of drivers) {
+      //   await driverCollection.doc(driver.uid).set(
+      //     {
+      //       activeTasks: FieldValue.increment(1),
+      //     },
+      //     {merge: true},
+      //   );
+      // }
 
-      // Send notification about newly assigned order
-      for (const driver of drivers) {
-        const tokens = Object.values(driver.fcmTokenMap || {});
-        if (!tokens.length) {
-          continue;
-        }
+      // // Send notification about newly assigned order
+      // for (const driver of drivers) {
+      //   const tokens = Object.values(driver.fcmTokenMap || {});
+      //   if (!tokens.length) {
+      //     continue;
+      //   }
 
-        getMessaging()
-          .sendEachForMulticast({
-            notification: {
-              title: "New Order!",
-              body: "You have a new order",
-            },
-            tokens: tokens,
-          })
-          .then((response) => {
-            console.log("Successfully sent message:", response);
-          })
-          .catch((error) => {
-            console.error("Error sending message:", error);
-          });
-      }
+      //   getMessaging()
+      //     .sendEachForMulticast({
+      //       notification: {
+      //         title: "New Order!",
+      //         body: "You have a new order",
+      //       },
+      //       tokens: tokens,
+      //     })
+      //     .then((response) => {
+      //       console.log("Successfully sent message:", response);
+      //     })
+      //     .catch((error) => {
+      //       console.error("Error sending message:", error);
+      //     });
+      // }
 
       console.log({paymentIntent: {id, amount}, meta: newOrder});
       return null;
