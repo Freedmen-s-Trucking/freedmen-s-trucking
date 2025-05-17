@@ -3,6 +3,9 @@ import {apiReqExtractOrderRequestFromText, type} from "@freedmen-s-trucking/type
 // import {extractOrderRequestFromText} from "~src/services/ai-agent/extract-order-request-from-text";
 import {deliveryOrder, sendMessage} from "~src/services/ai-agent/extract-order-request-assistant/agent-logic";
 import {Variables} from "~src/utils/types";
+import {trace, SpanStatusCode, context} from "@opentelemetry/api";
+
+const tracer = trace.getTracer("order-tracer");
 
 const router = new Hono<{Variables: Variables}>();
 

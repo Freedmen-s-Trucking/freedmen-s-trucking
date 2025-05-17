@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { Avatar, Badge, Card, Spinner, Tabs, Tooltip } from "flowbite-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { BsBicycle } from "react-icons/bs";
 import { HiAdjustments, HiClipboardList } from "react-icons/hi";
 import { IoLogOutOutline } from "react-icons/io5";
@@ -17,7 +17,7 @@ import { useStorageOperations } from "~/hooks/use-storage";
 import { setUser } from "~/stores/controllers/auth-ctrl";
 import { useAppDispatch } from "~/stores/hooks";
 import { tabTheme } from "~/utils/constants";
-import { OrderStatus } from "../../../../../common/types/src";
+import { OrderEntity, OrderStatus } from "../../../../../common/types/src";
 
 const tabs = ["active-orders", "history"] as const;
 
@@ -38,15 +38,22 @@ const CustomerDashboard = () => {
     window.location.href = "/";
   };
 
-  const { data: activeOrders, isLoading: activeOrdersLoading } = useQuery({
-    initialData: [],
-    queryKey: ["activeOrders"],
-    queryFn: () => fetchCurrentActiveOrders(user.info.uid, "client"),
-    throwOnError(error, query) {
-      console.warn({ ref: "activeOrders", error, query });
-      return false;
-    },
-  });
+  const [activeOrders, setActiveOrders] = useState<
+    { path: string; data: OrderEntity }[]
+  >([]);
+  const [isActiveOrdersLoading, setIsActiveOrdersLoading] = useState(true);
+  useEffect(() => {
+    const unsubscribe = fetchCurrentActiveOrders(
+      user.info.uid,
+      "client",
+      (data) => {
+        setActiveOrders(data);
+        setIsActiveOrdersLoading(false);
+      },
+    );
+    return unsubscribe;
+  }, [user.info.uid, fetchCurrentActiveOrders]);
+
   const { data: historyOrders, isLoading: historyOrdersLoading } = useQuery({
     initialData: [],
     queryKey: ["historyOrders"],
@@ -208,7 +215,7 @@ const CustomerDashboard = () => {
             </Tooltip>
           </div>
           <div className="mb-8 space-y-4">
-            {activeOrdersLoading && (
+            {isActiveOrdersLoading && (
               <p className="text-xs text-gray-500">Loading active orders...</p>
             )}
             {activeOrders.map((order) => (

@@ -92,7 +92,7 @@ const useOrderDbOperations = (db: Firestore) => {
         throw new Error("Order not found");
       }
       const prevOrder = docSnapshot.data() as OrderEntity;
-      if (userId !== prevOrder[`task-${userId}`]?.driverId) {
+      if (userId !== prevOrder[OrderEntityFields.task]?.driverId) {
         throw new Error("Unauthorized");
       }
 
@@ -104,17 +104,19 @@ const useOrderDbOperations = (db: Firestore) => {
       }
       // TODO: Validate status
       await updateDoc(docRef, {
-        [`task-${userId}.${OrderEntityFields.driverStatus}`]: driverStatus,
+        [`${OrderEntityFields.task}.${OrderEntityFields.driverStatus}`]:
+          driverStatus,
         ...(!!driverConfirmationCode && {
-          [`task-${userId}.${OrderEntityFields.driverConfirmationCode}`]:
+          [`${OrderEntityFields.task}.${OrderEntityFields.driverConfirmationCode}`]:
             driverConfirmationCode,
         }),
         ...(!!deliveredOrderConfirmationImage && {
-          [`task-${userId}.${OrderEntityFields.deliveredOrderConfirmationImage}`]:
+          [`${OrderEntityFields.task}.${OrderEntityFields.deliveredOrderConfirmationImage}`]:
             deliveredOrderConfirmationImage,
         }),
-        [`task-${userId}.${OrderEntityFields.updatedAt}`]: serverTimestamp(),
-        [`task-${userId}.${OrderEntityFields.driverPositions}.${driverStatus}`]:
+        [`${OrderEntityFields.task}.${OrderEntityFields.updatedAt}`]:
+          serverTimestamp(),
+        [`${OrderEntityFields.task}.${OrderEntityFields.driverPositions}.${driverStatus}`]:
           coords,
       });
 
@@ -284,15 +286,19 @@ const useDriverDbOperations = (db: Firestore) => {
    * Fetches active orders user orders into the database.
    */
   const fetchCurrentActiveOrders = useCallback(
-    async (uid: string, userType: "client" | "driver") => {
+    (
+      uid: string,
+      userType: "client" | "driver",
+      onValue: (orders: { path: string; data: OrderEntity }[]) => void,
+    ) => {
       checkFalsyAndThrow({ uid }, "FirestoreError::fetchCurrentActiveOrders");
       const q =
         userType === "driver"
           ? query(
               collection(db, CollectionName.ORDERS),
               where(
-                OrderEntityFields.assignedDriverIds satisfies keyof OrderEntity,
-                "array-contains",
+                OrderEntityFields.assignedDriverId satisfies keyof OrderEntity,
+                "==",
                 uid,
               ),
               where(
@@ -322,17 +328,15 @@ const useDriverDbOperations = (db: Firestore) => {
               // ),
               limit(10),
             );
-      const res = await getDocs<OrderEntity, OrderEntity>(
-        q as Query<OrderEntity, OrderEntity>,
-      );
 
-      const result = <{ path: string; data: OrderEntity }[]>[];
-
-      res.forEach((doc) => {
-        if (!doc.exists()) return;
-        result.push({ path: doc.ref.path, data: doc.data() });
+      return onSnapshot(q, (snapshot) => {
+        const result = <{ path: string; data: OrderEntity }[]>[];
+        snapshot.forEach((doc) => {
+          if (!doc.exists()) return;
+          result.push({ path: doc.ref.path, data: doc.data() as OrderEntity });
+        });
+        onValue(result);
       });
-      return result;
     },
     [db],
   );
@@ -348,8 +352,8 @@ const useDriverDbOperations = (db: Firestore) => {
           ? query(
               collection(db, CollectionName.ORDERS),
               where(
-                OrderEntityFields.assignedDriverIds satisfies keyof OrderEntity,
-                "array-contains",
+                OrderEntityFields.assignedDriverId satisfies keyof OrderEntity,
+                "==",
                 uid,
               ),
               where(
@@ -559,7 +563,7 @@ export const useDbOperations = () => {
     insertUser,
     createUser,
     fetchCompletedOrder,
-    fetchCurrentActiveOrders,
+    fetchCurrentActiveOrders: fetchCurrentActiveOrders,
     getUser,
     watchDriver,
     updateDriver: updateDriver,

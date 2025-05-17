@@ -1,4 +1,9 @@
-import { DriverEntity, DriverOrderStatus } from "@freedmen-s-trucking/types";
+import {
+  DriverEntity,
+  DriverOrderStatus,
+  OrderEntity,
+  OrderEntityFields,
+} from "@freedmen-s-trucking/types";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { differenceInMinutes } from "date-fns";
@@ -184,15 +189,22 @@ const DriverDashboard = () => {
     return () => unsubscribe();
   }, [watchDriver, user.info.uid]);
 
-  const { data: activeOrders, isLoading: activeOrdersLoading } = useQuery({
-    initialData: [],
-    queryKey: ["activeOrders"],
-    queryFn: () => fetchCurrentActiveOrders(user.info.uid, "driver"),
-    throwOnError(error, query) {
-      console.warn({ ref: "activeOrders", error, query });
-      return false;
-    },
-  });
+  const [activeOrders, setActiveOrders] = useState<
+    { path: string; data: OrderEntity }[]
+  >([]);
+  const [isActiveOrdersLoading, setIsActiveOrdersLoading] = useState(true);
+  useEffect(() => {
+    const unsubscribe = fetchCurrentActiveOrders(
+      user.info.uid,
+      "driver",
+      (data) => {
+        setActiveOrders(data);
+        setIsActiveOrdersLoading(false);
+      },
+    );
+    return unsubscribe;
+  }, [user.info.uid, fetchCurrentActiveOrders]);
+
   const { data: historyOrders, isLoading: historyOrdersLoading } = useQuery({
     initialData: [],
     queryKey: ["historyOrders"],
@@ -205,7 +217,7 @@ const DriverDashboard = () => {
 
   const hasUpdatedOrders = activeOrders.some(
     (order) =>
-      order.data[`task-${user.info.uid}`]?.driverStatus ===
+      order.data[OrderEntityFields.task]?.driverStatus ===
       DriverOrderStatus.WAITING,
   );
 
@@ -326,7 +338,7 @@ const DriverDashboard = () => {
           <div className="mb-6">
             <h2 className="mb-3 text-xl font-bold">Current Active Orders</h2>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {activeOrdersLoading && (
+              {isActiveOrdersLoading && (
                 <p className="text-xs text-gray-500">
                   Loading active orders...
                 </p>
@@ -387,7 +399,7 @@ const DriverDashboard = () => {
                         <div>
                           {
                             statusMap[
-                              order.data[`task-${user.info.uid}`]
+                              order.data[OrderEntityFields.task]
                                 ?.driverStatus || DriverOrderStatus.WAITING
                             ].badge
                           }
@@ -417,7 +429,7 @@ const DriverDashboard = () => {
         >
           <h2 className="mb-4 text-xl font-bold">Active Orders</h2>
           <div className="mb-8 space-y-4">
-            {activeOrdersLoading && (
+            {isActiveOrdersLoading && (
               <p className="text-xs text-gray-500">Loading active orders...</p>
             )}
             {activeOrders.map((order) => (

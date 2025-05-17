@@ -72,7 +72,7 @@ export const apiResExtractOrderRequestFromText = type({
         quantity: "number",
       }).array(),
       urgencyLevel: type.valueOf(OrderPriority).or("''").or("null"),
-      deliveryTime: "string | ''",
+      deliveryTime: "string?",
     })
       .partial()
       .or("null"),

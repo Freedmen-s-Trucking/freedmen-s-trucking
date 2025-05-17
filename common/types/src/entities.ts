@@ -80,6 +80,7 @@ export const driverEntity = userEntity.and({
   latestLocation: coordinateType
     .and({
       timestamp: dateStringOrTimestampType,
+      geoHash: "string?",
     })
     .optional(),
 });
@@ -239,12 +240,14 @@ export enum OrderEntityFields {
   driverName = "driverName",
   driverEmail = "driverEmail",
   driverPhone = "driverPhone",
-  unassignedVehiclesTypes = "unassignedVehiclesTypes",
-  unassignedVehicles = "unassignedVehicles",
-  assignedDriverIds = "assignedDriverIds",
+  // unassignedVehiclesTypes = "unassignedVehiclesTypes",
+  // unassignedVehicles = "unassignedVehicles",
+  // assignedDriverIds = "assignedDriverIds",
+  assignedDriverId = "assignedDriverId",
   deliveryScreenshotPath = "deliveryScreenshotPath",
   driverPositions = "driverPositions",
   payoutPaymentRef = "payoutPaymentRef",
+  task = "task",
 }
 export const newOrderEntity = type({
   [OrderEntityFields.ownerId]: "string",
@@ -287,17 +290,18 @@ export const orderEntity = newOrderEntity.merge({
   [OrderEntityFields.createdAt]: dateStringOrTimestampType.optional(),
   [OrderEntityFields.updatedAt]: dateStringOrTimestampType.optional(),
   [OrderEntityFields.paymentRef]: "string",
-  [OrderEntityFields.unassignedVehiclesTypes]: vehicleType.array(),
-  [OrderEntityFields.unassignedVehicles]: type({
-    deliveryFees: "number",
-  }).array(),
-  [OrderEntityFields.assignedDriverIds]: "string[]",
-  "+": "ignore",
+  // [OrderEntityFields.unassignedVehiclesTypes]: vehicleType.array(),
+  // [OrderEntityFields.unassignedVehicles]: type({
+  //   deliveryFees: "number",
+  // }).array(),
+  // [OrderEntityFields.assignedDriverIds]: "string[]",
+  [OrderEntityFields.assignedDriverId]: "string | null",
+  [OrderEntityFields.task]: taskEntity.optional(),
 });
-type TaskMap = {
-  [key: `task-${string}`]: typeof taskEntity.infer;
-};
-export type OrderEntity = TaskMap & typeof orderEntity.infer;
+// type TaskMap = {
+//   [key: `task-${string}`]: typeof taskEntity.infer;
+// };
+export type OrderEntity = /*TaskMap & */ typeof orderEntity.infer;
 
 export enum PaymentEntityFields {
   paymentIntentId = "paymentIntentId",

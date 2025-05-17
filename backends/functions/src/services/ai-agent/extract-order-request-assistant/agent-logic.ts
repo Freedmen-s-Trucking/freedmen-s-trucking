@@ -15,6 +15,9 @@ import {
 } from "openai/resources/chat";
 import {DocumentSnapshot, getFirestore} from "firebase-admin/firestore";
 import {fetchPlacesFromGoogle} from "./geocoding-functions";
+import {trace, SpanStatusCode, context} from "@opentelemetry/api";
+
+const tracer = trace.getTracer("order-tracer");
 
 const caches: {
   platformSettingsCache: PlatformSettingsEntity | null;
@@ -25,10 +28,12 @@ const caches: {
       lastUpdated: number;
     };
   };
+  callCount: number;
 } = {
   platformSettingsCache: null,
   platformSettingsLastFetched: 0,
   historyCache: {},
+  callCount: 0,
 };
 
 const TEN_MINUTES_MILLIS = 10 * 60 * 1000;

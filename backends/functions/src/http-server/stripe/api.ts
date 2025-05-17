@@ -26,11 +26,9 @@ import {
   WithFieldValue,
 } from "firebase-admin/firestore";
 import {Hono} from "hono";
-import {onetimeFindRightDriversForOrder} from "~src/utils/order.js";
 import {createPaymentIntent, generateConnectedAccountSetupLink} from "./payment";
 import {handleStripeWebhookEvent} from "./webhook.js";
 import {Variables} from "../../utils/types";
-// import {getMessaging} from "firebase-admin/messaging";
 
 const router = new Hono<{Variables: Variables}>();
 
@@ -130,7 +128,7 @@ router.post("/webhook", async (c) => {
       //   )
       //   .orderBy("activeTasks", "asc");
       // const snapshot = await query.get();
-      const [drivers, unassignedVehicles] = onetimeFindRightDriversForOrder([], verifiedNewOrder);
+      // const [drivers, unassignedVehicles] = onetimeFindRightDriversForOrder([], verifiedNewOrder);
       const userCollection = firestore.collection("users") as CollectionReference<UserEntity, UserEntity>;
       const user = await userCollection.doc(verifiedNewOrder.ownerId).get();
 
@@ -173,16 +171,9 @@ router.post("/webhook", async (c) => {
         [OrderEntityFields.clientEmail]: user.data()?.email || "",
         [OrderEntityFields.clientPhone]: user.data()?.phoneNumber || "",
         [OrderEntityFields.status]: OrderStatus.PAYMENT_RECEIVED,
-        // [OrderEntityFields.status]: unassignedVehicles.length === 0 ? OrderStatus.TASKS_ASSIGNED : OrderStatus.PAYMENT_RECEIVED,
-        [OrderEntityFields.unassignedVehiclesTypes]: unassignedVehicles.map(([type]) => type),
-        [OrderEntityFields.unassignedVehicles]: unassignedVehicles.map(([, details]) => ({
-          deliveryFees: details.deliveryFees,
-        })),
-        [OrderEntityFields.assignedDriverIds]: [],
-        // [OrderEntityFields.assignedDriverIds]: drivers.map((d) => d.uid),
-        // ...drivers.reduce(
-        //   (acc, driver) => {
-        //     acc[`task-${driver.uid}` satisfies keyof OrderEntity] = {
+        [OrderEntityFields.assignedDriverId]: null,
+        // [OrderEntityFields.assignedDriverId]: drivers[0].uid,
+        // [OrderEntityFields.task] : {
         //       [OrderEntityFields.driverId]: driver.uid,
         //       [OrderEntityFields.driverName]: driver.displayName || "",
         //       [OrderEntityFields.driverEmail]: driver.email || "",
@@ -192,11 +183,7 @@ router.post("/webhook", async (c) => {
         //       [OrderEntityFields.createdAt]: FieldValue.serverTimestamp(),
         //       [OrderEntityFields.updatedAt]: FieldValue.serverTimestamp(),
         //       [OrderEntityFields.deliveryScreenshotPath]: null,
-        //     };
-        //     return acc;
-        //   },
-        //   {} as Record<`task-${string}`, WithFieldValue<OrderEntity[`task-${string}`]>>,
-        // ),
+        //     },
         [OrderEntityFields.createdAt]: FieldValue.serverTimestamp(),
         [OrderEntityFields.updatedAt]: FieldValue.serverTimestamp(),
         [OrderEntityFields.paymentRef]: paymentDocRef.path,

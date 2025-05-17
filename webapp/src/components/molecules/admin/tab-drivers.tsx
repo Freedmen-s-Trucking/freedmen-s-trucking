@@ -724,7 +724,9 @@ const DriverManagement: React.FC = () => {
                         status: "failed",
                         title: "Confirm Action",
                         message:
-                          "This action will change the status of the driver to failed.",
+                          "This action will change the status of the driver to failed." +
+                          "\n\n" +
+                          "Note: If the driver has assigned or pending orders, he will still be able to complete them.",
                         requireExplanation: true,
                       })
                     }

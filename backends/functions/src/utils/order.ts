@@ -1,5 +1,5 @@
 import {DriverEntity, FIXED_DRIVER_SERVICE_FEE_PERCENT, NewOrder, VehicleType} from "@freedmen-s-trucking/types";
-import {QueryDocumentSnapshot, QuerySnapshot} from "firebase-admin/firestore";
+import {QueryDocumentSnapshot} from "firebase-admin/firestore";
 
 type OneTimeFindRightDriversForOrderResponse = [
   (DriverEntity & {uid: string; deliveryFees: number})[],

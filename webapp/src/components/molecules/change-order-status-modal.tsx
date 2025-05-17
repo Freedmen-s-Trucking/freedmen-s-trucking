@@ -337,9 +337,11 @@ const GetNextActionButton = ({
         if (!data) return;
         setShowStatusChangeModal(false);
         setImageData(null);
-        queryClient.invalidateQueries({ queryKey: ["activeOrders"] });
-        queryClient.invalidateQueries({ queryKey: ["historyOrders"] });
         queryClient.invalidateQueries({ queryKey: ["driverInfo"] });
+        setTimeout(
+          () => queryClient.invalidateQueries({ queryKey: ["historyOrders"] }),
+          3000,
+        );
       },
       onError: (error) => {
         console.error("Failed to update order status:", error);

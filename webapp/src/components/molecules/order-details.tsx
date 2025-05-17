@@ -346,7 +346,7 @@ const OrderDetailsView: React.FC<{
   });
 
   const { user } = useAuth();
-  const driverTask = order.data[`task-${user.info.uid}`] || null;
+  const driverTask = order.data[OrderEntityFields.task] || null;
 
   if (!driverTask && viewType === "driver") {
     console.log(order);
@@ -381,11 +381,11 @@ const OrderDetailsView: React.FC<{
         </div>
         <div className="mb-4 flex w-full items-center justify-between text-xs sm:text-sm md:text-lg">
           <div className="flex flex-col  justify-between">
-            <h5 className="mb-2 font-medium">Required Vehicles</h5>
+            <h5 className="mb-2 font-medium">Required Vehicle</h5>
             <div className="flex flex-wrap gap-2">
               {order.data.requiredVehicles?.map((req, index) => (
                 <Badge key={index} color="dark">
-                  {req.type} x{req.quantity}
+                  {req.type} x {req.quantity}
                 </Badge>
               ))}
             </div>
@@ -459,71 +459,71 @@ const OrderDetailsView: React.FC<{
           {(isAuthorizedToViewTasks && (
             <Card className="shadow-none [&>div]:justify-start [&>div]:p-2">
               <h4 className="text-sm font-semibold md:text-base">
-                Assigned Tasks
+                Assigned Task
               </h4>
-              {(order.data[OrderEntityFields.assignedDriverIds] || []).map(
-                (driverId, index) => (
-                  <div key={driverId}>
-                    {index > 0 && <hr className="my-2" />}
-                    <div className="flex items-center gap-3 overflow-hidden">
-                      <Avatar size="md" rounded />
-                      <div className="flex flex-col">
-                        <div className="text-xs font-medium md:text-sm">
-                          {order.data?.[`task-${driverId}`]?.driverName ||
-                            "Unknown Driver"}
-                        </div>
-                        <span className="text-ellipsis text-nowrap break-all text-xs text-gray-500">
-                          ID: {driverId.slice(0, 5)}-*****
+              <div>
+                <div className="flex items-center gap-3 overflow-hidden">
+                  <Avatar size="md" rounded />
+                  <div className="flex flex-col">
+                    <div className="text-xs font-medium md:text-sm">
+                      {order.data?.[OrderEntityFields.task]?.driverName ||
+                        "Unknown Driver"}
+                    </div>
+                    <span className="text-ellipsis text-nowrap break-all text-xs text-gray-500">
+                      ID:{" "}
+                      {order.data?.[OrderEntityFields.task]?.driverId.slice(
+                        0,
+                        5,
+                      )}
+                      -*****
+                    </span>
+                  </div>
+                </div>
+                {(order.data?.[OrderEntityFields.task]?.driverEmail ||
+                  order.data?.[OrderEntityFields.task]?.driverPhone) && (
+                  <div className="space-y-2 p-2 text-xs md:text-sm">
+                    {order.data?.[OrderEntityFields.task]?.driverEmail && (
+                      <div className="flex items-center gap-2">
+                        <HiMail className="text-gray-500" />
+                        <span>
+                          {order.data?.[OrderEntityFields.task]?.driverEmail}
                         </span>
                       </div>
-                    </div>
-                    {(order.data?.[`task-${driverId}`]?.driverEmail ||
-                      order.data?.[`task-${driverId}`]?.driverPhone) && (
-                      <div className="space-y-2 p-2 text-xs md:text-sm">
-                        {order.data?.[`task-${driverId}`]?.driverEmail && (
-                          <div className="flex items-center gap-2">
-                            <HiMail className="text-gray-500" />
-                            <span>
-                              {order.data?.[`task-${driverId}`]?.driverEmail}
-                            </span>
-                          </div>
-                        )}
-                        {order.data?.[`task-${driverId}`]?.driverPhone && (
-                          <div className="flex items-center gap-2">
-                            <HiPhone className="text-gray-500" />
-                            <span>
-                              {order.data?.[`task-${driverId}`]?.driverPhone}
-                            </span>
-                          </div>
-                        )}
-                        {order.data?.[`task-${driverId}`]?.driverStatus && (
-                          <div className="flex items-center gap-2">
-                            <span className="inline-flex">
-                              status:{" "}
-                              {
-                                driverStatusMap[
-                                  order.data?.[`task-${driverId}`]?.driverStatus
-                                ].badge
-                              }
-                            </span>
-                          </div>
-                        )}
-                        {user.info.isAdmin &&
-                          order.data?.[`task-${driverId}`]?.deliveryFee && (
-                            <div className="flex items-center gap-2">
-                              <span className="inline-flex">
-                                Delivery Fee:{" "}
-                                {formatPrice(
-                                  order.data?.[`task-${driverId}`]?.deliveryFee,
-                                )}
-                              </span>
-                            </div>
-                          )}
+                    )}
+                    {order.data?.[OrderEntityFields.task]?.driverPhone && (
+                      <div className="flex items-center gap-2">
+                        <HiPhone className="text-gray-500" />
+                        <span>
+                          {order.data?.[OrderEntityFields.task]?.driverPhone}
+                        </span>
                       </div>
                     )}
+                    {order.data?.[OrderEntityFields.task]?.driverStatus && (
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex">
+                          status:{" "}
+                          {
+                            driverStatusMap[
+                              order.data?.[OrderEntityFields.task]?.driverStatus
+                            ].badge
+                          }
+                        </span>
+                      </div>
+                    )}
+                    {user.info.isAdmin &&
+                      order.data?.[OrderEntityFields.task]?.deliveryFee && (
+                        <div className="flex items-center gap-2">
+                          <span className="inline-flex">
+                            Delivery Fee:{" "}
+                            {formatPrice(
+                              order.data?.[OrderEntityFields.task]?.deliveryFee,
+                            )}
+                          </span>
+                        </div>
+                      )}
                   </div>
-                ),
-              )}
+                )}
+              </div>
             </Card>
           )) ||
             null}
@@ -534,7 +534,7 @@ const OrderDetailsView: React.FC<{
             <div className="mb-3 flex items-center gap-2">
               <FaMapMarkerAlt className="mt-1 flex-shrink-0 text-xl text-green-500" />
               <span className="text-xs">
-                {order.data.pickupLocation?.address}
+                {order.data?.[OrderEntityFields.pickupLocation]?.address}
               </span>
             </div>
           </div>
@@ -543,7 +543,7 @@ const OrderDetailsView: React.FC<{
             <div className="mb-3 flex items-center gap-2">
               <FaMapMarkerAlt className="mt-1 flex-shrink-0 text-xl text-red-700" />
               <span className="text-xs">
-                {order.data.deliveryLocation?.address}
+                {order.data?.[OrderEntityFields.deliveryLocation]?.address}
               </span>
             </div>
           </div>
@@ -593,27 +593,26 @@ const OrderDetailsView: React.FC<{
                     className="m-0 p-0"
                     headerContent={<span>Delivery Location</span>}
                   />
-                  {(order.data[OrderEntityFields.assignedDriverIds] || []).map(
+                  {/* {(order.data[OrderEntityFields.assignedDriverIds] || []).map(
                     (driverId, index) => (
-                      <>
-                        {Object.entries(
-                          order.data?.[`task-${driverId}`]?.driverPositions ||
-                            {},
-                        ).map(([status, position]) => (
-                          <AdvancedMarker
-                            key={`${index}-${status}`}
-                            position={{
-                              lat: position.latitude,
-                              lng: position.longitude,
-                            }}
-                            anchorPoint={AdvancedMarkerAnchorPoint.CENTER}
-                          >
-                            <TbTruckDelivery size={32} color="#472E1E" />
-                          </AdvancedMarker>
-                        ))}
-                      </>
+                      <> */}
+                  {Object.entries(
+                    order.data[OrderEntityFields.task]?.driverPositions || {},
+                  ).map(([status, position]) => (
+                    <AdvancedMarker
+                      key={`${status}`}
+                      position={{
+                        lat: position.latitude,
+                        lng: position.longitude,
+                      }}
+                      anchorPoint={AdvancedMarkerAnchorPoint.CENTER}
+                    >
+                      <TbTruckDelivery size={32} color="#472E1E" />
+                    </AdvancedMarker>
+                  ))}
+                  {/* </>
                     ),
-                  )}
+                  )} */}
                 </Map>
               )) ||
                 null}
@@ -627,7 +626,9 @@ const OrderDetailsView: React.FC<{
               orderPath={order.path}
               action={
                 driverStatusMap[
-                  driverTask?.driverStatus || DriverOrderStatus.WAITING
+                  order.data[OrderEntityFields.task]?.[
+                    OrderEntityFields.driverStatus
+                  ] || DriverOrderStatus.WAITING
                 ]
               }
             />
@@ -680,7 +681,7 @@ export const Order: React.FC<{
   Details: typeof OrderDetails;
 } = ({ order, viewType }) => {
   const { user } = useAuth();
-  const driverTask = order.data[`task-${user.info.uid}`] || null;
+  const driverTask = order.data[OrderEntityFields.task] || null;
 
   return (
     <>

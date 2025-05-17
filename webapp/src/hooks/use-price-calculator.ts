@@ -274,6 +274,8 @@ const getDistanceFromGoogle = (
       distanceMeters: "number",
       duration: "string",
       condition: "string",
+      originIndex: "number",
+      destinationIndex: "number",
     }).array(),
   });
 };

@@ -26,11 +26,12 @@ service cloud.firestore {
     }
     function isDriverOfOrder() {
       let uid = request.auth.uid;
-      return uid != null &&  resource != null && "assignedDriverIds" in resource.data && uid in resource.data.assignedDriverIds;
+      return uid != null &&  resource != null && "assignedDriverId" in resource.data && uid == resource.data.assignedDriverId;
     }
     function canUpdateOrder() {
       let uid = request.auth.uid;
-      let allowedPath = 'task-' + uid;
+      // let allowedPath = 'task-' + uid;
+      let allowedPath = 'task';
 
       // Ensure only the driver's assignedTasks field is being updated
       return isDriverOfOrder() && request.resource.data.diff(resource.data).affectedKeys().hasOnly([allowedPath]);

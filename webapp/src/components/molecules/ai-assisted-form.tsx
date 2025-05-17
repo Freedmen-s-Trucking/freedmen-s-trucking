@@ -154,7 +154,7 @@ export const AIAssistedForm: React.FC<{
           ]);
           throw null;
         } else {
-          throw new Error("Something went wrong");
+          throw order;
         }
       }
 
@@ -180,8 +180,8 @@ export const AIAssistedForm: React.FC<{
     },
     onError(error, variables, context) {
       console.error({ error, variables, context });
-      if (error instanceof Error) {
-        setError(error);
+      if (error) {
+        setError(new Error("Something went wrong Please try again"));
         serverRequest("/logs", {
           method: "POST",
           body: {
@@ -190,7 +190,6 @@ export const AIAssistedForm: React.FC<{
             context,
           },
         });
-        setError(new Error("Something went wrong Please try again"));
       }
     },
   });

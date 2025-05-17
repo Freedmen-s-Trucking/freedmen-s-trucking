@@ -25,7 +25,7 @@ import {getMessaging} from "firebase-admin/messaging";
 import {onDocumentUpdated} from "firebase-functions/v2/firestore";
 import {transferFundsToDriver} from "~src/http-server/stripe/payment";
 
-const updateOrderStatusOnAllSubTaskCompleted = async (
+const updateOrderStatusOnTaskCompleted = async (
   before: OrderEntity | undefined,
   after: OrderEntity | undefined,
   orderId: string,
@@ -39,43 +39,27 @@ const updateOrderStatusOnAllSubTaskCompleted = async (
     console.log("Order status has unassigned tasks", aStatus);
     return;
   }
-  const isAllSubTasksCompleted = (after?.[OrderEntityFields.assignedDriverIds] || ["fake"]).every(
-    (driverId) => after?.[`task-${driverId}`]?.driverStatus === DriverOrderStatus.DELIVERED,
-  );
-  const newlyCompletedTasks: OrderEntity["task-${string}"][] = (after?.[OrderEntityFields.assignedDriverIds] || [])
-    .map((driverId) => {
-      const atask = after?.[`task-${driverId}`];
-      const btask = before?.[`task-${driverId}`];
-      if (btask?.driverStatus === atask?.driverStatus) {
-        return null;
-      }
-      if (atask?.driverStatus !== DriverOrderStatus.DELIVERED) {
-        return null;
-      }
-      return atask;
-    })
-    .filter((task) => task !== null);
-
-  const firestore = getFirestore();
-  const waterFall = [];
-  for (const task of newlyCompletedTasks) {
-    const driverCollection = firestore.collection(CollectionName.DRIVERS) as CollectionReference<
-      DriverEntity,
-      DriverEntity
-    >;
-    waterFall.push(
-      driverCollection.doc(task.driverId).update({
-        activeTasks: FieldValue.increment(-1),
-        tasksCompleted: FieldValue.increment(1),
-      }),
-    );
+  const atask = after?.[OrderEntityFields.task];
+  const btask = before?.[OrderEntityFields.task];
+  if (btask?.driverStatus === atask?.driverStatus) {
+    return;
   }
-  if (!isAllSubTasksCompleted) {
-    console.log("Not all sub tasks are completed");
-    await Promise.all(waterFall);
+  if (atask?.driverStatus !== DriverOrderStatus.DELIVERED) {
     return;
   }
 
+  const firestore = getFirestore();
+  const waterFall = [];
+  const driverCollection = firestore.collection(CollectionName.DRIVERS) as CollectionReference<
+    DriverEntity,
+    DriverEntity
+  >;
+  waterFall.push(
+    driverCollection.doc(atask.driverId).update({
+      activeTasks: FieldValue.increment(-1),
+      tasksCompleted: FieldValue.increment(1),
+    }),
+  );
   waterFall.push(
     (firestore.collection(CollectionName.ORDERS).doc(orderId) as DocumentReference<OrderEntity>).update({
       [OrderEntityFields.status]: OrderStatus.COMPLETED,
@@ -101,9 +85,8 @@ const payOutDriversOnDeliveryCompleted = async (
   if (!after || aStatus !== OrderStatus.COMPLETED) {
     return;
   }
-  const completedTasks: OrderEntity["task-${string}"][] = (after?.[OrderEntityFields.assignedDriverIds] || [])
-    .map((driverId) => {
-      const task = after?.[`task-${driverId}`];
+  const completedTasks: Exclude<OrderEntity["task"], undefined>[] = [after?.[OrderEntityFields.task]]
+    .map((task) => {
       return task?.driverStatus === DriverOrderStatus.DELIVERED ? task : null;
     })
     .filter((task) => task !== null);
@@ -135,7 +118,7 @@ const payOutDriversOnDeliveryCompleted = async (
         driver,
         task.deliveryFee,
         {id: orderId, data: after},
-        `task-${task.driverId}`,
+        OrderEntityFields.task,
       );
       if (res instanceof Error) {
         console.error("Failed to transfer funds to driver;", res);
@@ -176,7 +159,7 @@ const payOutDriversOnDeliveryCompleted = async (
           >
         ).set(
           {
-            [`task-${task.driverId}` satisfies keyof OrderEntity]: {
+            [OrderEntityFields.task]: {
               ...task,
               payoutPaymentRef: `${CollectionName.PAYMENTS}/${paymentDocRef.id}`,
             },
@@ -240,8 +223,8 @@ const notifyDriversOnNewOrder = async (
     return;
   }
 
-  const assignedDriversIds = after?.[OrderEntityFields.assignedDriverIds] || [];
-  if (!assignedDriversIds.length) {
+  const assignedDriversId = after?.[OrderEntityFields.assignedDriverId];
+  if (!assignedDriversId) {
     return;
   }
   const firestore = getFirestore();
@@ -249,7 +232,7 @@ const notifyDriversOnNewOrder = async (
     DriverEntity,
     DriverEntity
   >;
-  const driverSnapshot = await driverCollection.where("uid", "in", assignedDriversIds).get();
+  const driverSnapshot = await driverCollection.where("uid", "==", assignedDriversId).get();
   const drivers = driverSnapshot.docs.map((doc) => doc.data());
   const tokens = drivers.map((driver) => Object.values(driver.fcmTokenMap || {})).flat();
   if (!tokens.length) {
@@ -276,7 +259,7 @@ export const orderUpdateTrigger = onDocumentUpdated(`${CollectionName.ORDERS}/{o
   const after = data?.after?.data?.() as OrderEntity | undefined;
   const orderId = params.orderId;
   const waterFall = [
-    updateOrderStatusOnAllSubTaskCompleted(before, after, orderId),
+    updateOrderStatusOnTaskCompleted(before, after, orderId),
     payOutDriversOnDeliveryCompleted(before, after, orderId),
     notifyUserOnOrderStatusChange(before, after, orderId),
     notifyDriversOnNewOrder(before, after, orderId),

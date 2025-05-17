@@ -12,6 +12,7 @@ import {bearerAuth} from "hono/bearer-auth";
 import {getAuth} from "firebase-admin/auth";
 import {Variables} from "../utils/types";
 import {slackNotify} from "~src/utils/slack-notification";
+import backfillsApiRouter from "./backfills/api";
 
 export const customLogger = (message: string, ...rest: string[]) => {
   console.log(message, ...rest);
@@ -23,7 +24,12 @@ apiV1Route.use(secureHeaders());
 apiV1Route.use(async (c, next) => {
   console.log({reqPath: c.req.path});
   // Skip bearer auth for stripe webhook
-  if (c.req.path.endsWith("/stripe/webhook") || c.req.path.endsWith("/logs")) {
+  if (
+    c.req.path.endsWith("/stripe/webhook") ||
+    c.req.path.endsWith("/backfills/orders") ||
+    c.req.path.endsWith("/backfills/drivers") ||
+    c.req.path.endsWith("/logs")
+  ) {
     await next();
   } else {
     await bearerAuth({
@@ -45,6 +51,7 @@ apiV1Route.route("/ai-agent", aiAgentApiRouter);
 apiV1Route.route("/authenticate", authenticateApiRouter);
 apiV1Route.route("/order", orderApiRouter);
 apiV1Route.route("/user", userApiRouter);
+apiV1Route.route("/backfills", backfillsApiRouter);
 apiV1Route.post("/logs", async (c) => {
   const body = await c.req.json();
   slackNotify("frontend", body, body);

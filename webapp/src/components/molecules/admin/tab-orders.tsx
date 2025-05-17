@@ -188,16 +188,12 @@ const Orders: React.FC = () => {
                 </Table.Cell>
                 <Table.Cell>{renderStatusBadge(order.data.status)}</Table.Cell>
                 <Table.Cell>
-                  {order.data?.[OrderEntityFields.assignedDriverIds]?.length ? (
+                  {order.data?.[OrderEntityFields.assignedDriverId] ? (
                     <div className="flex items-center space-x-2">
-                      {(
-                        order.data?.[OrderEntityFields.assignedDriverIds] || []
-                      ).map((driverId) => (
-                        <span key={driverId}>
-                          {order.data?.[`task-${driverId}`]?.driverName ||
-                            "Unknown Driver"}
-                        </span>
-                      ))}
+                      <span>
+                        {order.data?.[OrderEntityFields.task]?.driverName ||
+                          "Unknown Driver"}
+                      </span>
                     </div>
                   ) : (
                     <Badge color="gray">Not Assigned</Badge>
