@@ -1,11 +1,27 @@
 import {Hono} from "hono";
-import {CollectionName, OrderEntity, DriverEntity, OrderEntityFields} from "@freedmen-s-trucking/types";
+import {CollectionName, OrderEntity, DriverEntity, OrderEntityFields, UserEntity} from "@freedmen-s-trucking/types";
 import {getFirestore, CollectionReference, UpdateData} from "firebase-admin/firestore";
 import {getGeoHash} from "~src/utils/geolocation/geolocation_utils";
 
 const router = new Hono();
 
-router.get("/drivers", async (c) => {
+async function backfillUsers() {
+  const firestore = getFirestore();
+  const userCollection = firestore.collection(CollectionName.USERS) as CollectionReference<UserEntity, UserEntity>;
+  const users = await userCollection.get();
+  const usersData = users.docs.map(async (user) => {
+    const data: UserEntity & {fcmTokenMaps?: Record<string, string>} = user.data();
+    if (data?.fcmTokenMaps) {
+      return user.ref.update({
+        fcmTokenMap: data.fcmTokenMaps,
+      });
+    }
+    return Promise.resolve(null);
+  });
+  return Promise.all(usersData);
+}
+
+async function backfillDrivers() {
   const firestore = getFirestore();
   const driverCollection = firestore.collection(CollectionName.DRIVERS) as CollectionReference<
     DriverEntity,
@@ -21,10 +37,10 @@ router.get("/drivers", async (c) => {
       "latestLocation.geoHash": getGeoHash(latestLocation.latitude, latestLocation.longitude),
     });
   });
-  return c.json(await Promise.all(driversData), 200);
-});
+  return Promise.all(driversData);
+}
 
-router.get("/orders", async (c) => {
+async function backfillsOrders() {
   const firestore = getFirestore();
   const orderCollection = firestore.collection(CollectionName.ORDERS) as CollectionReference<OrderEntity, OrderEntity>;
   const orders = await orderCollection.get();
@@ -62,7 +78,23 @@ router.get("/orders", async (c) => {
     }
     return Promise.resolve(null);
   });
-  return c.json(await Promise.all(ordersData), 200);
+  return Promise.all(ordersData);
+}
+
+router.get("/drivers", async (c) => {
+  return c.json(await backfillDrivers(), 200);
+});
+
+router.get("/orders", async (c) => {
+  return c.json(await backfillsOrders(), 200);
+});
+
+router.get("/users", async (c) => {
+  return c.json(await backfillUsers(), 200);
+});
+
+router.get("/all", async (c) => {
+  return c.json(await Promise.all([backfillDrivers(), backfillsOrders(), backfillUsers()]), 200);
 });
 
 export default router;
