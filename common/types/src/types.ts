@@ -54,8 +54,15 @@ export type DateStringOrTimestamp = typeof dateStringOrTimestampType.infer;
 export const coordinateType = locationType.omit("address");
 export type Coordinate = typeof coordinateType.infer;
 
+export const priceRange = type({
+  minMiles: "number",
+  maxMiles: "number",
+  price: "number",
+});
+
 export const placeLocationType = locationType.and({
   placeId: "string",
+  priceMap: priceRange.array().optional(),
   viewPort: {
     low: coordinateType,
     high: coordinateType,

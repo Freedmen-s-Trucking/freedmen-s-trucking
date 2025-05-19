@@ -31,7 +31,7 @@ function getPackageVolumeInCubicFeet(pkg: ProductWithQuantity): number {
  * - This function does not take in consideration the dimensions limit of the vehicle. e.g Steel bar is too long to fit in a van but his volume is small enough.
  * - This function does not support splitting packages between vehicles.
  * @param packages The array of packages to be delivered
- * @returns The array of vehicles needed to deliver the packages
+ * @return The array of vehicles needed to deliver the packages
  */
 export function computeTheMinimumRequiredVehiclesAndFees(
   packages: ProductWithQuantity[],
@@ -129,7 +129,7 @@ export function computeTheMinimumRequiredVehiclesAndFees(
  * @param vehicle The vehicle to get the fees for
  * @param priority The priority of the order
  * @param distanceInMiles The distance in miles
- * @returns The fees of the vehicle
+ * @return The fees of the vehicle
  */
 function getFeesOfVehicle(
   vehicle: Omit<RequiredVehicleEntity, "fees">,
@@ -164,7 +164,7 @@ function getFeesOfVehicle(
 /**
  * Find the smallest vehicle that can fit the volume and return the vehicle id and the remaining volume.
  * @param cuFeet The volume in cubic feet
- * @returns The vehicle id and the remaining volume
+ * @return The vehicle id and the remaining volume
  */
 function findVehicleIdBasedOnVolume(cuFeet: number): {
   id: number;
@@ -189,7 +189,7 @@ function findVehicleIdBasedOnVolume(cuFeet: number): {
  * Get the distance between two points from OSRM
  * @param startingPoint The starting point
  * @param endPoint The end point
- * @returns The distance in meters
+ * @return The distance in meters
  */
 const getDistance = (startingPoint: Coordinate, endPoint: Coordinate) => {
   const url = `https://router.project-osrm.org/route/v1/driving/${endPoint.longitude},${endPoint.latitude};${startingPoint.longitude},${startingPoint.latitude}`;

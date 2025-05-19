@@ -41,7 +41,7 @@ const notifyDriverOnTaskGroupStatusChange = async (
     .filter((orderId) => !before || !before[TaskGroupEntityFields.orderIds].includes(orderId))
     .map((orderId) => ({orderId, order: after[TaskGroupEntityFields.orderIdValueMap][orderId]}));
 
-  const title = isNewlyAssignedTask ? `New Delivery Task Assigned` : `Delivery Task Updated: New Stop Added`;
+  const title = isNewlyAssignedTask ? "New Delivery Task Assigned" : "Delivery Task Updated: New Stop Added";
   const body = isNewlyAssignedTask
     ? `You have a new task with ${newOrderIds.length} order(s)`
     : `Your task #${taskGroupId.slice(0, 5)} has been updated with ${newOrderIds.length} new stop(s)`;

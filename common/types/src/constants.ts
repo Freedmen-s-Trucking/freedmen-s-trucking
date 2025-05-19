@@ -1,15 +1,15 @@
 import { OrderPriority, PlatformSettingsEntity } from "./entities.js";
 import { VehicleInfo } from "./types.js";
 
-export const DEFAULT_PLATFORM_SETTINGS: PlatformSettingsEntity = {
+export const DEFAULT_PLATFORM_SETTINGS = {
   availableCities: null,
   taskAssignmentConfig: {
-    driverRadiusInMeters: 1000,
-    pickupRadiusInMeters: 1000,
-    dropoffRadiusInMeters: 3000,
+    maxDriverRadiusInMeters: 1000,
+    pickupsGroupDistanceInMeters: 1000,
+    dropoffsGroupsDistanceInMeters: 3000,
     maxOrdersPerGroup: 3,
   },
-};
+} as const satisfies PlatformSettingsEntity;
 
 /**
  * Default platform fee percent to apply on each order.

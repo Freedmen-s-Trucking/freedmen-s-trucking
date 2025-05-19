@@ -1,5 +1,5 @@
-import "source-map-support/register";
-import "dotenv/config";
+import "source-map-support/register.js";
+import "dotenv/config.js";
 
 import "./services/traces/tracing";
 import "./config";

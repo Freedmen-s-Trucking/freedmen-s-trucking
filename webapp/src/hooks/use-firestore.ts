@@ -37,8 +37,10 @@ import {
   userEntity,
   driverEntity,
   Coordinate,
+  platformSettingsEntity,
+  coordinateType,
 } from "@freedmen-s-trucking/types";
-import { checkFalsyAndThrow } from "~/utils/functions";
+import { validateOrFail } from "~/utils/functions";
 import { driverEntityConverter } from "~/utils/firestore";
 
 const useFirestore = () => {
@@ -69,21 +71,17 @@ const useOrderDbOperations = (db: Firestore) => {
         coords,
         driverConfirmationCode,
         deliveredOrderConfirmationImage,
-      } = params;
-      checkFalsyAndThrow(
-        {
-          userId,
-          orderPath,
-          driverStatus,
-          driverConfirmationCode,
-          deliveredOrderConfirmationImage,
-        },
-        "FirestoreError::updateOrderStatus",
+      } = validateOrFail(
+        params,
         type({
           userId: "string",
           orderPath: "string",
           driverStatus: type.valueOf(DriverOrderStatus),
+          coords: coordinateType.optional(),
+          driverConfirmationCode: "string?",
+          deliveredOrderConfirmationImage: "string | null ?",
         }),
+        "FirestoreError::updateOrderStatus",
       );
       const orderId = orderPath.split("/").pop();
       const docRef = doc(collection(db, CollectionName.ORDERS), orderId);
@@ -151,12 +149,12 @@ const useUserDbOperations = (db: Firestore) => {
    */
   const createUser = useCallback(
     async (user: UserEntity) => {
-      checkFalsyAndThrow(
+      validateOrFail(
         { user },
-        "FirestoreError::createUser",
         type({
           user: userEntity,
         }),
+        "FirestoreError::createUser",
       );
       const docRef = doc(collection(db, CollectionName.USERS), user.uid);
       const userSnapshot = await getDoc(docRef);
@@ -172,13 +170,13 @@ const useUserDbOperations = (db: Firestore) => {
    */
   const insertUser = useCallback(
     async (uid: string, user: Partial<UserEntity>) => {
-      checkFalsyAndThrow(
+      validateOrFail(
         { uid, user },
-        "FirestoreError::insertUser",
         type({
           uid: "string",
           user: userEntity.partial(),
         }),
+        "FirestoreError::insertUser",
       );
       const docRef = doc(collection(db, CollectionName.USERS), uid);
       await setDoc(docRef, user, { merge: true });
@@ -191,12 +189,12 @@ const useUserDbOperations = (db: Firestore) => {
    */
   const getUser = useCallback(
     async (uid: string) => {
-      checkFalsyAndThrow(
+      validateOrFail(
         { uid },
-        "FirestoreError::getUser",
         type({
           uid: "string",
         }),
+        "FirestoreError::getUser",
       );
       const docRef = doc(collection(db, CollectionName.USERS), uid);
       const userSnapshot = await getDoc(docRef);
@@ -217,13 +215,13 @@ const useDriverDbOperations = (db: Firestore) => {
    */
   const updateDriver = useCallback(
     async (uid: string, driver: PartialWithFieldValue<DriverEntity>) => {
-      checkFalsyAndThrow(
+      validateOrFail(
         { uid, driver },
-        "FirestoreError::updateDriver",
         type({
           uid: "string",
           driver: driverEntity.partial(),
         }),
+        "FirestoreError::updateDriver",
       );
       const docRef = doc(
         collection(db, CollectionName.DRIVERS),
@@ -243,8 +241,11 @@ const useDriverDbOperations = (db: Firestore) => {
 
   const getDriver = useCallback(
     async (uid: string) => {
-      checkFalsyAndThrow(
+      validateOrFail(
         { uid },
+        type({
+          uid: "string",
+        }),
         "FirestoreError::getDriver uid must not be falsy",
       );
       const docRef = doc(
@@ -262,9 +263,12 @@ const useDriverDbOperations = (db: Firestore) => {
 
   const watchDriver = useCallback(
     (uid: string, onValue: (driver: DriverEntity | null) => void) => {
-      checkFalsyAndThrow(
+      validateOrFail(
         { uid },
-        "FirestoreError::getDriver uid must not be falsy",
+        type({
+          uid: "string",
+        }),
+        "FirestoreError::watchDriver uid must not be falsy",
       );
       const docRef = doc(
         collection(db, CollectionName.DRIVERS),
@@ -291,7 +295,14 @@ const useDriverDbOperations = (db: Firestore) => {
       userType: "client" | "driver",
       onValue: (orders: { path: string; data: OrderEntity }[]) => void,
     ) => {
-      checkFalsyAndThrow({ uid }, "FirestoreError::fetchCurrentActiveOrders");
+      validateOrFail(
+        { uid, userType },
+        type({
+          uid: "string",
+          userType: "'client' | 'driver'",
+        }),
+        "FirestoreError::fetchCurrentActiveOrders",
+      );
       const q =
         userType === "driver"
           ? query(
@@ -346,7 +357,14 @@ const useDriverDbOperations = (db: Firestore) => {
    */
   const fetchCompletedOrder = useCallback(
     async (uid: string, userType: "client" | "driver") => {
-      checkFalsyAndThrow({ uid }, "FirestoreError::fetchCurrentActiveOrders");
+      validateOrFail(
+        { uid, userType },
+        type({
+          uid: "string",
+          userType: "'client' | 'driver'",
+        }),
+        "FirestoreError::fetchCurrentActiveOrders",
+      );
       const q =
         userType === "driver"
           ? query(
@@ -454,7 +472,7 @@ const useAdminDbOperations = (db: Firestore) => {
    * Fetches the overview of the platform.
    * Note: Firebase security rules is the one responsible to grant access to the data, not client code.
    */
-  const fetchPlatformOverview = useCallback(
+  const watchPlatformOverview = useCallback(
     (onValue: (arg: EntityWithPath<PlatformOverviewEntity> | null) => void) => {
       const docRef = doc(db, LATEST_PLATFORM_OVERVIEW_PATH);
       const unsubscribe = onSnapshot<
@@ -492,6 +510,29 @@ const useAdminDbOperations = (db: Firestore) => {
     return result;
   }, [db]);
 
+  // const watchPlatformSettings = useCallback(
+  //   (onValue: (arg: EntityWithPath<PlatformSettingsEntity> | null) => void) => {
+  //     const docRef = doc(db, LATEST_PLATFORM_SETTINGS_PATH);
+  //     const unsubscribe = onSnapshot<
+  //       PlatformSettingsEntity,
+  //       PlatformSettingsEntity
+  //     >(
+  //       docRef as DocumentReference<
+  //         PlatformSettingsEntity,
+  //         PlatformSettingsEntity
+  //       >,
+  //       (snapshot) => {
+  //         const res = snapshot.exists()
+  //           ? { path: docRef.path, data: snapshot.data() }
+  //           : null;
+  //         return onValue(res);
+  //       },
+  //     );
+  //     return unsubscribe;
+  //   },
+  //   [db],
+  // );
+
   const fetchPlatformSettings = useCallback(async () => {
     const docRef = doc(db, LATEST_PLATFORM_SETTINGS_PATH);
     const snapshot = await getDoc<
@@ -512,14 +553,19 @@ const useAdminDbOperations = (db: Firestore) => {
   }, [db]);
 
   const updatePlatformSettings = useCallback(
-    async (settings: WithFieldValue<PlatformSettingsEntity>) => {
+    async (settings: Partial<PlatformSettingsEntity>) => {
+      const sanitizedSettings = validateOrFail(
+        settings,
+        platformSettingsEntity.partial(),
+        "updatePlatformSettings",
+      );
       const docRef = doc(db, LATEST_PLATFORM_SETTINGS_PATH);
       await setDoc<PlatformSettingsEntity, PlatformSettingsEntity>(
         docRef as DocumentReference<
           PlatformSettingsEntity,
           PlatformSettingsEntity
         >,
-        settings,
+        { ...sanitizedSettings, updatedAt: serverTimestamp() },
         { merge: true },
       );
     },
@@ -529,7 +575,7 @@ const useAdminDbOperations = (db: Firestore) => {
   return {
     fetchOrders,
     fetchDrivers,
-    fetchPlatformOverview,
+    watchPlatformOverview,
     fetchPayments,
     updatePlatformSettings,
     fetchPlatformSettings,
@@ -553,7 +599,7 @@ export const useDbOperations = () => {
   const {
     fetchOrders,
     fetchDrivers,
-    fetchPlatformOverview,
+    watchPlatformOverview,
     fetchPayments,
     updatePlatformSettings,
     fetchPlatformSettings,
@@ -569,10 +615,10 @@ export const useDbOperations = () => {
     updateDriver: updateDriver,
     getDriver,
     updateOrderStatus: updateOrderStatus,
-    updatePlatformSettings,
+    updatePlatformSettings: updatePlatformSettings,
     fetchOrders,
     fetchDrivers,
-    fetchPlatformOverview,
+    watchPlatformOverview,
     fetchPayments,
     fetchPlatformSettings,
   };

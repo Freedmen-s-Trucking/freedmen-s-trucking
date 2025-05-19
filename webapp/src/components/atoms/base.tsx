@@ -1,5 +1,5 @@
 import { HTMLMotionProps, motion } from "motion/react";
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 // Primary Color #553A26;
 // Secondary Color #F2E7D8;
@@ -168,30 +168,95 @@ export const SecondaryButton: React.FC<
 };
 export const TextInput = React.forwardRef<
   HTMLInputElement,
-  { className?: string } & React.ComponentPropsWithoutRef<"input">
->(({ className = "", ...inputProps }, ref) => (
-  <input
-    {...inputProps}
-    className={`block w-full rounded-full border border-gray-300 bg-primary-50 p-2.5 py-3 text-secondary-950 focus:border-secondary-500 focus:ring-secondary-500 disabled:cursor-not-allowed disabled:opacity-50 ${className} text-sm`}
-    ref={ref}
-    onKeyDown={(e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        const form = e.currentTarget.form;
-        if (!form) return;
-        const index = Array.from(form).indexOf(e.currentTarget);
-        const nextElement = form.elements[index + 1];
-        if (nextElement) {
-          (nextElement as { focus?: () => void }).focus?.();
-        } else {
-          form.dispatchEvent(
-            new Event("submit", { bubbles: true, cancelable: true }),
-          );
-        }
-      }
-    }}
-  />
-));
+  {
+    onEnter?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+    className?: string;
+    endIcon?: React.ReactNode;
+    endIconShowCondition?: "always" | "onFocus" | "onHover" | "never";
+  } & React.ComponentPropsWithoutRef<"input">
+>(
+  (
+    {
+      className = "",
+      onEnter,
+      endIcon,
+      endIconShowCondition = "always",
+      ...inputProps
+    },
+    ref,
+  ) => {
+    const [canShowEndIcon, setCanShowEndIcon] = useState<boolean>(
+      endIconShowCondition === "always",
+    );
+
+    return (
+      <span className="relative">
+        <input
+          {...inputProps}
+          className={`block w-full rounded-full border border-gray-300 bg-primary-50 p-2.5 text-secondary-950 focus:border-secondary-500 focus:ring-secondary-500 disabled:cursor-not-allowed disabled:opacity-50 ${className} text-sm`}
+          onFocus={(e) => {
+            if (endIconShowCondition === "onFocus") {
+              setCanShowEndIcon(true);
+            }
+            if (inputProps.onFocus) {
+              inputProps.onFocus(e);
+            }
+          }}
+          onMouseEnter={(e) => {
+            if (endIconShowCondition === "onHover") {
+              setCanShowEndIcon(true);
+            }
+            if (inputProps.onMouseEnter) {
+              inputProps.onMouseEnter(e);
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (endIconShowCondition === "onHover") {
+              setCanShowEndIcon(false);
+            }
+            if (inputProps.onMouseLeave) {
+              inputProps.onMouseLeave(e);
+            }
+          }}
+          onBlur={(e) => {
+            if (endIconShowCondition === "onFocus") {
+              setCanShowEndIcon(false);
+            }
+            if (inputProps.onBlur) {
+              inputProps.onBlur(e);
+            }
+          }}
+          ref={ref}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              if (onEnter) {
+                onEnter(e);
+                return;
+              }
+              e.preventDefault();
+              const form = e.currentTarget.form;
+              if (!form) return;
+              const index = Array.from(form).indexOf(e.currentTarget);
+              const nextElement = form.elements[index + 1];
+              if (nextElement) {
+                (nextElement as { focus?: () => void }).focus?.();
+              } else {
+                form.dispatchEvent(
+                  new Event("submit", { bubbles: true, cancelable: true }),
+                );
+              }
+            }
+          }}
+        />
+        {endIcon && canShowEndIcon && (
+          <div className="absolute right-2 top-1/2 inline -translate-y-1/2">
+            {endIcon}
+          </div>
+        )}
+      </span>
+    );
+  },
+);
 
 export const TextArea = React.forwardRef<
   HTMLTextAreaElement,

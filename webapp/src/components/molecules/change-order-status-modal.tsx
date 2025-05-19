@@ -321,7 +321,7 @@ const GetNextActionButton = ({
           },
           ...(!!needsDeliveryPhotoAndCode && {
             deliveredOrderConfirmationImage:
-              deliveredOrderConfirmationImagePath,
+              deliveredOrderConfirmationImagePath || null,
             driverConfirmationCode: deliveryCode,
           }),
         });

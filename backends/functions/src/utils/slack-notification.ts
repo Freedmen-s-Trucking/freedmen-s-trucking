@@ -1,5 +1,4 @@
-import {isResponseError} from "up-fetch";
-import {up} from "up-fetch";
+import {isResponseError, up} from "up-fetch";
 
 const SLACK_ALERT_CHANNEL_WEBHOOK_URL = process.env.SLACK_ALERT_CHANNEL_WEBHOOK_URL;
 const postSlackMessage = up(fetch, () => ({

@@ -2,10 +2,10 @@ import {
   ApiReqExtractOrderRequestFromText,
   ApiResExtractOrderRequestFromText,
   apiResExtractOrderRequestFromText,
+  DEFAULT_PLATFORM_SETTINGS,
   LATEST_PLATFORM_SETTINGS_PATH,
   Location,
   OrderPriority,
-  PlatformSettingsEntity,
   RequiredVehicleEntity,
   type,
 } from "@freedmen-s-trucking/types";
@@ -41,9 +41,9 @@ export const AIAssistedForm: React.FC<{
     queryFn: fetchPlatformSettings,
     select: (result) => {
       return (
-        (
-          result?.data || ({ availableCities: [] } as PlatformSettingsEntity)
-        ).availableCities?.map((city) => city.viewPort) || []
+        (result?.data || DEFAULT_PLATFORM_SETTINGS).availableCities?.map(
+          (city) => city.viewPort,
+        ) || []
       );
     },
   });

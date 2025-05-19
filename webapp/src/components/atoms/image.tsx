@@ -1,10 +1,12 @@
-import { useState, useEffect, forwardRef } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { forwardRef } from "react";
+import { useStorageOperations } from "~/hooks/use-storage";
 import { isDevMode } from "~/utils/envs";
 
 interface ImageProps {
-  src: string;
   alt: string;
   width?: string;
+  src: string | { url?: string | null; storage: string | null };
   height?: string;
   placeholder?: string;
   className?: string;
@@ -25,23 +27,38 @@ export const AppImage = forwardRef<HTMLImageElement, ImageProps>(
     },
     ref,
   ) => {
-    const [currentSource, setCurrentSource] = useState(placeholder || src);
-    const [showFallback, setShowFallback] = useState(false);
+    const srcUrl = typeof src === "string" ? src : (src?.url ?? "");
+    const storagePath = typeof src === "string" ? undefined : src?.storage;
 
-    useEffect(() => {
-      const img = new window.Image();
-      img.src = src;
-      img.onload = () => {
-        setCurrentSource(src);
-        setShowFallback(false);
-      };
-      img.onerror = (e) => {
-        setShowFallback(true);
-        if (isDevMode) console.error(e);
-      };
-    }, [src]);
+    const { fetchImage: _fetchImage } = useStorageOperations();
 
-    if (showFallback && fallback) {
+    const { data: storageUrl, isError: isStorageError } = useQuery({
+      enabled: Boolean(storagePath),
+      queryKey: ["storageUrl", storagePath],
+      queryFn: () => _fetchImage(storagePath!),
+      initialData: null,
+    });
+
+    const { data: url, error } = useQuery({
+      enabled:
+        Boolean(srcUrl) || (!storageUrl && !storagePath && isStorageError),
+      queryKey: ["url", srcUrl],
+      retry: 1,
+      queryFn: async () => {
+        return new Promise<string>((resolve, reject) => {
+          const img = new window.Image();
+          img.src = srcUrl;
+          img.onload = () => resolve(img.src);
+          img.onerror = (error) => {
+            reject(error);
+            if (isDevMode) console.error(error);
+          };
+        });
+      },
+      initialData: null,
+    });
+
+    if (fallback && (!storageUrl || isStorageError || error)) {
       return (
         <span ref={ref} {...otherProps}>
           {fallback}
@@ -52,7 +69,7 @@ export const AppImage = forwardRef<HTMLImageElement, ImageProps>(
     return (
       <img
         ref={ref}
-        src={currentSource}
+        src={storageUrl || url || placeholder}
         alt={alt}
         width={width}
         height={height}

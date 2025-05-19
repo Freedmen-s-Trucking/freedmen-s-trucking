@@ -26,7 +26,7 @@ router.post("/update-fcm-token", async (c) => {
   );
 
   await userRef.update({
-    [`fcmTokenMaps.${req.deviceFingerprint}` as const]: token,
+    [`fcmTokenMap.${req.deviceFingerprint}`]: token,
   });
 
   const driverRef = (

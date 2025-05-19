@@ -32,15 +32,29 @@ router.get("/orders", async (c) => {
     const data: OrderEntity & {[key: `task-${string}`]: OrderEntity["task"]; assignedDriverIds?: string[]} =
       order.data();
     const updateOnOrder: UpdateData<OrderEntity> = {};
-
     if (!data[OrderEntityFields.assignedDriverId] && data[OrderEntityFields.assignedDriverId] !== null) {
       updateOnOrder[OrderEntityFields.assignedDriverId] = null;
     }
-
     const driverId = data.assignedDriverIds?.[0];
     if (driverId) {
       updateOnOrder[OrderEntityFields.task] = data[`task-${driverId}`];
       updateOnOrder[OrderEntityFields.assignedDriverId] = driverId;
+
+      if (
+        updateOnOrder[OrderEntityFields.task] &&
+        !updateOnOrder[OrderEntityFields.task][OrderEntityFields.photoURL] &&
+        !updateOnOrder[OrderEntityFields.task][OrderEntityFields.uploadedProfileStoragePath]
+      ) {
+        const driver = await firestore.collection(CollectionName.DRIVERS).doc(driverId).get();
+        const driverData = driver.data() as DriverEntity | undefined;
+        if (driverData?.photoURL) {
+          updateOnOrder[OrderEntityFields.task][OrderEntityFields.photoURL] = driverData?.photoURL;
+        }
+        if (driverData?.uploadedProfileStoragePath) {
+          updateOnOrder[OrderEntityFields.task][OrderEntityFields.uploadedProfileStoragePath] =
+            driverData?.uploadedProfileStoragePath;
+        }
+      }
     }
 
     if (Object.keys(updateOnOrder).length > 0) {

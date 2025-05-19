@@ -1,7 +1,7 @@
 import { useCallback, useContext } from "react";
 import { StorageCtx } from "~/provider/storage";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import { checkFalsyAndThrow } from "~/utils/functions";
+import { validateOrFail } from "~/utils/functions";
 import { type } from "arktype";
 
 const useStorage = () => {
@@ -20,8 +20,12 @@ export const useStorageOperations = () => {
    */
   const uploadOrderPackageDelivered = useCallback(
     async (orderId: string, packageCapture: File) => {
-      checkFalsyAndThrow(
+      validateOrFail(
         { orderId, packageCapture },
+        type({
+          orderId: "string",
+          packageCapture: "object",
+        }),
         "FStorageError:: The orderId or packageCapture must not be empty or null or undefined",
       );
       const orderStorageRef = ref(storage, `orders/${orderId}`);
@@ -46,8 +50,12 @@ export const useStorageOperations = () => {
    */
   const uploadProfile = useCallback(
     async (uid: string, profile: File) => {
-      checkFalsyAndThrow(
+      validateOrFail(
         { uid, profile },
+        type({
+          uid: "string",
+          profile: "File",
+        }),
         "FStorageError:: The uid or profile must not be empty or null or undefined",
       );
       const userStorageRef = ref(storage, `users/${uid}`);
@@ -79,14 +87,15 @@ export const useStorageOperations = () => {
         | "driver-license-back"
         | "driver-insurance",
     ) => {
-      checkFalsyAndThrow(
-        { uid, license, type: docType },
-        "FStorageError:: The uid or license must not be empty or null or undefined",
+      validateOrFail(
+        { uid, license, docType },
         type({
           uid: "string",
           license: "File",
-          type: "string",
+          docType:
+            "'driver-license-front' | 'driver-license-back' | 'driver-insurance'",
         }),
+        "FStorageError:: The uid or license must not be empty or null or undefined",
       );
       const userStorageRef = ref(storage, `drivers-certifications/${uid}`);
 

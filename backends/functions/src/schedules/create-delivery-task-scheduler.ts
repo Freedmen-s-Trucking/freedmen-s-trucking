@@ -31,14 +31,14 @@ import {getGeoHash, getGeohashQueryBounds} from "~src/utils/geolocation/geolocat
 interface ProximityPair {
   order1Id: string;
   order2Id: string;
-  pickupDistance: number;
-  dropoffDistance: number;
+  pickupDistanceInMeter: number;
+  dropoffDistanceInMeter: number;
 }
 
 /**
  * Finds the nearest driver to the task group.
  * @param taskGroup The task group to find the nearest driver for.
- * @returns The nearest driver or null if no driver is found.
+ * @return The nearest driver or null if no driver is found.
  */
 const findNearestDriver = async (
   taskGroup: TaskGroupEntity,
@@ -81,12 +81,12 @@ const findNearestDriver = async (
 /**
  * Groups orders into task groups based on proximity and delivery constraints
  * @param existingTaskGroups Optional list of existing task groups to add orders to
- * @returns Array of task groups
+ * @return Array of task groups
  */
 export async function groupOrdersIntoTasks(
   eligibleOrders: EntityWithID<OrderEntity>[],
   existingTaskGroups: EntityWithPartialID<TaskGroupEntity>[],
-  maxOrdersPerGroup: number = 3,
+  config: PlatformSettingsEntity["taskAssignmentConfig"],
 ): Promise<EntityWithPartialID<TaskGroupEntity>[]> {
   if (eligibleOrders.length === 0) {
     return existingTaskGroups;
@@ -110,12 +110,12 @@ export async function groupOrdersIntoTasks(
 
     for (const group of taskGroups) {
       // Skip full groups
-      if (group.data.orderIds.length >= maxOrdersPerGroup) {
+      if (group.data.orderIds.length >= config.maxOrdersPerGroup) {
         continue;
       }
 
       // Check if this order can be added to the group
-      if (await canAddOrderToGroup(order, group.data, eligibleOrders, proximityPairs)) {
+      if (await canAddOrderToGroup(order, group.data, eligibleOrders, proximityPairs, config)) {
         // Add the order to this group
         group.data.orderIds.push(order.id);
 
@@ -178,6 +178,7 @@ async function canAddOrderToGroup(
   group: TaskGroupEntity,
   allOrders: EntityWithID<OrderEntity>[],
   proximityPairs: ProximityPair[],
+  config: PlatformSettingsEntity["taskAssignmentConfig"],
 ): Promise<boolean> {
   // Get orders in this group
   const ordersInGroup = allOrders.filter((o) => group.orderIds.includes(o.id));
@@ -196,7 +197,10 @@ async function canAddOrderToGroup(
     }
 
     // Check if distances exceed 3km (3000m)
-    if (pair.pickupDistance > 3000 || pair.dropoffDistance > 3000) {
+    if (
+      pair.pickupDistanceInMeter > config.pickupsGroupDistanceInMeters ||
+      pair.dropoffDistanceInMeter > config.dropoffsGroupsDistanceInMeters
+    ) {
       return false;
     }
   }
@@ -266,8 +270,8 @@ async function calculateAllProximities(orders: EntityWithID<OrderEntity>[]): Pro
       pairs.push({
         order1Id: orders[i].id,
         order2Id: orders[j].id,
-        pickupDistance,
-        dropoffDistance,
+        pickupDistanceInMeter: pickupDistance,
+        dropoffDistanceInMeter: dropoffDistance,
       });
     }
   }
@@ -294,6 +298,15 @@ export const scheduleNewOrder = onSchedule("*/5 * * * *", async () => {
   if (eligibleOrders.length === 0) {
     return;
   }
+  const platformSettingsCollection = getFirestore().doc(LATEST_PLATFORM_SETTINGS_PATH) as DocumentReference<
+    PlatformSettingsEntity,
+    PlatformSettingsEntity
+  >;
+  const platformSettingsSnapshot = await platformSettingsCollection.get();
+  const _platformSettings = platformSettingsSnapshot.data();
+  const maxDriverRadiusInMeters =
+    _platformSettings?.taskAssignmentConfig?.maxDriverRadiusInMeters ||
+    DEFAULT_PLATFORM_SETTINGS.taskAssignmentConfig.maxDriverRadiusInMeters;
 
   const taskGroupsCollection = getFirestore().collection(CollectionName.TASK_GROUPS) as CollectionReference<
     TaskGroupEntity,
@@ -304,22 +317,17 @@ export const scheduleNewOrder = onSchedule("*/5 * * * *", async () => {
   const existingTaskGroups = taskGroupsSnapshot.docs.map((doc) => ({id: doc.id, data: doc.data()}));
 
   // Group orders into tasks
-  const updatedTaskGroups = await groupOrdersIntoTasks(eligibleOrders, existingTaskGroups);
-
-  const platformSettingsCollection = getFirestore().doc(LATEST_PLATFORM_SETTINGS_PATH) as DocumentReference<
-    PlatformSettingsEntity,
-    PlatformSettingsEntity
-  >;
-  const platformSettingsSnapshot = await platformSettingsCollection.get();
-  const platformSettings = platformSettingsSnapshot.data() || DEFAULT_PLATFORM_SETTINGS;
+  const updatedTaskGroups = await groupOrdersIntoTasks(eligibleOrders, existingTaskGroups, {
+    ...DEFAULT_PLATFORM_SETTINGS.taskAssignmentConfig,
+    ...(_platformSettings?.taskAssignmentConfig ?? {}),
+  });
 
   const promiseTasks: Promise<unknown>[] = [];
   // Update task groups in Firestore
   for (const taskGroup of updatedTaskGroups) {
     if (!taskGroup.data[TaskGroupEntityFields.driverId]) {
       // find the nearest driver for the task.
-      const configDriverRadiusInMeter = platformSettings.taskAssignmentConfig.driverRadiusInMeters;
-      const nearestDriverId = await findNearestDriver(taskGroup.data, configDriverRadiusInMeter);
+      const nearestDriverId = await findNearestDriver(taskGroup.data, maxDriverRadiusInMeters);
       if (nearestDriverId) {
         taskGroup.data[TaskGroupEntityFields.driverId] = nearestDriverId;
       }
@@ -341,9 +349,9 @@ export const scheduleNewOrder = onSchedule("*/5 * * * *", async () => {
   return;
 });
 
-///
+// /
 // DEEPSEEK
-///
+// /
 // interface TaskGroup {
 //   id: string;
 //   orderIds: string[];

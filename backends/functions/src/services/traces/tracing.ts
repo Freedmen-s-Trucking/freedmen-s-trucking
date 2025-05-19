@@ -4,7 +4,6 @@ import {TraceExporter} from "@google-cloud/opentelemetry-cloud-trace-exporter";
 import {Resource} from "@opentelemetry/resources";
 import {ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION} from "@opentelemetry/semantic-conventions";
 import {diag, DiagConsoleLogger, DiagLogLevel} from "@opentelemetry/api";
-import {WinstonInstrumentation} from "@opentelemetry/instrumentation-winston";
 
 // Configure OpenTelemetry logging
 diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.INFO);
@@ -27,7 +26,6 @@ const sdk = new NodeSDK({
         enabled: false,
       },
     }),
-    new WinstonInstrumentation(),
   ],
 });
 
@@ -35,7 +33,7 @@ const sdk = new NodeSDK({
 process.on("SIGTERM", () => {
   sdk
     .shutdown()
-    .then(() => console.log("Tracing terminated"))
+    .then(() => console.log("Tracing terminated!"))
     .catch((error) => console.error("Error terminating tracing", error))
     .finally(() => process.exit(0));
 });

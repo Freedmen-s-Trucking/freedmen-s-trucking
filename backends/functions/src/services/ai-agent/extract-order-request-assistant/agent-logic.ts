@@ -296,7 +296,7 @@ async function getPlatformSettings() {
  * Search for a pickup or dropoff location by user-provided address.
  *
  * @param query - The address to search for.
- * @returns Promise that resolves to the search results.
+ * @return Promise that resolves to the search results.
  */
 async function placeSearch(query: string): Promise<typeof placeSearchResponseType.infer> {
   const platformSettings = await getPlatformSettings();

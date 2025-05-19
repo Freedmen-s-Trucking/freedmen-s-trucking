@@ -25,7 +25,7 @@ import { useMemo, useState } from "react";
 import { BsTrainFreightFront } from "react-icons/bs";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import { GiTruck } from "react-icons/gi";
-import { HiArrowRight, HiMail, HiPhone, HiUser } from "react-icons/hi";
+import { HiArrowRight, HiMail, HiPhone } from "react-icons/hi";
 import { IoCarOutline } from "react-icons/io5";
 import { PiVanBold } from "react-icons/pi";
 import { TbCarSuv, TbTruckDelivery } from "react-icons/tb";
@@ -34,9 +34,10 @@ import { GOOGLE_MAPS_API_KEY } from "~/utils/envs";
 import { customDateFormat, formatPrice } from "~/utils/functions";
 import GetNextActionButton from "./change-order-status-modal";
 import { useServerRequest } from "~/hooks/use-server-request";
-import { PrimaryButton } from "../atoms";
+import { AppImage, PrimaryButton } from "../atoms";
 import { useQuery } from "@tanstack/react-query";
 import { isResponseError } from "up-fetch";
+import { useDbOperations } from "~/hooks/use-firestore";
 
 const driverStatusMap: Record<
   DriverOrderStatus,
@@ -320,6 +321,31 @@ const OrderDetailsView: React.FC<{
     };
   }, [pickupPosition, deliveryPosition]);
 
+  const { getUser, getDriver } = useDbOperations();
+  const { data: assignedDriver } = useQuery({
+    enabled: !!order.data[OrderEntityFields.assignedDriverId],
+    queryKey: ["driver", order.data[OrderEntityFields.assignedDriverId]],
+    queryFn: async () => {
+      const driverId = order.data[OrderEntityFields.assignedDriverId];
+      if (!driverId) {
+        return null;
+      }
+      return getDriver(driverId);
+    },
+  });
+
+  const { data: orderOwner } = useQuery({
+    enabled: !!order.data[OrderEntityFields.ownerId],
+    queryKey: ["user", order.data[OrderEntityFields.ownerId]],
+    queryFn: async () => {
+      const ownerId = order.data[OrderEntityFields.ownerId];
+      if (!ownerId) {
+        return null;
+      }
+      return getUser(ownerId);
+    },
+  });
+
   const staticMapsUrl = createStaticMapsUrl({
     apiKey: GOOGLE_MAPS_API_KEY,
     width: 512,
@@ -441,7 +467,16 @@ const OrderDetailsView: React.FC<{
               </h4>
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <HiUser className="text-gray-500" />
+                  <AppImage
+                    width="40"
+                    className="rounded-full"
+                    src={{
+                      url: orderOwner?.photoURL,
+                      storage: orderOwner?.uploadedProfileStoragePath ?? null,
+                    }}
+                    alt="Driver"
+                    fallback={<Avatar size="md" rounded />}
+                  />
                   <span>{order.data.clientName}</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -463,7 +498,15 @@ const OrderDetailsView: React.FC<{
               </h4>
               <div>
                 <div className="flex items-center gap-3 overflow-hidden">
-                  <Avatar size="md" rounded />
+                  <AppImage
+                    src={{
+                      url: assignedDriver?.photoURL,
+                      storage:
+                        assignedDriver?.uploadedProfileStoragePath ?? null,
+                    }}
+                    alt="Driver"
+                    fallback={<Avatar size="md" rounded />}
+                  />
                   <div className="flex flex-col">
                     <div className="text-xs font-medium md:text-sm">
                       {order.data?.[OrderEntityFields.task]?.driverName ||
@@ -620,20 +663,48 @@ const OrderDetailsView: React.FC<{
             </Accordion.Content>
           </Accordion.Panel>
         </Accordion>
-        {viewType === "driver" && (
-          <div className="mt-3 flex justify-end">
-            <GetNextActionButton
-              orderPath={order.path}
-              action={
-                driverStatusMap[
-                  order.data[OrderEntityFields.task]?.[
-                    OrderEntityFields.driverStatus
-                  ] || DriverOrderStatus.WAITING
-                ]
-              }
-            />
+        {order.data?.[OrderEntityFields.task]?.[
+          OrderEntityFields.deliveredOrderConfirmationImage
+        ] && (
+          <div className="my-4 grid grid-cols-1 gap-2 md:grid-cols-2">
+            <div className="rounded-lg border px-4 py-2">
+              <span className="mb-0 text-sm font-semibold">
+                Confirmation Image
+              </span>
+              <div className="mb-3 flex items-center gap-2">
+                <AppImage
+                  src={{
+                    storage:
+                      order.data?.[OrderEntityFields.task]?.[
+                        OrderEntityFields.deliveredOrderConfirmationImage
+                      ],
+                  }}
+                  alt="Confirmation Image"
+                  width="100%"
+                  height="auto"
+                />
+              </div>
+            </div>
           </div>
         )}
+
+        {viewType === "driver" &&
+          order.data[OrderEntityFields.task]?.[
+            OrderEntityFields.driverStatus
+          ] !== DriverOrderStatus.DELIVERED && (
+            <div className="mt-3 flex justify-end">
+              <GetNextActionButton
+                orderPath={order.path}
+                action={
+                  driverStatusMap[
+                    order.data[OrderEntityFields.task]?.[
+                      OrderEntityFields.driverStatus
+                    ] || DriverOrderStatus.WAITING
+                  ]
+                }
+              />
+            </div>
+          )}
         {user.info.uid === order.data[OrderEntityFields.ownerId] && (
           <GetDeliveryCode
             orderId={order.path.split("/").pop() || ""}

@@ -214,45 +214,45 @@ const notifyUserOnOrderStatusChange = async (
     });
 };
 
-const notifyDriversOnNewOrder = async (
-  before: OrderEntity | undefined,
-  after: OrderEntity | undefined,
-  orderId: string,
-) => {
-  if (!after || after.status === before?.status) {
-    return;
-  }
+// const notifyDriversOnNewOrder = async (
+//   before: OrderEntity | undefined,
+//   after: OrderEntity | undefined,
+//   orderId: string,
+// ) => {
+//   if (!after || after.status === before?.status) {
+//     return;
+//   }
 
-  const assignedDriversId = after?.[OrderEntityFields.assignedDriverId];
-  if (!assignedDriversId) {
-    return;
-  }
-  const firestore = getFirestore();
-  const driverCollection = firestore.collection(CollectionName.DRIVERS) as CollectionReference<
-    DriverEntity,
-    DriverEntity
-  >;
-  const driverSnapshot = await driverCollection.where("uid", "==", assignedDriversId).get();
-  const drivers = driverSnapshot.docs.map((doc) => doc.data());
-  const tokens = drivers.map((driver) => Object.values(driver.fcmTokenMap || {})).flat();
-  if (!tokens.length) {
-    return;
-  }
-  getMessaging()
-    .sendEachForMulticast({
-      notification: {
-        title: "New Order",
-        body: `You have a new order #${orderId.substring(0, 4)}`,
-      },
-      tokens: tokens,
-    })
-    .then((response) => {
-      console.log("Successfully sent message:", response);
-    })
-    .catch((error) => {
-      console.error("Error sending message:", error);
-    });
-};
+//   const assignedDriversId = after?.[OrderEntityFields.assignedDriverId];
+//   if (!assignedDriversId || before?.[OrderEntityFields.assignedDriverId] === assignedDriversId) {
+//     return;
+//   }
+//   const firestore = getFirestore();
+//   const driverCollection = firestore.collection(CollectionName.DRIVERS) as CollectionReference<
+//     DriverEntity,
+//     DriverEntity
+//   >;
+//   const driverSnapshot = await driverCollection.where("uid", "==", assignedDriversId).get();
+//   const drivers = driverSnapshot.docs.map((doc) => doc.data());
+//   const tokens = drivers.map((driver) => Object.values(driver.fcmTokenMap || {})).flat();
+//   if (!tokens.length) {
+//     return;
+//   }
+//   getMessaging()
+//     .sendEachForMulticast({
+//       notification: {
+//         title: "New Order",
+//         body: `You have a new order #${orderId.substring(0, 4)}`,
+//       },
+//       tokens: tokens,
+//     })
+//     .then((response) => {
+//       console.log("Successfully sent message:", response);
+//     })
+//     .catch((error) => {
+//       console.error("Error sending message:", error);
+//     });
+// };
 
 export const orderUpdateTrigger = onDocumentUpdated(`${CollectionName.ORDERS}/{orderId}`, async ({data, params}) => {
   const before = data?.before?.data?.() as OrderEntity | undefined;
@@ -262,7 +262,7 @@ export const orderUpdateTrigger = onDocumentUpdated(`${CollectionName.ORDERS}/{o
     updateOrderStatusOnTaskCompleted(before, after, orderId),
     payOutDriversOnDeliveryCompleted(before, after, orderId),
     notifyUserOnOrderStatusChange(before, after, orderId),
-    notifyDriversOnNewOrder(before, after, orderId),
+    // notifyDriversOnNewOrder(before, after, orderId),
   ];
 
   return Promise.all(waterFall);

@@ -93,7 +93,7 @@ const distanceMatrixAPIResponseType = type({
  * Get the distance between points from Google Maps
  * @param origins The starting points
  * @param destinations The end points
- * @returns The distance in meters
+ * @return The distance in meters
  */
 export const getDistanceFromGoogle = (
   origins: Coordinate[],

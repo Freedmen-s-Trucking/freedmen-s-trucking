@@ -1,5 +1,10 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import {
+  createFileRoute,
+  redirect,
+  useNavigate,
+  useRouterState,
+} from "@tanstack/react-router";
+import { useState, useEffect, useRef } from "react";
 import { Tabs, Badge } from "flowbite-react";
 import {
   MdDashboard,
@@ -26,14 +31,20 @@ import { tabTheme } from "~/utils/constants";
 
 // Mock API functions (replace with your actual API calls)
 const AdminDashboard: React.FC = () => {
-  const [activeTab, setActiveTab] = useState("overview");
+  const route = useRouterState();
+  const routeParams = new URLSearchParams(
+    decodeURIComponent(route.location.hash),
+  );
+  const activeTab = routeParams.get("tab") || "overview";
 
-  const { fetchPlatformOverview } = useDbOperations();
+  const { watchPlatformOverview } = useDbOperations();
   const [overview, setData] =
     useState<EntityWithPath<PlatformOverviewEntity> | null>(null);
 
+  const navigation = useNavigate();
+  const parentTabRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    const unsubscribe = fetchPlatformOverview((arg) =>
+    const unsubscribe = watchPlatformOverview((arg) =>
       setData(
         arg ||
           ({ data: {}, path: "" } as EntityWithPath<PlatformOverviewEntity>),
@@ -41,23 +52,40 @@ const AdminDashboard: React.FC = () => {
     );
 
     return () => unsubscribe();
-  }, [fetchPlatformOverview]);
+  }, [watchPlatformOverview]);
+
+  useEffect(() => {
+    if (parentTabRef.current) {
+      parentTabRef.current
+        .querySelector('[role="tablist"]')
+        ?.querySelector('[aria-selected="true"]')
+        ?.scrollIntoView({ behavior: "instant", block: "center" });
+    }
+  }, [parentTabRef]);
 
   const onActiveTabChange = (tabindex: number) => {
     switch (tabindex) {
       case 0:
-        setActiveTab("overview");
+        routeParams.set("tab", "overview");
         break;
       case 1:
-        setActiveTab("driverManagement");
+        routeParams.set("tab", "driverManagement");
         break;
       case 2:
-        setActiveTab("orders");
+        routeParams.set("tab", "orders");
         break;
       case 3:
-        setActiveTab("transactions");
+        routeParams.set("tab", "transactions");
+        break;
+      case 4:
+        routeParams.set("tab", "settings");
         break;
     }
+    navigation({
+      to: route.location.pathname,
+      hash: routeParams.toString(),
+      replace: true,
+    });
   };
 
   const fadeVariants = {
@@ -69,7 +97,7 @@ const AdminDashboard: React.FC = () => {
     <div className="flex min-h-screen flex-col items-center bg-gray-50 p-2">
       <AdminHeader />
 
-      <div className="w-full max-w-5xl py-6">
+      <div ref={parentTabRef} className="w-full max-w-5xl py-6">
         <Tabs
           theme={tabTheme}
           aria-label="Admin Dashboard Tabs"
@@ -78,6 +106,7 @@ const AdminDashboard: React.FC = () => {
           onActiveTabChange={onActiveTabChange}
         >
           <Tabs.Item
+            className="inline"
             title={
               <div className="flex items-center gap-2">
                 <MdDashboard className="h-5 w-5" />

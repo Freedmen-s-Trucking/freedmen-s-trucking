@@ -2,14 +2,17 @@ import { Table, Button, Modal, Spinner, Tooltip } from "flowbite-react";
 import { HiOutlineTrash } from "react-icons/hi";
 import { useDbOperations } from "~/hooks/use-firestore";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   PlaceLocation,
   LATEST_PLATFORM_SETTINGS_PATH,
+  DEFAULT_PLATFORM_SETTINGS,
 } from "@freedmen-s-trucking/types";
-import { SecondaryButton } from "~/components/atoms";
+import { SecondaryButton, TextInput } from "~/components/atoms";
 import { AddressSearchInput } from "~/components/atoms";
 import { PiPlus } from "react-icons/pi";
+import { CheckIcon } from "lucide-react";
+import { customDateFormat } from "~/utils/functions";
 
 const tableTheme = {
   root: {
@@ -51,9 +54,7 @@ const RemoveCityBtn: React.FC<{
     mutationFn: async () => {
       if (!canDeleteCity) return;
       cities.splice(removeAt, 1);
-      return updatePlatformSettings({
-        availableCities: cities,
-      });
+      return updatePlatformSettings({ availableCities: cities });
     },
     onSuccess() {
       console.log("city deleted", removeAt);
@@ -161,7 +162,7 @@ const AddCityBtn: React.FC<{ cities: PlaceLocation[] }> = ({ cities }) => {
               <AddressSearchInput
                 primaryTypes={[
                   "administrative_area_level_1",
-                  // "administrative_area_level_2",
+                  "administrative_area_level_2",
                 ]}
                 onAddressChanged={(params) => setCurrentCity(params.place)}
               />
@@ -198,8 +199,82 @@ const AddCityBtn: React.FC<{ cities: PlaceLocation[] }> = ({ cities }) => {
   );
 };
 
+const UpdateSettingField: React.FC<{
+  type: "text" | "number";
+  defaultValue: unknown;
+  fieldPath: string;
+  label: string;
+  updateSetting: (currentValue: string) => Promise<void>;
+}> = ({
+  type,
+  defaultValue,
+  fieldPath,
+  label,
+  updateSetting: _updateSetting,
+}) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [value, setValue] = useState(`${defaultValue}`);
+
+  const queryClient = useQueryClient();
+  const {
+    mutate: updateSetting,
+    isPending: isUpdateSettingPending,
+    error: updateSettingError,
+  } = useMutation({
+    mutationFn: async (currentValue: string) => {
+      if (!currentValue) return;
+      if (currentValue === `${defaultValue}`) return;
+      await _updateSetting(currentValue);
+    },
+    onSuccess: () => {
+      inputRef.current?.blur();
+      queryClient.invalidateQueries({
+        queryKey: [LATEST_PLATFORM_SETTINGS_PATH],
+      });
+    },
+    onError: (error) => {
+      console.error("Failed to update setting", error);
+    },
+  });
+
+  return (
+    <div className="inline-block w-full min-w-80 flex-1">
+      <label className="flex w-full min-w-fit max-w-md flex-row items-center justify-between text-sm font-medium text-secondary-800">
+        <span className="text-[.8125rem]">{label} :</span>
+        <TextInput
+          type={type}
+          ref={inputRef}
+          name={fieldPath}
+          aria-invalid={!!updateSettingError}
+          aria-errormessage={updateSettingError?.message}
+          endIcon={
+            <SecondaryButton
+              className="mx-0 my-0 inline border-none bg-transparent px-0 py-0"
+              isLoading={isUpdateSettingPending}
+              onClick={() => updateSetting(value)}
+            >
+              <CheckIcon className="mr-1 h-5 w-5 rounded-full border-2 border-green-900 bg-primary-50 p-[.12em] text-green-900" />
+            </SecondaryButton>
+          }
+          endIconShowCondition="onFocus"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onEnter={(e) => {
+            e.preventDefault();
+            const inputValue = e.currentTarget.value;
+            console.log(inputValue);
+            if (!inputValue) return;
+            updateSetting(inputValue);
+          }}
+          className="mx-2 inline w-[6em!important] rounded-lg border border-secondary-500 px-2 py-1 text-center text-secondary-900 focus:outline-none focus:ring-1 focus:ring-secondary-500"
+        />
+      </label>
+    </div>
+  );
+};
+
 const PlatformSettings = () => {
-  const { fetchPlatformSettings } = useDbOperations();
+  const { fetchPlatformSettings, updatePlatformSettings } = useDbOperations();
 
   const { data: settings, isLoading } = useQuery({
     queryKey: [LATEST_PLATFORM_SETTINGS_PATH],
@@ -227,12 +302,19 @@ const PlatformSettings = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-primary-700">Settings</h2>
+    <div className="space-y-6 py-4">
+      <div>
+        <h2 className="text-2xl font-bold text-primary-900">Settings</h2>
+        {settings.data?.updatedAt && (
+          <span className="text-xs text-gray-500">
+            Updated At: {customDateFormat(settings.data?.updatedAt)}
+          </span>
+        )}
+      </div>
 
-      <div className="flex flex-col items-center gap-4 overflow-x-auto rounded-lg shadow-sm">
+      <div className="flex flex-col items-center gap-4 overflow-x-auto rounded-lg">
         <div className="flex w-full items-center justify-between">
-          <h3 className="text-lg font-bold text-primary-700">
+          <h3 className="text-lg font-bold text-primary-900">
             Available Cities
           </h3>
           <AddCityBtn cities={settings.data?.availableCities ?? []} />
@@ -273,6 +355,95 @@ const PlatformSettings = () => {
           </Table>
         )}
         {!settings.data.availableCities?.length && <p>No cities found</p>}
+      </div>
+      <div className="flex flex-col items-center gap-4 overflow-x-auto rounded-lg">
+        <div className="flex w-full items-center justify-between">
+          <h3 className="text-lg font-bold text-primary-900">
+            Task Assignment Config
+          </h3>
+        </div>
+        <div className="flex w-full items-center justify-between">
+          <div className="flex flex-wrap content-stretch gap-2">
+            <UpdateSettingField
+              type="number"
+              defaultValue={
+                settings.data.taskAssignmentConfig
+                  ?.pickupsGroupDistanceInMeters ??
+                DEFAULT_PLATFORM_SETTINGS.taskAssignmentConfig
+                  .pickupsGroupDistanceInMeters
+              }
+              fieldPath="taskAssignmentConfig.pickupsGroupDistanceInMeters"
+              label="Pickups Group Distance (meters)"
+              updateSetting={(currentValue) =>
+                updatePlatformSettings({
+                  taskAssignmentConfig: {
+                    ...DEFAULT_PLATFORM_SETTINGS.taskAssignmentConfig,
+                    ...(settings.data.taskAssignmentConfig || {}),
+                    pickupsGroupDistanceInMeters: Number(currentValue),
+                  },
+                })
+              }
+            />
+            <UpdateSettingField
+              type="number"
+              defaultValue={
+                settings.data.taskAssignmentConfig
+                  ?.dropoffsGroupsDistanceInMeters ??
+                DEFAULT_PLATFORM_SETTINGS.taskAssignmentConfig
+                  .dropoffsGroupsDistanceInMeters
+              }
+              fieldPath="taskAssignmentConfig.dropoffsGroupsDistanceInMeters"
+              label="Dropoffs Group Distance (meters)"
+              updateSetting={(currentValue) =>
+                updatePlatformSettings({
+                  taskAssignmentConfig: {
+                    ...DEFAULT_PLATFORM_SETTINGS.taskAssignmentConfig,
+                    ...(settings.data.taskAssignmentConfig || {}),
+                    dropoffsGroupsDistanceInMeters: Number(currentValue),
+                  },
+                })
+              }
+            />
+            <UpdateSettingField
+              type="number"
+              defaultValue={
+                settings.data.taskAssignmentConfig?.maxDriverRadiusInMeters ??
+                DEFAULT_PLATFORM_SETTINGS.taskAssignmentConfig
+                  .maxDriverRadiusInMeters
+              }
+              fieldPath="taskAssignmentConfig.maxDriverRadiusInMeters"
+              label="Max Driver Radius (meters)"
+              updateSetting={(currentValue) =>
+                updatePlatformSettings({
+                  taskAssignmentConfig: {
+                    ...DEFAULT_PLATFORM_SETTINGS.taskAssignmentConfig,
+                    ...(settings.data.taskAssignmentConfig || {}),
+                    maxDriverRadiusInMeters: Number(currentValue),
+                  },
+                })
+              }
+            />
+
+            <UpdateSettingField
+              type="number"
+              defaultValue={
+                settings.data.taskAssignmentConfig?.maxOrdersPerGroup ??
+                DEFAULT_PLATFORM_SETTINGS.taskAssignmentConfig.maxOrdersPerGroup
+              }
+              fieldPath="taskAssignmentConfig.maxOrdersPerGroup"
+              label="Max Orders per Group"
+              updateSetting={(currentValue) =>
+                updatePlatformSettings({
+                  taskAssignmentConfig: {
+                    ...DEFAULT_PLATFORM_SETTINGS.taskAssignmentConfig,
+                    ...(settings.data.taskAssignmentConfig || {}),
+                    maxOrdersPerGroup: Number(currentValue),
+                  },
+                })
+              }
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

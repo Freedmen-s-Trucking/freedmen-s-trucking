@@ -26,8 +26,8 @@ export const userEntity = type({
   lastName: "string",
   email: "string | null",
   phoneNumber: "string | null",
-  photoURL: "string | null",
   birthDate: dateStringOrTimestampType.optional(),
+  photoURL: "string | null",
   uploadedProfileStoragePath: type("string | null").optional(),
   isEmailVerified: "boolean",
   isPhoneNumberVerified: "boolean",
@@ -89,11 +89,13 @@ export type DriverEntity = typeof driverEntity.infer;
 export const platformSettingsEntity = type({
   availableCities: placeLocationType.array().or("null"),
   taskAssignmentConfig: {
-    driverRadiusInMeters: "number",
-    pickupRadiusInMeters: "number",
-    dropoffRadiusInMeters: "number",
+    maxDriverRadiusInMeters: "number",
+    pickupsGroupDistanceInMeters: "number",
+    dropoffsGroupsDistanceInMeters: "number",
     maxOrdersPerGroup: "number",
   },
+  updatedAt: dateStringOrTimestampType.optional(),
+  "+": "delete",
 });
 export type PlatformSettingsEntity = typeof platformSettingsEntity.infer;
 
@@ -247,6 +249,8 @@ export enum OrderEntityFields {
   distanceMeasurement = "distanceMeasurement",
   driverId = "driverId",
   createdAt = "createdAt",
+  photoURL = "photoURL",
+  uploadedProfileStoragePath = "uploadedProfileStoragePath",
   deliveryFee = "deliveryFee",
   updatedAt = "updatedAt",
   paymentRef = "paymentRef",
@@ -279,6 +283,8 @@ const orderTaskType = type({
   [OrderEntityFields.driverId]: "string",
   [OrderEntityFields.driverName]: "string",
   [OrderEntityFields.driverEmail]: "string",
+  [OrderEntityFields.photoURL]: "string | null",
+  [OrderEntityFields.uploadedProfileStoragePath]: type("string | null").optional(),
   [OrderEntityFields.driverPhone]: "string",
   [OrderEntityFields.deliveryFee]: "number",
   [OrderEntityFields.payoutPaymentRef]: type("string").optional(),
@@ -338,7 +344,9 @@ export const taskGroupEntity = type({
         OrderEntityFields.assignedDriverId,
         OrderEntityFields.status
       )
-      .and({ "+": "delete" }),
+      .merge({
+        "+": "delete",
+      }),
   },
   [TaskGroupEntityFields.status]: type.valueOf(TaskGroupStatus),
   [TaskGroupEntityFields.createdAt]: dateStringOrTimestampType,

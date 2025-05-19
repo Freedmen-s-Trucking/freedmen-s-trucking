@@ -1,8 +1,8 @@
-import { ArkErrors, Type } from "arktype";
 import {
   DateStringOrTimestamp,
   DriverEntity,
   VerificationStatus,
+  type,
 } from "@freedmen-s-trucking/types";
 import { Timestamp } from "firebase/firestore";
 import {
@@ -12,25 +12,33 @@ import {
 } from "flowbite-react";
 import { modalTheme, tabTheme } from "./constants";
 
-export function checkFalsyAndThrow(
-  paramsToCheck: Record<string, unknown>,
+// Recursively remove undefined values
+function removeUndefinedDeep(obj: unknown): unknown {
+  if (obj === null || typeof obj !== "object") {
+    return obj;
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(removeUndefinedDeep);
+  }
+
+  return Object.fromEntries(
+    Object.entries(obj)
+      .filter(([, value]) => value !== undefined)
+      .map(([key, value]) => [key, removeUndefinedDeep(value)]),
+  );
+}
+
+export function validateOrFail<T extends Record<string, unknown>>(
+  paramsToCheck: T,
+  schema: type,
   traceRef?: string,
-  schema?: Type,
-) {
-  if (schema) {
-    const res = schema(paramsToCheck);
-    if (res instanceof ArkErrors) {
-      throw new Error(`${traceRef || ""}:: ${res.summary}`);
-    }
-    return;
+): T {
+  const res = schema(removeUndefinedDeep(paramsToCheck));
+  if (res instanceof type.errors) {
+    throw new Error(`${traceRef || ""}:: ${res.summary}`);
   }
-  for (const [key, valueProvided] of Object.entries(paramsToCheck)) {
-    if (!valueProvided || Object(valueProvided).length === 0) {
-      throw new Error(
-        `${traceRef || ""}:: Unexpected falsy parameters ${JSON.stringify([key, valueProvided], null, " ")}`,
-      );
-    }
-  }
+  return paramsToCheck;
 }
 
 /**
