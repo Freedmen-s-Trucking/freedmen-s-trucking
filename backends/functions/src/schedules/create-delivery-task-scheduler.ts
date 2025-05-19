@@ -13,6 +13,7 @@ import {
   LATEST_PLATFORM_SETTINGS_PATH,
   PlatformSettingsEntity,
   DEFAULT_PLATFORM_SETTINGS,
+  VerificationStatus,
 } from "@freedmen-s-trucking/types";
 import {getDistanceFromGoogle} from "~src/utils/order";
 import {
@@ -22,6 +23,7 @@ import {
   UpdateData,
   DocumentReference,
   QueryDocumentSnapshot,
+  Filter,
 } from "firebase-admin/firestore";
 import {getGeoHash, getGeohashQueryBounds} from "~src/utils/geolocation/geolocation_utils";
 
@@ -58,7 +60,32 @@ const findNearestDriver = async (
   const driverSnapshots = await Promise.all(
     bounds.map(([start, end]) =>
       driverCollection
-        // .where("activeTasks" satisfies keyof DriverEntity, "==", 0)
+        .where(
+          Filter.or(
+            Filter.where(
+              "verificationStatus" satisfies keyof UpdateData<DriverEntity>,
+              "==",
+              "verified" satisfies VerificationStatus,
+            ),
+            Filter.and(
+              Filter.where(
+                "verificationStatus" satisfies keyof UpdateData<DriverEntity>,
+                "==",
+                "pending" satisfies VerificationStatus,
+              ),
+              Filter.where(
+                "driverLicenseVerificationStatus" satisfies keyof UpdateData<DriverEntity>,
+                "==",
+                "verified" satisfies VerificationStatus,
+              ),
+              Filter.where(
+                "driverInsuranceVerificationStatus" satisfies keyof UpdateData<DriverEntity>,
+                "==",
+                "verified" satisfies VerificationStatus,
+              ),
+            ),
+          ),
+        )
         .orderBy("latestLocation.geoHash" satisfies keyof UpdateData<DriverEntity>)
         .startAt(start)
         .endAt(end)
