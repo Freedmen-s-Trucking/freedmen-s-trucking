@@ -62,7 +62,6 @@ export const priceRange = type({
 
 export const placeLocationType = locationType.and({
   placeId: "string",
-  priceMap: priceRange.array().optional(),
   viewPort: {
     low: coordinateType,
     high: coordinateType,

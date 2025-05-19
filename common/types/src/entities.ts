@@ -9,6 +9,7 @@ import {
   verificationStatus,
   coordinateType,
   dateStringOrTimestampType,
+  priceRange,
 } from "./types.js";
 
 export const withdrawalEntity = type({
@@ -87,7 +88,12 @@ export const driverEntity = userEntity.and({
 export type DriverEntity = typeof driverEntity.infer;
 
 export const platformSettingsEntity = type({
-  availableCities: placeLocationType.array().or("null"),
+  availableCities: placeLocationType
+    .and({
+      priceMap: priceRange.array().or("null").optional(),
+    })
+    .array()
+    .or("null"),
   taskAssignmentConfig: {
     maxDriverRadiusInMeters: "number",
     pickupsGroupDistanceInMeters: "number",
@@ -284,7 +290,8 @@ const orderTaskType = type({
   [OrderEntityFields.driverName]: "string",
   [OrderEntityFields.driverEmail]: "string",
   [OrderEntityFields.photoURL]: "string | null",
-  [OrderEntityFields.uploadedProfileStoragePath]: type("string | null").optional(),
+  [OrderEntityFields.uploadedProfileStoragePath]:
+    type("string | null").optional(),
   [OrderEntityFields.driverPhone]: "string",
   [OrderEntityFields.deliveryFee]: "number",
   [OrderEntityFields.payoutPaymentRef]: type("string").optional(),

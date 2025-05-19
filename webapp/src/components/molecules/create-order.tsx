@@ -1,8 +1,8 @@
 import {
+  DEFAULT_PLATFORM_SETTINGS,
   LATEST_PLATFORM_SETTINGS_PATH,
   OrderPriority,
   PlaceLocation,
-  PlatformSettingsEntity,
   ProductWithQuantity,
 } from "@freedmen-s-trucking/types";
 import { useQuery } from "@tanstack/react-query";
@@ -125,9 +125,7 @@ const ManualForm: React.FC<{
     queryKey: [LATEST_PLATFORM_SETTINGS_PATH],
     queryFn: fetchPlatformSettings,
     select: (result) => {
-      return (
-        result?.data || ({ availableCities: [] } as PlatformSettingsEntity)
-      );
+      return result?.data || DEFAULT_PLATFORM_SETTINGS;
     },
   });
 
