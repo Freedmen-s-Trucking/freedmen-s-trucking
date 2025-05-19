@@ -1,5 +1,15 @@
-import { OrderPriority } from "./entities.js";
+import { OrderPriority, PlatformSettingsEntity } from "./entities.js";
 import { VehicleInfo } from "./types.js";
+
+export const DEFAULT_PLATFORM_SETTINGS: PlatformSettingsEntity = {
+  availableCities: null,
+  taskAssignmentConfig: {
+    driverRadiusInMeters: 1000,
+    pickupRadiusInMeters: 1000,
+    dropoffRadiusInMeters: 3000,
+    maxOrdersPerGroup: 3,
+  },
+};
 
 /**
  * Default platform fee percent to apply on each order.
@@ -66,7 +76,7 @@ export enum CollectionName {
   TMP_ORDERS = "tmpOrders",
   ORDERS = "orders",
   ORDERS_PRIVATE_DETAILS = "ordersPrivateDetails",
-  TASKS = "tasks",
+  TASK_GROUPS = "task_groups",
   PAYMENTS = "payments",
   PLATFORM_OVERVIEW = "platformOverviews",
   PLATFORM_SETTINGS = "platformSettings",

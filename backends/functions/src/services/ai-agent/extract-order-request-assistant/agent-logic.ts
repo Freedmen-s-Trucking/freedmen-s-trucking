@@ -15,7 +15,7 @@ import {
 } from "openai/resources/chat";
 import {DocumentSnapshot, getFirestore} from "firebase-admin/firestore";
 import {fetchPlacesFromGoogle} from "./geocoding-functions";
-import {trace, SpanStatusCode, context} from "@opentelemetry/api";
+import {trace, SpanStatusCode, Exception} from "@opentelemetry/api";
 
 const tracer = trace.getTracer("order-tracer");
 
@@ -68,109 +68,208 @@ export const sendMessage = async (
   recursionDepth = 0,
   maxRecursionDepth = 2,
 ): Promise<{response: string | null; threadId: string; chatId: string}> => {
-  if (recursionDepth > maxRecursionDepth) throw new Error("Too many tool call recursions");
+  return tracer.startActiveSpan("send-message", async (span) => {
+    try {
+      span.setAttributes({
+        "message.role": message.role,
+        "message.length": message.content?.length || 0,
+        "thread.id": config.threadId,
+        "recursion.depth": recursionDepth,
+      });
 
-  const messages: Message[] =
-    _internal_history && _internal_history.length > 0
-      ? _internal_history
-      : [{role: "developer", content: orderDataExtractionSystemPrompt}];
-
-  // Load history from DB if needed.
-  if (!config.reset && (!_internal_history || _internal_history.length === 0)) {
-    const tempOrderHistory: Message[] = caches.historyCache[config.threadId]?.history || [];
-    for (const m of tempOrderHistory) {
-      messages.push(m);
-      if ((m as Message).messageId === message.messageId) {
-        break;
+      if (recursionDepth > maxRecursionDepth) {
+        throw new Error("Too many tool call recursions");
       }
-    }
-  }
 
-  messages.push(message);
-  const response = await openAiClient.chat.completions.create({
-    model: "gpt-4o",
-    messages: messages.map((m) => {
-      const res = Object.assign({}, m);
-      delete res.messageId;
-      return res;
-    }),
-    temperature: 0.2,
-    tools: [
-      {
-        type: "function",
-        function: {
-          name: "search_place",
-          description: "Search for a pickup or dropoff location by user-provided address.",
-          parameters: {
-            type: "object",
-            properties: {
-              query: {type: "string", description: "The place to search for."},
-            },
-            required: ["query"],
-          },
-        },
-      },
-    ],
-    response_format: {
-      type: "json_schema",
-      json_schema: {
-        name: "OrderRequest",
-        description: "Order request details",
-        // strict: true,
-        schema: DeliveryOrderSchema as Record<string, unknown>,
-      },
-    },
-  });
+      const messages: Message[] =
+        _internal_history && _internal_history.length > 0
+          ? _internal_history
+          : [{role: "developer", content: orderDataExtractionSystemPrompt}];
 
-  const responseMessage = response.choices[0].message;
-
-  messages.push(Object.assign({messageId: response.id}, responseMessage));
-
-  if (responseMessage.tool_calls?.length) {
-    const toolResponseMessages: ChatCompletionToolMessageParam[] = [];
-    for (const toolCall of responseMessage.tool_calls) {
-      let toolResponseMessage: ChatCompletionToolMessageParam;
-      switch (toolCall.function.name) {
-        case "search_place": {
-          let parsedArgs;
+      // Load history from cache if needed
+      if (!config.reset && (!_internal_history || _internal_history.length === 0)) {
+        await tracer.startActiveSpan("load-history", async (historySpan) => {
           try {
-            parsedArgs = JSON.parse(toolCall.function.arguments);
-          } catch (error) {
-            throw new Error(`Invalid JSON from toolCall: ${String(error)}`);
+            const tempOrderHistory: Message[] = caches.historyCache[config.threadId]?.history || [];
+            for (const m of tempOrderHistory) {
+              messages.push(m);
+              if ((m as Message).messageId === message.messageId) {
+                break;
+              }
+            }
+            historySpan.setAttribute("history.items", tempOrderHistory.length);
+          } finally {
+            historySpan.end();
           }
-          const args = type({query: "string"})(parsedArgs);
-          if (args instanceof type.errors) {
-            throw {...new Error(), ...args};
-          }
-          const {query} = args;
-          const result = await placeSearch(query);
-          toolResponseMessage = {role: "tool", content: JSON.stringify(result), tool_call_id: toolCall.id};
-          break;
-        }
-        default: {
-          toolResponseMessage = {role: "tool", content: "tool not found.", tool_call_id: toolCall.id};
-          break;
-        }
+        });
       }
-      toolResponseMessages.push(toolResponseMessage);
-    }
-    const lastToolResponseMessage = toolResponseMessages.pop()!;
-    return sendMessage(lastToolResponseMessage, config, messages.concat(toolResponseMessages), recursionDepth + 1);
-  }
 
-  // Save history to DB
-  if (config.threadId) {
-    caches.historyCache[config.threadId] ??= {history: [], lastUpdated: 0};
-    caches.historyCache[config.threadId].history = messages.slice(1) as unknown as TempOrderEntity["history"];
-    caches.historyCache[config.threadId].lastUpdated = Date.now();
-    // remove old history older than 5 minutes
-    for (const {lastUpdated} of Object.values(caches.historyCache)) {
-      if (Date.now() - lastUpdated > TEN_MINUTES_MILLIS) {
-        delete caches.historyCache[config.threadId];
+      messages.push(message);
+
+      // Call OpenAI API
+      const response = await tracer.startActiveSpan("openai-chat", async (openaiSpan) => {
+        try {
+          const result = await openAiClient.chat.completions.create({
+            model: "gpt-4o",
+            messages: messages.map((m) => {
+              const res = Object.assign({}, m);
+              delete res.messageId;
+              return res;
+            }),
+            temperature: 0.2,
+            tools: [
+              {
+                type: "function",
+                function: {
+                  name: "search_place",
+                  description: "Search for a pickup or dropoff location by user-provided address.",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      query: {type: "string", description: "The place to search for."},
+                    },
+                    required: ["query"],
+                  },
+                },
+              },
+            ],
+            response_format: {
+              type: "json_schema",
+              json_schema: {
+                name: "OrderRequest",
+                description: "Order request details",
+                schema: DeliveryOrderSchema as Record<string, unknown>,
+              },
+            },
+          });
+
+          openaiSpan.setAttributes({
+            "openai.model": "gpt-4o",
+            "openai.response_id": response.id,
+            "openai.usage.prompt_tokens": response.usage?.prompt_tokens,
+            "openai.usage.completion_tokens": response.usage?.completion_tokens,
+          });
+
+          return result;
+        } finally {
+          openaiSpan.end();
+        }
+      });
+
+      const responseMessage = response.choices[0].message;
+      messages.push(Object.assign({messageId: response.id}, responseMessage));
+
+      // Handle tool calls
+      if (responseMessage.tool_calls?.length) {
+        const toolResponseMessages: ChatCompletionToolMessageParam[] = [];
+
+        for (const toolCall of responseMessage.tool_calls) {
+          await tracer.startActiveSpan("process-tool-call", async (toolSpan) => {
+            try {
+              toolSpan.setAttributes({
+                "tool.name": toolCall.function.name,
+                "tool.call_id": toolCall.id,
+              });
+
+              let toolResponseMessage: ChatCompletionToolMessageParam;
+              switch (toolCall.function.name) {
+                case "search_place": {
+                  const parsedArgs = await tracer.startActiveSpan("parse-tool-args", async (parseSpan) => {
+                    try {
+                      return JSON.parse(toolCall.function.arguments);
+                    } catch (error) {
+                      parseSpan.recordException(error as Exception);
+                      throw new Error(`Invalid JSON from toolCall: ${String(error)}`);
+                    } finally {
+                      parseSpan.end();
+                    }
+                  });
+
+                  const args = type({query: "string"})(parsedArgs);
+                  if (args instanceof type.errors) {
+                    throw {...new Error(), ...args};
+                  }
+
+                  const placeResult = await tracer.startActiveSpan("place-search", async (searchSpan) => {
+                    try {
+                      const result = await placeSearch(args.query);
+                      searchSpan.setAttribute("place.results", result.availableZones.length);
+                      return result;
+                    } finally {
+                      searchSpan.end();
+                    }
+                  });
+
+                  toolResponseMessage = {
+                    role: "tool",
+                    content: JSON.stringify(placeResult),
+                    tool_call_id: toolCall.id,
+                  };
+                  break;
+                }
+                default: {
+                  toolResponseMessage = {
+                    role: "tool",
+                    content: "tool not found.",
+                    tool_call_id: toolCall.id,
+                  };
+                  break;
+                }
+              }
+
+              toolResponseMessages.push(toolResponseMessage);
+            } finally {
+              toolSpan.end();
+            }
+          });
+        }
+
+        const lastToolResponseMessage = toolResponseMessages.pop()!;
+        return sendMessage(
+          lastToolResponseMessage,
+          config,
+          messages.concat(toolResponseMessages),
+          recursionDepth + 1,
+          maxRecursionDepth,
+        );
       }
+
+      // Update cache
+      if (config.threadId) {
+        await tracer.startActiveSpan("update-cache", async (cacheSpan) => {
+          try {
+            caches.historyCache[config.threadId] ??= {history: [], lastUpdated: 0};
+            caches.historyCache[config.threadId].history = messages.slice(1) as unknown as TempOrderEntity["history"];
+            caches.historyCache[config.threadId].lastUpdated = Date.now();
+
+            // Clean old cache entries
+            for (const [threadId, {lastUpdated}] of Object.entries(caches.historyCache)) {
+              if (Date.now() - lastUpdated > TEN_MINUTES_MILLIS) {
+                delete caches.historyCache[threadId];
+              }
+            }
+          } finally {
+            cacheSpan.end();
+          }
+        });
+      }
+
+      return {
+        response: responseMessage.content,
+        threadId: config.threadId,
+        chatId: response.id,
+      };
+    } catch (error) {
+      span.recordException(error as Exception);
+      span.setStatus({
+        code: SpanStatusCode.ERROR,
+        message: "Failed to send message",
+      });
+      throw error;
+    } finally {
+      span.end();
     }
-  }
-  return {response: responseMessage.content, threadId: config.threadId, chatId: response.id};
+  });
 };
 
 /**

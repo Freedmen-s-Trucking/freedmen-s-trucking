@@ -347,7 +347,7 @@ export const useComputeDeliveryEstimation = (
       const route = data[0];
       const durationInSeconds = parseInt(route.duration);
       return {
-        distanceMeasurement: DistanceMeasurement.OSRM_FASTEST_ROUTE,
+        distanceMeasurement: DistanceMeasurement.GOOGLE_DISTANCE_MATRIX,
         distanceInMiles: metersToMiles(route.distanceMeters),
         durationInSeconds: isNaN(durationInSeconds) ? null : durationInSeconds,
       };

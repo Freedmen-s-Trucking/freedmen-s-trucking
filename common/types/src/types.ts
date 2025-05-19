@@ -88,6 +88,7 @@ export type AccountType = typeof accountTypeType.infer;
 
 export type EntityWithPath<T> = { path: string; data: T };
 export type EntityWithID<T> = { id: string; data: T };
+export type EntityWithPartialID<T> = { id: string | null; data: T };
 
 export const extractedDriverInsuranceDetails = type({
   driver_full_name: "string",

@@ -88,6 +88,12 @@ export type DriverEntity = typeof driverEntity.infer;
 
 export const platformSettingsEntity = type({
   availableCities: placeLocationType.array().or("null"),
+  taskAssignmentConfig: {
+    driverRadiusInMeters: "number",
+    pickupRadiusInMeters: "number",
+    dropoffRadiusInMeters: "number",
+    maxOrdersPerGroup: "number",
+  },
 });
 export type PlatformSettingsEntity = typeof platformSettingsEntity.infer;
 
@@ -137,6 +143,12 @@ export enum OrderStatus {
   COMPLETED = "completed",
 }
 
+export enum TaskGroupStatus {
+  IDLE = "idle",
+  IN_PROGRESS = "in-progress",
+  COMPLETED = "completed",
+}
+
 export enum DriverOrderStatus {
   WAITING = "waiting",
   ACCEPTED = "accepted",
@@ -153,6 +165,7 @@ export enum OrderPriority {
 
 export enum DistanceMeasurement {
   OSRM_FASTEST_ROUTE = "osrm-fastest-route",
+  GOOGLE_DISTANCE_MATRIX = "google-distance-matrix",
 }
 
 export enum TempOrderEntityFields {
@@ -262,7 +275,7 @@ export const newOrderEntity = type({
 });
 export type NewOrder = typeof newOrderEntity.infer;
 
-const taskEntity = type({
+const orderTaskType = type({
   [OrderEntityFields.driverId]: "string",
   [OrderEntityFields.driverName]: "string",
   [OrderEntityFields.driverEmail]: "string",
@@ -296,12 +309,48 @@ export const orderEntity = newOrderEntity.merge({
   // }).array(),
   // [OrderEntityFields.assignedDriverIds]: "string[]",
   [OrderEntityFields.assignedDriverId]: "string | null",
-  [OrderEntityFields.task]: taskEntity.optional(),
+  [OrderEntityFields.task]: orderTaskType.optional(),
 });
 // type TaskMap = {
 //   [key: `task-${string}`]: typeof taskEntity.infer;
 // };
 export type OrderEntity = /*TaskMap & */ typeof orderEntity.infer;
+
+export enum TaskGroupEntityFields {
+  driverId = "driverId",
+  orderIds = "orderIds",
+  orderIdValueMap = "orderIdValueMap",
+  status = "status",
+  createdAt = "createdAt",
+  updatedAt = "updatedAt",
+  pickupCenterCoordinate = "pickupCenterCoordinate",
+  dropoffCenterCoordinate = "dropoffCenterCoordinate",
+  pickupCenterGeoHash = "pickupCenterGeoHash",
+  dropoffCenterGeoHash = "dropoffCenterGeoHash",
+}
+export const taskGroupEntity = type({
+  [TaskGroupEntityFields.driverId]: "string | null",
+  [TaskGroupEntityFields.orderIds]: "string[]",
+  [TaskGroupEntityFields.orderIdValueMap]: {
+    "[string]": orderEntity
+      .omit(
+        OrderEntityFields.task,
+        OrderEntityFields.assignedDriverId,
+        OrderEntityFields.status
+      )
+      .and({ "+": "delete" }),
+  },
+  [TaskGroupEntityFields.status]: type.valueOf(TaskGroupStatus),
+  [TaskGroupEntityFields.createdAt]: dateStringOrTimestampType,
+  [TaskGroupEntityFields.updatedAt]: dateStringOrTimestampType,
+  [TaskGroupEntityFields.pickupCenterCoordinate]: coordinateType,
+  [TaskGroupEntityFields.pickupCenterGeoHash]: "string",
+  [TaskGroupEntityFields.dropoffCenterCoordinate]: coordinateType,
+  [TaskGroupEntityFields.dropoffCenterGeoHash]: "string",
+  "+": "delete",
+});
+
+export type TaskGroupEntity = typeof taskGroupEntity.infer;
 
 export enum PaymentEntityFields {
   paymentIntentId = "paymentIntentId",
