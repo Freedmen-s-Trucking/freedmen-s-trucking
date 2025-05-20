@@ -166,7 +166,7 @@ const Orders: React.FC = () => {
                       setShowModal(true);
                     }}
                   >
-                    View Details
+                    <u>View Details</u>
                   </Button>
                 </Table.Cell>
                 <Table.Cell>

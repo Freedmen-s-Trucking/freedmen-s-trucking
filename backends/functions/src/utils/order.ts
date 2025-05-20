@@ -1,25 +1,14 @@
 import {
-  CollectionName,
   Coordinate,
   DriverEntity,
   FIXED_DRIVER_SERVICE_FEE_PERCENT,
   NewOrder,
-  OrderEntity,
   type,
   VehicleType,
 } from "@freedmen-s-trucking/types";
-import {
-  CollectionReference,
-  getFirestore,
-  QueryDocumentSnapshot,
-  Timestamp,
-  UpdateData,
-} from "firebase-admin/firestore";
+import {QueryDocumentSnapshot, UpdateData} from "firebase-admin/firestore";
 import {ENV_GOOGLE_MAPS_API_KEY_BACKEND} from "./envs";
 import {up} from "up-fetch";
-import {DEFAULT_DRIVER_SEARCH_RADIUS_IN_METER} from "./constants";
-import {sub} from "date-fns";
-import {getGeohashQueryBounds} from "./geolocation/geolocation_utils";
 
 type OneTimeFindRightDriversForOrderResponse = [
   (DriverEntity & {uid: string; deliveryFees: number})[],
@@ -39,11 +28,12 @@ export function onetimeFindRightDriversForOrder(
   order: NewOrder,
 ): OneTimeFindRightDriversForOrderResponse {
   const drivers = [] as (DriverEntity & {uid: string; deliveryFees: number})[];
-  const requiredVehicles = order.requiredVehicles.map((v) => ({
-    type: v.type,
-    quantity: v.quantity,
-    deliveryFees: v.fees,
-  }));
+  const requiredVehicles =
+    order.requiredVehicles?.map((v) => ({
+      type: v.type,
+      quantity: v.quantity,
+      deliveryFees: v.fees,
+    })) ?? [];
   for (const doc of snapshots) {
     const driver: DriverEntity & {uid: string} = {...doc.data(), uid: doc.id};
     if (!driver.vehicles || !driver.vehicles.length) {

@@ -179,7 +179,7 @@ const ManualForm: React.FC<{
               ...newPackages[index].estimatedDimensions,
               [dimensionName]:
                 value && type === "number" ? parseFloat(value) : value,
-            },
+            } as ProductWithQuantity["estimatedDimensions"],
           };
         } else {
           newPackages[index] = {
@@ -366,7 +366,7 @@ const ManualForm: React.FC<{
                     step={0.01}
                     name="estimatedDimensions.heightInInches"
                     id={`package-height-input-${index}`}
-                    value={`${packageProps.estimatedDimensions.heightInInches}`}
+                    value={`${packageProps.estimatedDimensions?.heightInInches}`}
                     onChange={handlePackageChange(index)}
                     className={`block w-full rounded-xl border p-3 text-center text-lg text-black placeholder:text-lg focus:border-red-400 focus:outline-none focus:ring-transparent ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
                     placeholder="Height (in)"
@@ -381,7 +381,7 @@ const ManualForm: React.FC<{
                     step={0.01}
                     name="estimatedDimensions.widthInInches"
                     id={`package-width-input-${index}`}
-                    value={`${packageProps.estimatedDimensions.widthInInches}`}
+                    value={`${packageProps.estimatedDimensions?.widthInInches}`}
                     onChange={handlePackageChange(index)}
                     className={`block w-full rounded-xl border p-3 text-center text-lg text-black placeholder:text-lg focus:border-red-400 focus:outline-none focus:ring-transparent ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
                     placeholder="Width (in)"
@@ -396,7 +396,7 @@ const ManualForm: React.FC<{
                     step={0.01}
                     name="estimatedDimensions.lengthInInches"
                     id={`package-length-input-${index}`}
-                    value={`${packageProps.estimatedDimensions.lengthInInches}`}
+                    value={`${packageProps.estimatedDimensions?.lengthInInches}`}
                     onChange={handlePackageChange(index)}
                     className={`block w-full rounded-xl border p-3 text-center text-lg text-black placeholder:text-lg focus:border-red-400 focus:outline-none focus:ring-transparent ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
                     placeholder="Length (in)"
@@ -471,7 +471,7 @@ const ManualForm: React.FC<{
           pickupLocation={pickupLocation}
           deliveryLocation={deliveryLocation}
           deliveryPriority={deliveryPriority?.value || null}
-          packages={packages}
+          packageToDeliver={packages}
           disabled={!!error}
           onOrderCreated={onOrderCreated}
           estimations={estimations || null}

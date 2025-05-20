@@ -196,10 +196,10 @@ const Transactions = () => {
                       setShowModal(true);
                     }}
                   >
-                    View Details
+                    <u>View Details</u>
                   </Button>
                 </Table.Cell>
-                <Table.Cell>
+                <Table.Cell className="min-w-32">
                   <div>{customDateFormat(transaction.data.date || null)}</div>
                   {/* <div className="text-xs text-gray-500">
                     {customDateFormat(transaction.data.date || null, "HH:mm")}
@@ -346,7 +346,7 @@ const Transactions = () => {
                     <div className="flex justify-between">
                       <span className="text-gray-500">Reference</span>
                       <span className="font-medium">
-                        {currentTransaction.data.provider.ref}
+                        {currentTransaction.data.provider.ref.slice(0, 12)}
                       </span>
                     </div>
                   </div>

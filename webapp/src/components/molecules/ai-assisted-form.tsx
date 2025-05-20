@@ -498,7 +498,7 @@ export const AIAssistedForm: React.FC<{
             pickupLocation={reqInfo.pickupLocation || null}
             deliveryLocation={reqInfo.dropoffLocation || null}
             deliveryPriority={reqInfo.urgencyLevel || null}
-            packages={reqInfo.items || []}
+            packageToDeliver={reqInfo.items || []}
             onOrderCreated={onOrderCreated}
           />
         )}

@@ -210,7 +210,6 @@ export const useGeocoding = (type: "OSRM" | "GMAP" = "OSRM") => {
     },
   });
   const { query, options } = qreq;
-  console.log({ query, options });
 
   const { data, error, isFetching } = useQuery({
     queryKey: ["reponseData", query],

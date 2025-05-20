@@ -7,7 +7,6 @@ import {
   Firestore,
   getDoc,
   getDocs,
-  increment,
   limit,
   onSnapshot,
   PartialWithFieldValue,
@@ -117,25 +116,6 @@ const useOrderDbOperations = (db: Firestore) => {
         [`${OrderEntityFields.task}.${OrderEntityFields.driverPositions}.${driverStatus}`]:
           coords,
       });
-
-      // TODO: Verify if driver tasks are updated by the backend.
-      if (driverStatus === DriverOrderStatus.DELIVERED) {
-        const docRef = doc(collection(db, CollectionName.DRIVERS), userId);
-        const docSnapshot = await getDoc(docRef);
-        if (!docSnapshot.exists()) {
-          throw new Error("Driver not found");
-        }
-        await setDoc<Partial<DriverEntity>, Partial<DriverEntity>>(
-          docRef,
-          {
-            tasksCompleted: increment(1),
-            activeTasks: increment(-1),
-          },
-          {
-            merge: true,
-          },
-        );
-      }
     },
     [db],
   );

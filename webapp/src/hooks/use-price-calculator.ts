@@ -22,7 +22,9 @@ import {
 } from "@freedmen-s-trucking/types";
 import { GOOGLE_MAPS_API_KEY } from "~/utils/envs";
 
-function getPackageVolumeInCubicFeet(pkg: ProductWithQuantity): number {
+function getPackageVolumeInCubicFeet(
+  pkg: Required<ProductWithQuantity>,
+): number {
   return (
     (pkg.estimatedDimensions.heightInInches *
       pkg.estimatedDimensions.widthInInches *
@@ -41,7 +43,7 @@ function getPackageVolumeInCubicFeet(pkg: ProductWithQuantity): number {
  * @returns The array of vehicles needed to deliver the packages
  */
 export function computeTheMinimumRequiredVehiclesAndFees(
-  packages: ProductWithQuantity[],
+  packages: Required<ProductWithQuantity>[],
   distanceInMiles: number,
   priority: OrderPriority,
 ):
@@ -374,7 +376,16 @@ export const useComputeDeliveryEstimation = (
     ],
     queryFn: () => {
       const res = computeTheMinimumRequiredVehiclesAndFees(
-        products || [],
+        products?.map((p) => ({
+          name: p.name,
+          estimatedDimensions: p.estimatedDimensions || {
+            widthInInches: 0,
+            heightInInches: 0,
+            lengthInInches: 0,
+          },
+          estimatedWeightInLbsPerUnit: p.estimatedWeightInLbsPerUnit || 0,
+          quantity: p.quantity || 0,
+        })) || [],
         distanceData?.distanceInMiles || 0,
         priority || OrderPriority.STANDARD,
       );

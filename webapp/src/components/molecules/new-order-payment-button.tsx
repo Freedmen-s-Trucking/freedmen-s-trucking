@@ -19,7 +19,7 @@ export const PaymentButton: React.FC<{
   pickupLocation: Location | null;
   deliveryLocation: Location | null;
   deliveryPriority: OrderPriority | null;
-  packages: ProductWithQuantity[];
+  packageToDeliver: ProductWithQuantity[];
   disabled: boolean;
   estimations: {
     distanceInMiles?: number | undefined;
@@ -36,7 +36,7 @@ export const PaymentButton: React.FC<{
   pickupLocation,
   deliveryLocation,
   deliveryPriority,
-  packages,
+  packageToDeliver,
 }) => {
   const { user } = useAuth();
   const [isScheduling, setIsScheduling] = useState(false);
@@ -68,7 +68,7 @@ export const PaymentButton: React.FC<{
       !pickupLocation ||
       !deliveryLocation ||
       !deliveryPriority ||
-      !packages?.length ||
+      // !packages?.length ||
       !estimations
     ) {
       return;
@@ -92,7 +92,7 @@ export const PaymentButton: React.FC<{
           latitude: +deliveryLocation.latitude || 0,
           longitude: +deliveryLocation.longitude || 0,
         },
-        products: packages,
+        packageToDeliver: packageToDeliver[0],
         priority: deliveryPriority || "standard",
         priceInUSD: +estimations.fees,
         requiredVehicles: estimations.vehicles,
@@ -108,7 +108,7 @@ export const PaymentButton: React.FC<{
     user,
     requestSignIn,
     deliveryPriority,
-    packages,
+    packageToDeliver,
     estimations,
     isScheduling,
   ]);

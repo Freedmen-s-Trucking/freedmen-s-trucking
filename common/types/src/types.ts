@@ -20,12 +20,15 @@ export type AuthMethod = typeof authMethodType.infer;
 
 export const productType = type({
   name: "string",
-  estimatedDimensions: {
-    widthInInches: "number > 0",
-    heightInInches: "number > 0",
-    lengthInInches: "number > 0",
-  },
-  estimatedWeightInLbsPerUnit: "number > 0",
+  estimatedDimensions: [
+    {
+      widthInInches: "number > 0",
+      heightInInches: "number > 0",
+      lengthInInches: "number > 0",
+    },
+    "?",
+  ],
+  estimatedWeightInLbsPerUnit: ["number > 0", "?"],
 });
 export type Product = typeof productType.infer;
 
@@ -55,10 +58,12 @@ export const coordinateType = locationType.omit("address");
 export type Coordinate = typeof coordinateType.infer;
 
 export const priceRange = type({
-  minMiles: "number",
-  maxMiles: "number",
-  price: "number",
+  minMiles: "number | null",
+  maxMiles: "number | null",
+  customerFees: "number",
+  driverFees: "number",
 });
+export type PriceRange = typeof priceRange.infer;
 
 export const placeLocationType = locationType.and({
   placeId: "string",

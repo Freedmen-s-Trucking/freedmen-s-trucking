@@ -259,8 +259,8 @@ export const orderUpdateTrigger = onDocumentUpdated(`${CollectionName.ORDERS}/{o
   const after = data?.after?.data?.() as OrderEntity | undefined;
   const orderId = params.orderId;
   const waterFall = [
-    updateOrderStatusOnTaskCompleted(before, after, orderId),
-    payOutDriversOnDeliveryCompleted(before, after, orderId),
+    // updateOrderStatusOnTaskCompleted(before, after, orderId),
+    // payOutDriversOnDeliveryCompleted(before, after, orderId),
     notifyUserOnOrderStatusChange(before, after, orderId),
     // notifyDriversOnNewOrder(before, after, orderId),
   ];

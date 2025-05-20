@@ -14,6 +14,7 @@ import {
   PlatformSettingsEntity,
   DEFAULT_PLATFORM_SETTINGS,
   VerificationStatus,
+  OrderStatus,
 } from "@freedmen-s-trucking/types";
 import {getDistanceFromGoogle} from "~src/utils/order";
 import {
@@ -114,17 +115,29 @@ export async function groupOrdersIntoTasks(
   eligibleOrders: EntityWithID<OrderEntity>[],
   existingTaskGroups: EntityWithPartialID<TaskGroupEntity>[],
   config: PlatformSettingsEntity["taskAssignmentConfig"],
-): Promise<EntityWithPartialID<TaskGroupEntity>[]> {
+): Promise<{taskGroups: EntityWithPartialID<TaskGroupEntity>[]; assignedOrderIds: Set<string>}> {
   if (eligibleOrders.length === 0) {
-    return existingTaskGroups;
+    return {taskGroups: existingTaskGroups, assignedOrderIds: new Set()};
   }
 
   // Copy existing task groups to avoid mutation
   const taskGroups = [...existingTaskGroups];
 
-  // Calculate distances between all orders
-  const proximityPairs = await calculateAllProximities(eligibleOrders);
+  const alreadyAssignedOrder = taskGroups.flatMap((group) =>
+    Object.entries(group.data.orderIdValueMap).map(([id, order]) => ({
+      id,
+      data: {
+        ...order,
+        [OrderEntityFields.assignedDriverId]: group.data[TaskGroupEntityFields.driverId],
+        [OrderEntityFields.status]: OrderStatus.TASKS_ASSIGNED,
+      },
+    })),
+  );
 
+  // Calculate distances between all orders
+  const proximityPairs = await calculateAllProximities([...eligibleOrders, ...alreadyAssignedOrder]);
+
+  const assignedOrderIds = new Set<string>();
   // First try to add orders to existing groups
   for (const order of eligibleOrders) {
     // Check if order has already been assigned to a group
@@ -145,6 +158,7 @@ export async function groupOrdersIntoTasks(
       if (await canAddOrderToGroup(order, group.data, eligibleOrders, proximityPairs, config)) {
         // Add the order to this group
         group.data.orderIds.push(order.id);
+        assignedOrderIds.add(order.id);
 
         // Recalculate center coordinates for the group
         const groupOrders = eligibleOrders.filter((o) => group.data.orderIds.includes(o.id));
@@ -168,6 +182,7 @@ export async function groupOrdersIntoTasks(
 
     // If couldn't add to existing group, create a new one
     if (!addedToExistingGroup) {
+      assignedOrderIds.add(order.id);
       taskGroups.push({
         id: null,
         data: {
@@ -194,7 +209,7 @@ export async function groupOrdersIntoTasks(
     }
   }
 
-  return taskGroups;
+  return {taskGroups, assignedOrderIds};
 }
 
 /**
@@ -350,8 +365,11 @@ export const scheduleNewOrder = onSchedule("*/5 * * * *", async () => {
   });
 
   const promiseTasks: Promise<unknown>[] = [];
+  updatedTaskGroups.assignedOrderIds.forEach((orderId) => {
+    promiseTasks.push(orderCollection.doc(orderId).update({status: OrderStatus.TASKS_ASSIGNED}));
+  });
   // Update task groups in Firestore
-  for (const taskGroup of updatedTaskGroups) {
+  for (const taskGroup of updatedTaskGroups.taskGroups) {
     if (!taskGroup.data[TaskGroupEntityFields.driverId]) {
       // find the nearest driver for the task.
       const nearestDriverId = await findNearestDriver(taskGroup.data, maxDriverRadiusInMeters);

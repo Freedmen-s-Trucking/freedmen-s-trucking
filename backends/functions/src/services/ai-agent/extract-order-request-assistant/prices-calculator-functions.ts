@@ -15,7 +15,7 @@ import {
 } from "@freedmen-s-trucking/types";
 import {up} from "up-fetch";
 
-function getPackageVolumeInCubicFeet(pkg: ProductWithQuantity): number {
+function getPackageVolumeInCubicFeet(pkg: Required<ProductWithQuantity>): number {
   return (
     (pkg.estimatedDimensions.heightInInches *
       pkg.estimatedDimensions.widthInInches *
@@ -34,7 +34,7 @@ function getPackageVolumeInCubicFeet(pkg: ProductWithQuantity): number {
  * @return The array of vehicles needed to deliver the packages
  */
 export function computeTheMinimumRequiredVehiclesAndFees(
-  packages: ProductWithQuantity[],
+  packages: Required<ProductWithQuantity>[],
   distanceInMiles: number,
   priority: OrderPriority,
 ):
@@ -239,7 +239,12 @@ export async function computeDeliveryEstimation(params: Partial<ComputeDeliveryE
   };
 
   const data = computeTheMinimumRequiredVehiclesAndFees(
-    products || [],
+    products?.map((p) => ({
+      name: p.name,
+      estimatedDimensions: p.estimatedDimensions || {widthInInches: 0, heightInInches: 0, lengthInInches: 0},
+      estimatedWeightInLbsPerUnit: p.estimatedWeightInLbsPerUnit || 0,
+      quantity: p.quantity || 0,
+    })) || [],
     distanceData?.distanceInMiles || 0,
     priority || OrderPriority.STANDARD,
   );

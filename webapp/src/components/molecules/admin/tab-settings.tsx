@@ -4,15 +4,17 @@ import { useDbOperations } from "~/hooks/use-firestore";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import {
-  PlaceLocation,
   LATEST_PLATFORM_SETTINGS_PATH,
   DEFAULT_PLATFORM_SETTINGS,
+  PriceRange,
+  PlatformSettingsEntity,
 } from "@freedmen-s-trucking/types";
 import { SecondaryButton, TextInput } from "~/components/atoms";
 import { AddressSearchInput } from "~/components/atoms";
 import { PiPlus } from "react-icons/pi";
 import { CheckIcon } from "lucide-react";
 import { customDateFormat } from "~/utils/functions";
+import { FaTrash } from "react-icons/fa";
 
 const tableTheme = {
   root: {
@@ -42,7 +44,7 @@ const tableTheme = {
 } as const;
 
 const RemoveCityBtn: React.FC<{
-  cities: PlaceLocation[];
+  cities: Exclude<PlatformSettingsEntity["availableCities"], null>;
   removeAt: number;
 }> = ({ cities, removeAt }) => {
   const { updatePlatformSettings } = useDbOperations();
@@ -103,18 +105,30 @@ const RemoveCityBtn: React.FC<{
     </>
   );
 };
-const AddCityBtn: React.FC<{ cities: PlaceLocation[] }> = ({ cities }) => {
+const AddCityBtn: React.FC<{
+  cities: Exclude<PlatformSettingsEntity["availableCities"], null>;
+}> = ({ cities }) => {
   const { updatePlatformSettings } = useDbOperations();
 
   const queryClient = useQueryClient();
   const [canAddCity, setCanAddCity] = useState<boolean>(false);
-  const [currentCity, setCurrentCity] = useState<PlaceLocation | null>(null);
+  const [currentCity, setCurrentCity] = useState<(typeof cities)[0] | null>(
+    null,
+  );
+  const [cityPrices, setCityPrices] = useState<PriceRange[]>([
+    {
+      minMiles: 0,
+      maxMiles: null,
+      customerFees: 2,
+      driverFees: 2,
+    },
+  ]);
 
   const { mutate: addCity, isPending: isAddCityPending } = useMutation({
     mutationFn: async () => {
       if (!currentCity) return;
       return updatePlatformSettings({
-        availableCities: [...cities, currentCity],
+        availableCities: [...cities, { ...currentCity, priceMap: cityPrices }],
       });
     },
     onSuccess() {
@@ -157,41 +171,231 @@ const AddCityBtn: React.FC<{ cities: PlaceLocation[] }> = ({ cities }) => {
           <Modal.Header className="[&>button]:rounded-full [&>button]:bg-accent-400 [&>button]:p-[1px] [&>button]:text-primary-100 [&>button]:transition-all  [&>button]:duration-300  hover:[&>button]:scale-110 hover:[&>button]:text-primary-950 ">
             <span className="text-lg font-medium">Add City</span>
           </Modal.Header>
-          <Modal.Body className="flex min-h-72 flex-col justify-between gap-4 text-secondary-950">
-            <div className="mb-4">
-              <AddressSearchInput
-                primaryTypes={[
-                  "administrative_area_level_1",
-                  "administrative_area_level_2",
-                ]}
-                onAddressChanged={(params) => setCurrentCity(params.place)}
-              />
-            </div>
-            {currentCity && (
-              <div className="mb-4">
-                <div className="overflow-hidden font-medium">
-                  <p>Address: {currentCity.address}</p>
-                  <p>
-                    lat:{currentCity.latitude}; lng:{currentCity.longitude}
-                  </p>
-                  <p>
-                    bound:low [{currentCity.viewPort.low.latitude},
-                    {currentCity.viewPort.low.longitude}]
-                  </p>
-                  <p>
-                    bound:high [{currentCity.viewPort.high.latitude},
-                    {currentCity.viewPort.high.longitude}]
-                  </p>
-                </div>
-              </div>
-            )}
-            <SecondaryButton
-              onClick={currentCity ? () => addCity() : undefined}
-              isLoading={isAddCityPending}
-              className="border-secondary-500 py-2 text-secondary-950"
+          <Modal.Body>
+            <form
+              onSubmit={() => addCity()}
+              className="flex min-h-72 flex-col justify-between gap-4 text-secondary-950"
             >
-              ADD
-            </SecondaryButton>
+              <div className="mb-4 flex flex-col gap-2">
+                <AddressSearchInput
+                  primaryTypes={[
+                    "administrative_area_level_1",
+                    "administrative_area_level_2",
+                  ]}
+                  placeholder="Enter city name"
+                  onAddressChanged={(params) =>
+                    setCurrentCity(
+                      !params.place
+                        ? null
+                        : { ...params.place, priceMap: cityPrices },
+                    )
+                  }
+                />
+                {currentCity && (
+                  <div className="-mt-2 mb-4 overflow-hidden text-xs font-medium">
+                    <p>
+                      bounds [{currentCity.viewPort.low.latitude},
+                      {currentCity.viewPort.low.longitude}]
+                    </p>
+                    <p>
+                      [{currentCity.viewPort.high.latitude},
+                      {currentCity.viewPort.high.longitude}]
+                    </p>
+                    <p>
+                      center: [{currentCity.latitude}, {currentCity.longitude}]
+                    </p>
+                    <p>Address: {currentCity.address}</p>
+                  </div>
+                )}
+                <span className="-mb-1 mt-2 text-sm font-medium">
+                  Prices Map:
+                </span>
+                {cityPrices.map((price, index) => (
+                  <div
+                    key={index}
+                    className="relative flex flex-row items-stretch gap-2 text-xs"
+                  >
+                    <label className="flex flex-col text-center font-medium">
+                      <span className="flex flex-1 items-center justify-center">
+                        Min miles
+                      </span>
+                      <TextInput
+                        type="number"
+                        required
+                        step={0.01}
+                        readOnly={index + 1 < cityPrices.length}
+                        className="min-w-16"
+                        min={cityPrices[index - 1]?.maxMiles ?? 0}
+                        max={
+                          index <= 0
+                            ? 0
+                            : Math.min(
+                                cityPrices[index + 1]?.minMiles ?? Infinity,
+                                cityPrices[index]?.maxMiles || Infinity,
+                              )
+                        }
+                        value={price.minMiles ?? ""}
+                        onChange={(e) => {
+                          const val = e.target.value
+                            ? Number(e.target.value)
+                            : null;
+                          if (val !== null && isNaN(val)) return;
+                          setCityPrices((prev) => {
+                            const newPrices = [...prev];
+                            newPrices[index] = {
+                              ...price,
+                              minMiles: val,
+                            };
+                            return newPrices;
+                          });
+                        }}
+                        placeholder="Min"
+                      />
+                    </label>
+                    <label className="flex flex-col text-center font-medium">
+                      <span className="flex flex-1 items-center justify-center">
+                        Max miles
+                      </span>
+                      <TextInput
+                        type="number"
+                        min={0}
+                        className="min-w-16"
+                        required
+                        step={0.01}
+                        readOnly={index + 1 < cityPrices.length}
+                        value={price.maxMiles ?? ""}
+                        onChange={(e) => {
+                          const val = e.target.value
+                            ? Number(e.target.value)
+                            : null;
+                          if (val !== null && isNaN(val)) return;
+                          setCityPrices((prev) => {
+                            const newPrices = [...prev];
+                            newPrices[index] = {
+                              ...price,
+                              maxMiles: val,
+                            };
+                            return newPrices;
+                          });
+                        }}
+                        placeholder="Max"
+                      />
+                    </label>
+                    <label className="flex flex-col text-center font-medium">
+                      <span className="flex flex-1 items-center justify-center">
+                        Customer Fees
+                      </span>
+                      <TextInput
+                        type="number"
+                        min={cityPrices[index - 1]?.customerFees ?? 0.1}
+                        required
+                        step={0.01}
+                        className="min-w-16"
+                        value={price.customerFees || ""}
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          if (isNaN(val)) return;
+                          setCityPrices((prev) => {
+                            const newPrices = [...prev];
+                            newPrices[index] = {
+                              ...price,
+                              customerFees: val,
+                            };
+                            return newPrices;
+                          });
+                        }}
+                        placeholder="CFees"
+                      />
+                    </label>
+                    <label className="flex flex-col text-center font-medium">
+                      <span className="flex flex-1 items-center justify-center">
+                        Driver Fees
+                      </span>
+                      <TextInput
+                        type="number"
+                        min={cityPrices[index - 1]?.driverFees ?? 0.1}
+                        max={cityPrices[index]?.customerFees ?? 0.1}
+                        required
+                        step={0.01}
+                        className="min-w-16"
+                        value={price.driverFees || ""}
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          if (isNaN(val)) return;
+                          setCityPrices((prev) => {
+                            const newPrices = [...prev];
+                            newPrices[index] = {
+                              ...price,
+                              driverFees: val,
+                            };
+                            return newPrices;
+                          });
+                        }}
+                        placeholder="DFees"
+                      />
+                    </label>
+                    {index > 0 && (
+                      <div className="absolute -bottom-1 -right-5">
+                        <button
+                          className={`m-0 inline-block h-11 bg-transparent p-0 transition-all duration-100 `}
+                          onClick={() => {
+                            setCityPrices((prev) => {
+                              const newPrices = [...prev];
+                              newPrices.splice(index, 1);
+                              return newPrices;
+                            });
+                          }}
+                        >
+                          <FaTrash className="rounded-xl p-1 text-xl text-orange-500 hover:bg-gray-200 hover:text-red-600" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+                <div className="text-xs font-medium opacity-70">
+                  Note:
+                  <ul className="ml-4 list-disc">
+                    <li>The first min miles will always be zero (0).</li>
+                    <li>
+                      Zero (0) in max miles means any value greater or equal to
+                      min miles will fit.
+                    </li>
+                  </ul>
+                </div>
+                <SecondaryButton
+                  className={`self-center rounded-xl border bg-transparent px-2 py-1 text-sm text-secondary-900 transition-all  duration-100 hover:text-secondary-900`}
+                  disabled={!cityPrices[cityPrices.length - 1]?.maxMiles}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const form = e.currentTarget.closest("form");
+                    if (form?.checkValidity()) {
+                      setCityPrices((prev) => [
+                        ...prev,
+                        {
+                          minMiles: prev[prev.length - 1]?.minMiles ?? null,
+                          maxMiles: null,
+                          customerFees: 0,
+                          driverFees: 0,
+                        },
+                      ]);
+                    } else {
+                      form?.reportValidity();
+                      console.log("Form is invalid!");
+                    }
+                  }}
+                >
+                  + Add Price Range
+                </SecondaryButton>
+              </div>
+              <SecondaryButton
+                type="submit"
+                disabled={!currentCity}
+                isLoading={isAddCityPending}
+                className="border-secondary-500 py-2 text-secondary-950"
+              >
+                Save City
+              </SecondaryButton>
+            </form>
           </Modal.Body>
         </Modal>
       )}
@@ -227,10 +431,10 @@ const UpdateSettingField: React.FC<{
       await _updateSetting(currentValue);
     },
     onSuccess: () => {
-      inputRef.current?.blur();
       queryClient.invalidateQueries({
         queryKey: [LATEST_PLATFORM_SETTINGS_PATH],
       });
+      inputRef.current?.blur();
     },
     onError: (error) => {
       console.error("Failed to update setting", error);
@@ -319,41 +523,55 @@ const PlatformSettings = () => {
           </h3>
           <AddCityBtn cities={settings.data?.availableCities ?? []} />
         </div>
-        {(settings.data?.availableCities?.length ?? 0) > 0 && (
-          <Table theme={tableTheme} striped>
-            <Table.Head>
-              <Table.HeadCell>Actions</Table.HeadCell>
-              <Table.HeadCell>City</Table.HeadCell>
-              <Table.HeadCell>Center</Table.HeadCell>
-              <Table.HeadCell>Bounds</Table.HeadCell>
-            </Table.Head>
-            <Table.Body>
-              {settings.data.availableCities?.map((city, index, cities) => (
-                <Table.Row key={index}>
-                  <Table.Cell>
-                    <RemoveCityBtn cities={cities} removeAt={index} />
-                  </Table.Cell>
-                  <Table.Cell>{city.address}</Table.Cell>
-                  <Table.Cell>
-                    <div className="font-medium">
-                      lat:{city.latitude}; lng:{city.longitude}
-                    </div>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <div className="font-medium">
-                      lat:{city.viewPort.low.latitude}; lng:
-                      {city.viewPort.low.longitude}
-                    </div>
-                    <div className="mt-1 text-xs">
-                      lat:{city.viewPort.high.latitude}; lng:
-                      {city.viewPort.high.longitude}
-                    </div>
-                  </Table.Cell>
-                </Table.Row>
-              ))}
-            </Table.Body>
-          </Table>
-        )}
+        <div className="w-full overflow-x-auto">
+          {(settings.data?.availableCities?.length ?? 0) > 0 && (
+            <Table theme={tableTheme} striped>
+              <Table.Head>
+                <Table.HeadCell>Actions</Table.HeadCell>
+                <Table.HeadCell>City</Table.HeadCell>
+                <Table.HeadCell>Prices</Table.HeadCell>
+                <Table.HeadCell>Center</Table.HeadCell>
+                <Table.HeadCell>Bounds</Table.HeadCell>
+              </Table.Head>
+              <Table.Body>
+                {settings.data.availableCities?.map((city, index, cities) => (
+                  <Table.Row key={index} className="text-xs">
+                    <Table.Cell>
+                      <RemoveCityBtn cities={cities} removeAt={index} />
+                    </Table.Cell>
+                    <Table.Cell>{city.address}</Table.Cell>
+                    <Table.Cell className="min-w-36">
+                      {city.priceMap?.map((v, idx) => (
+                        <span
+                          key={idx}
+                          className="inline-block h-2 text-[.7rem] font-medium"
+                        >
+                          {v.minMiles}:{v.maxMiles || "∞"} | ${v.customerFees};
+                          ${v.driverFees}
+                        </span>
+                      )) || <div className="font-medium">N/A</div>}
+                    </Table.Cell>
+                    <Table.Cell>
+                      <div className="font-medium">
+                        lat:{city.latitude}; lng:{city.longitude}
+                      </div>
+                    </Table.Cell>
+                    <Table.Cell>
+                      <div className="m-0">
+                        lat:{city.viewPort.low.latitude}; lng:
+                        {city.viewPort.low.longitude}
+                      </div>
+                      <div className="mt-1 text-xs">
+                        lat:{city.viewPort.high.latitude}; lng:
+                        {city.viewPort.high.longitude}
+                      </div>
+                    </Table.Cell>
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table>
+          )}
+        </div>
         {!settings.data.availableCities?.length && <p>No cities found</p>}
       </div>
       <div className="flex flex-col items-center gap-4 overflow-x-auto rounded-lg">

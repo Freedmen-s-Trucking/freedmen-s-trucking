@@ -110,7 +110,6 @@ export const PrimaryButton: React.FC<
 export const SecondaryButton: React.FC<
   React.PropsWithChildren<
     {
-      onClick?: () => void;
       className?: string;
       isLoading?: boolean;
       loadingText?: string;

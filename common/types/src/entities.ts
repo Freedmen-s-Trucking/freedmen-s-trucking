@@ -3,13 +3,13 @@ import {
   placeLocationType,
   locationType,
   payoutMethodType,
-  productWithQuantityType,
   type,
   vehicleType,
   verificationStatus,
   coordinateType,
   dateStringOrTimestampType,
   priceRange,
+  productType,
 } from "./types.js";
 
 export const withdrawalEntity = type({
@@ -90,10 +90,12 @@ export type DriverEntity = typeof driverEntity.infer;
 export const platformSettingsEntity = type({
   availableCities: placeLocationType
     .and({
-      priceMap: priceRange.array().or("null").optional(),
+      priceMap: priceRange.array().optional(),
     })
     .array()
     .or("null"),
+
+  defaultPriceMap: priceRange.array().or("null").optional(),
   taskAssignmentConfig: {
     maxDriverRadiusInMeters: "number",
     pickupsGroupDistanceInMeters: "number",
@@ -245,7 +247,7 @@ export enum OrderEntityFields {
   deliveryLocation = "deliveryLocation",
   requiredVehicles = "requiredVehicles",
   priceInUSD = "priceInUSD",
-  products = "products",
+  packageToDeliver = "packageToDeliver",
   priority = "priority",
   status = "status",
   driverStatus = "driverStatus",
@@ -276,9 +278,15 @@ export const newOrderEntity = type({
   [OrderEntityFields.ownerId]: "string",
   [OrderEntityFields.pickupLocation]: locationType,
   [OrderEntityFields.deliveryLocation]: locationType,
-  [OrderEntityFields.requiredVehicles]: requiredVehicleEntity.array(),
+  [OrderEntityFields.requiredVehicles]: requiredVehicleEntity
+    .array()
+    .or("null")
+    .optional(),
   [OrderEntityFields.priceInUSD]: "number",
-  [OrderEntityFields.products]: productWithQuantityType.array(),
+  [OrderEntityFields.packageToDeliver]: productType
+    .partial()
+    .or("null")
+    .optional(),
   [OrderEntityFields.priority]: type.valueOf(OrderPriority),
   [OrderEntityFields.distanceInMiles]: "number",
   [OrderEntityFields.distanceMeasurement]: type.valueOf(DistanceMeasurement),

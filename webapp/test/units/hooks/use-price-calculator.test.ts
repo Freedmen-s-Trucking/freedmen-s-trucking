@@ -20,7 +20,7 @@ describe("computeTheMinimumRequiredVehiclesAndFees", () => {
         quantity: 1,
         // volumeInCuFeet: 20,
       },
-    ] as ProductWithQuantity[];
+    ] satisfies ProductWithQuantity[];
     const distanceInMiles = 75; // From: Bluhill Rd, Silver Spring, MD 20902, USA => To: Fredericksburg, VA 22408, USA
     const priority = OrderPriority.STANDARD;
     const result = computeTheMinimumRequiredVehiclesAndFees(

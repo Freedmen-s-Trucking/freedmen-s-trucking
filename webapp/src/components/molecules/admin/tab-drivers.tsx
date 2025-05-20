@@ -455,7 +455,7 @@ const DriverManagement: React.FC = () => {
                       setShowModal(true);
                     }}
                   >
-                    View Details
+                    <u>View Details</u>
                   </Button>
                 </Table.Cell>
                 <Table.Cell className="whitespace-nowrap font-medium">

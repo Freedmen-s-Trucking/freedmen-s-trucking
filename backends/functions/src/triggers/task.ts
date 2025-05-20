@@ -3,7 +3,7 @@ import {CollectionName, DriverEntity, TaskGroupEntity, TaskGroupEntityFields} fr
 import {CollectionReference, getFirestore} from "firebase-admin/firestore";
 import {getMessaging} from "firebase-admin/messaging";
 
-const notifyDriverOnTaskGroupStatusChange = async (
+const notifyDriverOnTaskGroupUpdate = async (
   before: TaskGroupEntity | undefined,
   after: TaskGroupEntity | undefined,
   taskGroupId: string,
@@ -41,6 +41,9 @@ const notifyDriverOnTaskGroupStatusChange = async (
     .filter((orderId) => !before || !before[TaskGroupEntityFields.orderIds].includes(orderId))
     .map((orderId) => ({orderId, order: after[TaskGroupEntityFields.orderIdValueMap][orderId]}));
 
+  if (!newOrderIds.length) {
+    return;
+  }
   const title = isNewlyAssignedTask ? "New Delivery Task Assigned" : "Delivery Task Updated: New Stop Added";
   const body = isNewlyAssignedTask
     ? `You have a new task with ${newOrderIds.length} order(s)`
@@ -74,7 +77,7 @@ export const taskGroupUpdateTrigger = onDocumentUpdated(
     const before = data?.before?.data?.() as TaskGroupEntity | undefined;
     const after = data?.after?.data?.() as TaskGroupEntity | undefined;
     const taskGroupId = params.taskGroupId;
-    const waterFall = [notifyDriverOnTaskGroupStatusChange(before, after, taskGroupId)];
+    const waterFall = [notifyDriverOnTaskGroupUpdate(before, after, taskGroupId)];
 
     return Promise.all(waterFall);
   },

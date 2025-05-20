@@ -427,37 +427,64 @@ const OrderDetailsView: React.FC<{
           </div>
         </div>
 
-        <div>
-          <h5 className="mb-2 font-medium">Products</h5>
-          <div className="mb-4 overflow-x-auto">
-            <Table>
-              <Table.Head>
-                <Table.HeadCell>Product</Table.HeadCell>
-                <Table.HeadCell>Dimensions</Table.HeadCell>
-                <Table.HeadCell>Weight</Table.HeadCell>
-                <Table.HeadCell>Quantity</Table.HeadCell>
-              </Table.Head>
-              <Table.Body>
-                {order.data.products?.map((product, index) => (
-                  <Table.Row key={index}>
+        {order.data.packageToDeliver && (
+          <div>
+            <h5 className="mb-2 font-medium">Package Info</h5>
+            <div className="mb-4 overflow-x-auto">
+              <Table>
+                <Table.Head>
+                  <Table.HeadCell>Description</Table.HeadCell>
+                  {order.data.packageToDeliver.estimatedDimensions && (
+                    <Table.HeadCell>Dimensions</Table.HeadCell>
+                  )}
+                  {order.data.packageToDeliver.estimatedWeightInLbsPerUnit && (
+                    <Table.HeadCell>Weight</Table.HeadCell>
+                  )}
+                </Table.Head>
+                <Table.Body>
+                  {/* {order.data.products?.map((product, index) => ( */}
+                  <Table.Row
+                  // key={index}
+                  >
                     <Table.Cell className="text-xs font-medium sm:text-sm md:text-base">
-                      {product.name}
+                      {order.data.packageToDeliver?.name}
                     </Table.Cell>
-                    <Table.Cell className="text-xs sm:text-sm md:text-base">
-                      {product.estimatedDimensions?.lengthInInches}" x{" "}
-                      {product.estimatedDimensions?.widthInInches}" x{" "}
-                      {product.estimatedDimensions?.heightInInches}"
-                    </Table.Cell>
-                    <Table.Cell className="text-xs sm:text-sm md:text-base">
-                      {product.estimatedWeightInLbsPerUnit} lbs
-                    </Table.Cell>
-                    <Table.Cell>{product.quantity}</Table.Cell>
+                    {order.data.packageToDeliver.estimatedDimensions && (
+                      <Table.Cell className="text-xs sm:text-sm md:text-base">
+                        {
+                          order.data.packageToDeliver.estimatedDimensions
+                            ?.lengthInInches
+                        }
+                        " x{" "}
+                        {
+                          order.data.packageToDeliver.estimatedDimensions
+                            ?.widthInInches
+                        }
+                        " x{" "}
+                        {
+                          order.data.packageToDeliver.estimatedDimensions
+                            ?.heightInInches
+                        }
+                        "
+                      </Table.Cell>
+                    )}
+                    {order.data.packageToDeliver
+                      .estimatedWeightInLbsPerUnit && (
+                      <Table.Cell className="text-xs sm:text-sm md:text-base">
+                        {
+                          order.data.packageToDeliver
+                            .estimatedWeightInLbsPerUnit
+                        }{" "}
+                        lbs
+                      </Table.Cell>
+                    )}
                   </Table.Row>
-                ))}
-              </Table.Body>
-            </Table>
+                  {/* ))} */}
+                </Table.Body>
+              </Table>
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="mb-6 grid grid-cols-1 gap-6 text-xs sm:grid-cols-2 md:text-base">
           {(viewType !== "customer" && (
