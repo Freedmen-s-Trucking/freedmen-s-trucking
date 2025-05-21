@@ -329,68 +329,71 @@ async function calculateAllProximities(orders: EntityWithID<OrderEntity>[]): Pro
  */
 export const scheduleGroupTaskInOrder = onSchedule("*/5 * * * *", async () => {
   console.log("Running scheduler for creating delivery tasks");
-  const orderCollection = getFirestore().collection(CollectionName.ORDERS) as CollectionReference<
-    OrderEntity,
-    OrderEntity
-  >;
-  const orderQuery = orderCollection.where(OrderEntityFields.status, "==", "payment-received");
-  const orderSnapshot = await orderQuery.get();
-  const eligibleOrders = orderSnapshot.docs.map((doc) => ({id: doc.id, data: doc.data()}));
+  try {
+    const orderCollection = getFirestore().collection(CollectionName.ORDERS) as CollectionReference<
+      OrderEntity,
+      OrderEntity
+    >;
+    const orderQuery = orderCollection.where(OrderEntityFields.status, "==", "payment-received");
+    const orderSnapshot = await orderQuery.get();
+    const eligibleOrders = orderSnapshot.docs.map((doc) => ({id: doc.id, data: doc.data()}));
 
-  if (eligibleOrders.length === 0) {
-    return;
-  }
-  const platformSettingsCollection = getFirestore().doc(LATEST_PLATFORM_SETTINGS_PATH) as DocumentReference<
-    PlatformSettingsEntity,
-    PlatformSettingsEntity
-  >;
-  const platformSettingsSnapshot = await platformSettingsCollection.get();
-  const _platformSettings = platformSettingsSnapshot.data();
-  const maxDriverRadiusInMeters =
-    _platformSettings?.taskAssignmentConfig?.maxDriverRadiusInMeters ||
-    DEFAULT_PLATFORM_SETTINGS.taskAssignmentConfig.maxDriverRadiusInMeters;
+    if (eligibleOrders.length === 0) {
+      return;
+    }
+    const platformSettingsCollection = getFirestore().doc(LATEST_PLATFORM_SETTINGS_PATH) as DocumentReference<
+      PlatformSettingsEntity,
+      PlatformSettingsEntity
+    >;
+    const platformSettingsSnapshot = await platformSettingsCollection.get();
+    const _platformSettings = platformSettingsSnapshot.data();
+    const maxDriverRadiusInMeters =
+      _platformSettings?.taskAssignmentConfig?.maxDriverRadiusInMeters ||
+      DEFAULT_PLATFORM_SETTINGS.taskAssignmentConfig.maxDriverRadiusInMeters;
 
-  const taskGroupsCollection = getFirestore().collection(CollectionName.TASK_GROUPS) as CollectionReference<
-    TaskGroupEntity,
-    TaskGroupEntity
-  >;
-  const taskGroupsQuery = taskGroupsCollection.where(TaskGroupEntityFields.status, "==", "active");
-  const taskGroupsSnapshot = await taskGroupsQuery.get();
-  const existingTaskGroups = taskGroupsSnapshot.docs.map((doc) => ({id: doc.id, data: doc.data()}));
+    const taskGroupsCollection = getFirestore().collection(CollectionName.TASK_GROUPS) as CollectionReference<
+      TaskGroupEntity,
+      TaskGroupEntity
+    >;
+    const taskGroupsQuery = taskGroupsCollection.where(TaskGroupEntityFields.status, "==", "active");
+    const taskGroupsSnapshot = await taskGroupsQuery.get();
+    const existingTaskGroups = taskGroupsSnapshot.docs.map((doc) => ({id: doc.id, data: doc.data()}));
 
-  // Group orders into tasks
-  const updatedTaskGroups = await groupOrdersIntoTasks(eligibleOrders, existingTaskGroups, {
-    ...DEFAULT_PLATFORM_SETTINGS.taskAssignmentConfig,
-    ...(_platformSettings?.taskAssignmentConfig ?? {}),
-  });
+    // Group orders into tasks
+    const updatedTaskGroups = await groupOrdersIntoTasks(eligibleOrders, existingTaskGroups, {
+      ...DEFAULT_PLATFORM_SETTINGS.taskAssignmentConfig,
+      ...(_platformSettings?.taskAssignmentConfig ?? {}),
+    });
 
-  const promiseTasks: Promise<unknown>[] = [];
-  updatedTaskGroups.assignedOrderIds.forEach((orderId) => {
-    promiseTasks.push(orderCollection.doc(orderId).update({status: OrderStatus.TASKS_ASSIGNED}));
-  });
-  // Update task groups in Firestore
-  for (const taskGroup of updatedTaskGroups.taskGroups) {
-    if (!taskGroup.data[TaskGroupEntityFields.driverId]) {
-      // find the nearest driver for the task.
-      const nearestDriverId = await findNearestDriver(taskGroup.data, maxDriverRadiusInMeters);
-      if (nearestDriverId) {
-        taskGroup.data[TaskGroupEntityFields.driverId] = nearestDriverId;
+    const promiseTasks: Promise<unknown>[] = [];
+    updatedTaskGroups.assignedOrderIds.forEach((orderId) => {
+      promiseTasks.push(orderCollection.doc(orderId).update({status: OrderStatus.TASKS_ASSIGNED}));
+    });
+    // Update task groups in Firestore
+    for (const taskGroup of updatedTaskGroups.taskGroups) {
+      if (!taskGroup.data[TaskGroupEntityFields.driverId]) {
+        // find the nearest driver for the task.
+        const nearestDriverId = await findNearestDriver(taskGroup.data, maxDriverRadiusInMeters);
+        if (nearestDriverId) {
+          taskGroup.data[TaskGroupEntityFields.driverId] = nearestDriverId;
+        }
+      }
+      if (!taskGroup.id) {
+        promiseTasks.push(taskGroupsCollection.add(taskGroup.data));
+      } else {
+        promiseTasks.push(taskGroupsCollection.doc(taskGroup.id).set(taskGroup.data));
+        // Handle driver notifications.
+        // TODO: Notify driver about the update.
+        if (!taskGroup.data.driverId) {
+          continue;
+        }
       }
     }
-    if (!taskGroup.id) {
-      promiseTasks.push(taskGroupsCollection.add(taskGroup.data));
-    } else {
-      promiseTasks.push(taskGroupsCollection.doc(taskGroup.id).set(taskGroup.data));
-      // Handle driver notifications.
-      // TODO: Notify driver about the update.
-      if (!taskGroup.data.driverId) {
-        continue;
-      }
-    }
+
+    await Promise.all(promiseTasks);
+  } catch (error) {
+    console.error("Error in scheduler for creating delivery tasks:", error);
   }
-
-  await Promise.all(promiseTasks);
-
   return;
 });
 

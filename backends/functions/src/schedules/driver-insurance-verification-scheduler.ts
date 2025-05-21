@@ -301,6 +301,13 @@ const verifyDriverInsurance = async (
         : []),
     ]);
   } catch (error) {
-    console.error("Failed to verify driver insurance", error);
+    console.error({
+      ...Object(error),
+      info: {
+        message: "Failed to verify driver insurance",
+        driverId: driverSnapshot.id,
+        functions: scheduleDriverInsuranceVerification.name,
+      },
+    });
   }
 };

@@ -84,7 +84,7 @@ export const ManualOrderingForm: React.FC<{
       const durationInSeconds = parseInt(route.duration);
       return {
         distanceMeasurement: DistanceMeasurement.GOOGLE_DISTANCE_MATRIX,
-        distanceInMiles: metersToMiles(route.distanceMeters),
+        distanceInMiles: metersToMiles(route.distanceMeters || 0),
         durationInSeconds: isNaN(durationInSeconds) ? null : durationInSeconds,
       };
     },

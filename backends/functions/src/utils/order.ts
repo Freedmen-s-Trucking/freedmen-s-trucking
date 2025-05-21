@@ -28,12 +28,13 @@ export function onetimeFindRightDriversForOrder(
   order: NewOrder,
 ): OneTimeFindRightDriversForOrderResponse {
   const drivers = [] as (DriverEntity & {uid: string; driverFees: number})[];
-  const requiredVehicles =
-    order.requiredVehicles?.map((v) => ({
-      type: v.type,
-      quantity: v.quantity,
-      driverFees: v.fees,
-    })) ?? [];
+  const requiredVehicles = !order.requiredVehicle
+    ? []
+    : [order.requiredVehicle].map((v) => ({
+        type: v.type,
+        quantity: v.quantity,
+        driverFees: v.fees,
+      }));
   for (const doc of snapshots) {
     const driver: DriverEntity & {uid: string} = {...doc.data(), uid: doc.id};
     if (!driver.vehicles || !driver.vehicles.length) {
@@ -71,7 +72,7 @@ export function onetimeFindRightDriversForOrder(
 }
 
 const distanceMatrixAPIResponseType = type({
-  distanceMeters: "number",
+  distanceMeters: "number?",
   duration: "string",
   condition: "string",
   originIndex: "number",
@@ -89,7 +90,7 @@ export const getDistanceFromGoogle = (
   destinations: Coordinate[],
 ): Promise<
   {
-    distanceMeters: number;
+    distanceMeters?: number;
     duration: string;
     condition: string;
     originIndex: number;

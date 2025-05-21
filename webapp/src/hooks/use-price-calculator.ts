@@ -271,7 +271,7 @@ export const getDistanceFromGoogle = (
       routingPreference: "TRAFFIC_AWARE",
     },
     schema: type({
-      distanceMeters: "number",
+      distanceMeters: "number?",
       duration: "string",
       condition: "string",
       // originIndex: "number",
@@ -348,7 +348,7 @@ export const useComputeDeliveryEstimation = (
       const durationInSeconds = parseInt(route.duration);
       return {
         distanceMeasurement: DistanceMeasurement.GOOGLE_DISTANCE_MATRIX,
-        distanceInMiles: metersToMiles(route.distanceMeters),
+        distanceInMiles: metersToMiles(route.distanceMeters || 0),
         durationInSeconds: isNaN(durationInSeconds) ? null : durationInSeconds,
       };
     },

@@ -87,7 +87,14 @@ export const scheduleDriverIdentityVerification = onSchedule("*/5 * * * *", asyn
           continue;
         }
       }
-      console.error("Failed to verify driver identity", {driverId: driverSnapshot.id, error});
+      console.error({
+        ...Object(error),
+        info: {
+          message: "Failed to verify driver identity",
+          driverId: driverSnapshot.id,
+          functions: scheduleDriverIdentityVerification.name,
+        },
+      });
     }
   }
 });

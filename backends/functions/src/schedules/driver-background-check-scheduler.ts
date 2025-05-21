@@ -55,11 +55,12 @@ export const scheduleBackgroundCheck = onSchedule("*/5 * * * *", async () => {
         continue;
       }
       console.error({
-        error,
+        ...Object(error),
         info: {
           driverId: driverSnapshot.id,
           authenticateAccessCode: driver.authenticateAccessCode,
           driverName: driver.displayName,
+          functionScheduler: scheduleBackgroundCheck.name,
         },
       });
     }
