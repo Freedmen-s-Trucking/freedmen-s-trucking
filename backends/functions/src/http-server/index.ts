@@ -26,9 +26,10 @@ apiV1Route.use(async (c, next) => {
   // Skip bearer auth for stripe webhook
   if (
     c.req.path.endsWith("/stripe/webhook") ||
+    c.req.path.endsWith("/logs") ||
+    c.req.path.endsWith("/backfills/all") ||
     c.req.path.endsWith("/backfills/orders") ||
-    c.req.path.endsWith("/backfills/drivers") ||
-    c.req.path.endsWith("/logs")
+    c.req.path.endsWith("/backfills/drivers")
   ) {
     await next();
   } else {
