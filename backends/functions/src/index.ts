@@ -15,3 +15,4 @@ export {orderUpdateTrigger} from "./triggers/order";
 export {scheduleBackgroundCheck} from "./schedules/driver-background-check-scheduler";
 export {scheduleDriverIdentityVerification} from "./schedules/driver-identity-verification-scheduler";
 export {scheduleDriverInsuranceVerification} from "./schedules/driver-insurance-verification-scheduler";
+export {scheduleGroupTaskInOrder} from "./schedules/create-delivery-task-scheduler";

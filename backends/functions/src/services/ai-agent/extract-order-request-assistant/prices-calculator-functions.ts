@@ -71,17 +71,17 @@ export function computeTheMinimumRequiredVehiclesAndFees(
     // We need to find the small quantity that can fit in the current vehicle.
     const usedPackageQuantity = Math.floor((currentVehicle.avgCapacityInCubicFeet - remainingVolume) / pkgVolume);
     if (usedPackageQuantity === 0 && remainingVolume === 0) {
-      const errorMessage = `Unable to find a vehicle that can fit the package: ${currentPackage.name}. The highest capacity vehicle is ${currentVehicle.type} with a capacity of ${currentVehicle.avgCapacityInCubicFeet} cubic feet.`;
+      const errorMessage = `Unable to find a vehicle that can fit the package: ${currentPackage.description}. The highest capacity vehicle is ${currentVehicle.type} with a capacity of ${currentVehicle.avgCapacityInCubicFeet} cubic feet.`;
       return new Error(errorMessage);
     }
 
     vehicles[currentVehicle.type] = {
       type: currentVehicle.type,
       quantity: (vehicles[currentVehicle.type]?.quantity || 0) + 1,
-      weightToBeUsedInLbs: [
-        ...(vehicles[currentVehicle.type]?.weightToBeUsedInLbs || []),
-        remainingWeight + usedPackageQuantity * currentPackage.estimatedWeightInLbsPerUnit,
-      ],
+      weightToBeUsedInLbs:
+        (vehicles[currentVehicle.type]?.weightToBeUsedInLbs || 0) +
+        remainingWeight +
+        usedPackageQuantity * currentPackage.estimatedWeightInLbsPerUnit,
     };
 
     remainingVolume = 0;
@@ -94,7 +94,7 @@ export function computeTheMinimumRequiredVehiclesAndFees(
     vehicles[currentVehicle.type] = {
       type: currentVehicle.type,
       quantity: (vehicles[currentVehicle.type]?.quantity || 0) + 1,
-      weightToBeUsedInLbs: [...(vehicles[currentVehicle.type]?.weightToBeUsedInLbs || []), remainingWeight],
+      weightToBeUsedInLbs: (vehicles[currentVehicle.type]?.weightToBeUsedInLbs || 0) + remainingWeight,
     };
   }
 
@@ -148,10 +148,7 @@ function getFeesOfVehicle(
   // Weight & Volume Fees Constraints
   // • $0.10/lb over 50 lbs
   // • $10 upgrade if volume exceeds 15 cu. ft. ???
-  const weightCost = vehicle.weightToBeUsedInLbs.reduce(
-    (acc, weight) => (weight > 50 ? acc + (weight - 50) * 0.1 : acc),
-    0,
-  );
+  const weightCost = vehicle.weightToBeUsedInLbs < 50 ? 0 : (vehicle.weightToBeUsedInLbs - 50) * 0.1;
   const volumeCost = vehicleInfo.avgCapacityInCubicFeet > 15 ? 10 * vehicle.quantity : 0;
 
   const totalCost =
@@ -240,7 +237,7 @@ export async function computeDeliveryEstimation(params: Partial<ComputeDeliveryE
 
   const data = computeTheMinimumRequiredVehiclesAndFees(
     products?.map((p) => ({
-      name: p.name,
+      description: p.description,
       estimatedDimensions: p.estimatedDimensions || {widthInInches: 0, heightInInches: 0, lengthInInches: 0},
       estimatedWeightInLbsPerUnit: p.estimatedWeightInLbsPerUnit || 0,
       quantity: p.quantity || 0,

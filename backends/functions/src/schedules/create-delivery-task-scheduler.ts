@@ -327,8 +327,8 @@ async function calculateAllProximities(orders: EntityWithID<OrderEntity>[]): Pro
  * @param existingTaskGroups Existing task groups (optional)
  * @returns Updated task groups
  */
-export const scheduleNewOrder = onSchedule("*/5 * * * *", async () => {
-  console.log("Running scheduler for background check");
+export const scheduleGroupTaskInOrder = onSchedule("*/5 * * * *", async () => {
+  console.log("Running scheduler for creating delivery tasks");
   const orderCollection = getFirestore().collection(CollectionName.ORDERS) as CollectionReference<
     OrderEntity,
     OrderEntity

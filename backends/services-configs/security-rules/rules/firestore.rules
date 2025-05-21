@@ -52,6 +52,10 @@ service cloud.firestore {
       allow update: if canUpdateOrder();
     }
     
+    match /tasks/{content=**} {
+      allow read: if isNotAnonymous();
+    }
+    
     match /payments/{content=**} {
       allow read: if isAdmin();
     }

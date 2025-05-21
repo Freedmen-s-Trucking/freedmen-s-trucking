@@ -54,7 +54,14 @@ export const scheduleBackgroundCheck = onSchedule("*/5 * * * *", async () => {
         // Identity verification is pending.
         continue;
       }
-      console.error(error);
+      console.error({
+        error,
+        info: {
+          driverId: driverSnapshot.id,
+          authenticateAccessCode: driver.authenticateAccessCode,
+          driverName: driver.displayName,
+        },
+      });
     }
   }
 });
