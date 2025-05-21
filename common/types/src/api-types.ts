@@ -62,7 +62,7 @@ export const apiResExtractOrderRequestFromText = type({
         placeId: "string",
       },
       items: type({
-        name: "string",
+        description: "string",
         estimatedDimensions: {
           widthInInches: "number",
           heightInInches: "number",

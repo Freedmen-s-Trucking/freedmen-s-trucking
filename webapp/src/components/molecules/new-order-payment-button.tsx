@@ -25,8 +25,9 @@ export const PaymentButton: React.FC<{
     distanceInMiles?: number | undefined;
     durationInSeconds?: number | null;
     distanceMeasurement?: DistanceMeasurement | undefined;
-    vehicles: RequiredVehicleEntity[];
+    vehicle: RequiredVehicleEntity;
     fees: number;
+    driverFees: number;
   } | null;
 }> = ({
   isLoading,
@@ -67,7 +68,7 @@ export const PaymentButton: React.FC<{
     if (
       !pickupLocation ||
       !deliveryLocation ||
-      !deliveryPriority ||
+      // !deliveryPriority ||
       // !packages?.length ||
       !estimations
     ) {
@@ -93,9 +94,10 @@ export const PaymentButton: React.FC<{
           longitude: +deliveryLocation.longitude || 0,
         },
         packageToDeliver: packageToDeliver[0],
-        priority: deliveryPriority || "standard",
+        priority: deliveryPriority || OrderPriority.STANDARD,
         priceInUSD: +estimations.fees,
-        requiredVehicles: estimations.vehicles,
+        driverFeesInUSD: +estimations.driverFees,
+        requiredVehicle: estimations.vehicle,
       });
     } catch (error) {
       console.error("Error creating order:", error);
@@ -115,7 +117,7 @@ export const PaymentButton: React.FC<{
 
   const validEstimations =
     estimations?.fees !== undefined &&
-    estimations?.vehicles?.length > 0 &&
+    estimations?.vehicle &&
     estimations?.distanceInMiles !== undefined &&
     estimations?.durationInSeconds !== undefined;
 

@@ -1,4 +1,5 @@
 import {
+  Coordinate,
   DateStringOrTimestamp,
   DriverEntity,
   VerificationStatus,
@@ -297,3 +298,53 @@ export function generateBrowserFingerprint() {
   }
   return Math.abs(hash);
 }
+type Point = { latitude: number; longitude: number };
+
+function isPointInQuadrilateral(point: Coordinate, quad: Point[]): boolean {
+  const { latitude, longitude } = point;
+  let inside = false;
+  const n = quad.length;
+
+  for (let i = 0; i < n; i++) {
+    const { latitude: x1, longitude: longitude1 } = quad[i];
+    const { latitude: x2, longitude: longitude2 } = quad[(i + 1) % n];
+
+    // Check if the point is exactly on a vertex
+    if (latitude === x1 && longitude === longitude1) {
+      return true;
+    }
+
+    // Check if the point is on a horizontal edge
+    if (
+      longitude1 === longitude2 &&
+      longitude === longitude1 &&
+      Math.min(x1, x2) <= latitude &&
+      latitude <= Math.max(x1, x2)
+    ) {
+      return true;
+    }
+
+    // Check if the ray intersects the edge
+    if (longitude1 > longitude !== longitude2 > longitude) {
+      const xIntersect =
+        ((longitude - longitude1) * (x2 - x1)) / (longitude2 - longitude1) + x1;
+      if (latitude <= xIntersect) {
+        inside = !inside;
+      }
+    }
+  }
+
+  return inside;
+}
+
+// Example Usage
+const quadrilateral: Point[] = [
+  { latitude: 0, longitude: 0 },
+  { latitude: 10, longitude: 0 },
+  { latitude: 10, longitude: 10 },
+  { latitude: 0, longitude: 10 },
+]; // A square
+
+const point: Point = { latitude: 5, longitude: 5 };
+
+console.log(isPointInQuadrilateral(point, quadrilateral)); // Output: true

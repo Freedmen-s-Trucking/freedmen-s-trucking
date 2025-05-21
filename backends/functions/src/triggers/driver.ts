@@ -118,7 +118,7 @@ const updatePlatformOverviewOnDriverVerificationStatusChange = async (
 //           [OrderEntityFields.driverName]: after.displayName || "",
 //           [OrderEntityFields.driverEmail]: after.email || "",
 //           [OrderEntityFields.driverPhone]: after.phoneNumber || "",
-//           [OrderEntityFields.deliveryFee]: details.deliveryFees,
+//           [OrderEntityFields.deliveryFee]: details.driverFees,
 //           [OrderEntityFields.driverStatus]: DriverOrderStatus.WAITING,
 //           [OrderEntityFields.createdAt]: FieldValue.serverTimestamp(),
 //           [OrderEntityFields.updatedAt]: FieldValue.serverTimestamp(),

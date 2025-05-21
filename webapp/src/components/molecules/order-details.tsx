@@ -7,7 +7,6 @@ import {
   OrderEntityFields,
   OrderPriority,
   OrderStatus,
-  RequiredVehicleEntity,
   type,
 } from "@freedmen-s-trucking/types";
 import {
@@ -22,13 +21,9 @@ import {
 } from "@vis.gl/react-google-maps";
 import { Accordion, Avatar, Badge, Card, Modal, Table } from "flowbite-react";
 import { useMemo, useState } from "react";
-import { BsTrainFreightFront } from "react-icons/bs";
 import { FaMapMarkerAlt } from "react-icons/fa";
-import { GiTruck } from "react-icons/gi";
 import { HiArrowRight, HiMail, HiPhone } from "react-icons/hi";
-import { IoCarOutline } from "react-icons/io5";
-import { PiVanBold } from "react-icons/pi";
-import { TbCarSuv, TbTruckDelivery } from "react-icons/tb";
+import { TbTruckDelivery } from "react-icons/tb";
 import { useAuth } from "~/hooks/use-auth";
 import { GOOGLE_MAPS_API_KEY } from "~/utils/envs";
 import { customDateFormat, formatPrice } from "~/utils/functions";
@@ -38,6 +33,7 @@ import { AppImage, PrimaryButton } from "../atoms";
 import { useQuery } from "@tanstack/react-query";
 import { isResponseError } from "up-fetch";
 import { useDbOperations } from "~/hooks/use-firestore";
+import { DisplayRequiredVehicles } from "./display-vehicles";
 
 const driverStatusMap: Record<
   DriverOrderStatus,
@@ -154,28 +150,6 @@ const StatusBadge: React.FC<{
   // }
 
   return badge;
-};
-
-const DisplayRequiredVehicles: React.FC<{
-  vehicles: RequiredVehicleEntity[] | undefined;
-}> = ({ vehicles }) => {
-  const vehicleIcons: Record<RequiredVehicleEntity["type"], React.ReactNode> = {
-    SEDAN: <IoCarOutline />,
-    SUV: <TbCarSuv />,
-    VAN: <PiVanBold />,
-    TRUCK: <GiTruck />,
-    FREIGHT: <BsTrainFreightFront />,
-  };
-  return (
-    <div className="flex items-center gap-2">
-      {(vehicles || []).map((vehicle) => (
-        <span key={vehicle.type} className="flex items-center">
-          <span className="text-sm">{vehicle.quantity}&nbsp;*&nbsp;</span>
-          {vehicleIcons[vehicle.type]}
-        </span>
-      ))}
-    </div>
-  );
 };
 
 const PriorityBadge: React.FC<{ priority: OrderPriority }> = ({ priority }) => {
@@ -406,16 +380,16 @@ const OrderDetailsView: React.FC<{
           </div>
         </div>
         <div className="mb-4 flex w-full items-center justify-between text-xs sm:text-sm md:text-lg">
-          <div className="flex flex-col  justify-between">
-            <h5 className="mb-2 font-medium">Required Vehicle</h5>
-            <div className="flex flex-wrap gap-2">
-              {order.data.requiredVehicles?.map((req, index) => (
-                <Badge key={index} color="dark">
-                  {req.type} x {req.quantity}
-                </Badge>
-              ))}
+          {order.data.requiredVehicle && (
+            <div className="flex flex-col  justify-between">
+              <h5 className="mb-2 font-medium">Required Vehicle</h5>
+              <div className="flex flex-wrap gap-2">
+                <DisplayRequiredVehicles
+                  vehicles={[order.data.requiredVehicle]}
+                />
+              </div>
             </div>
-          </div>
+          )}
           <div className="flex flex-col items-end gap-3">
             <div className="flex items-center gap-1">
               <HiArrowRight className="text-gray-500" />
@@ -447,7 +421,7 @@ const OrderDetailsView: React.FC<{
                   // key={index}
                   >
                     <Table.Cell className="text-xs font-medium sm:text-sm md:text-base">
-                      {order.data.packageToDeliver?.name}
+                      {order.data.packageToDeliver?.description}
                     </Table.Cell>
                     {order.data.packageToDeliver.estimatedDimensions && (
                       <Table.Cell className="text-xs sm:text-sm md:text-base">
@@ -798,7 +772,7 @@ export const Order: React.FC<{
               </span>
               <div>
                 <DisplayRequiredVehicles
-                  vehicles={order.data.requiredVehicles || []}
+                  vehicles={[order.data.requiredVehicle]}
                 />
               </div>
             </div>

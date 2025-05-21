@@ -11,8 +11,8 @@ import {ENV_GOOGLE_MAPS_API_KEY_BACKEND} from "./envs";
 import {up} from "up-fetch";
 
 type OneTimeFindRightDriversForOrderResponse = [
-  (DriverEntity & {uid: string; deliveryFees: number})[],
-  readonly [VehicleType, {deliveryFees: number}][],
+  (DriverEntity & {uid: string; driverFees: number})[],
+  readonly [VehicleType, {driverFees: number}][],
 ];
 
 /**
@@ -27,12 +27,12 @@ export function onetimeFindRightDriversForOrder(
   snapshots: QueryDocumentSnapshot<DriverEntity>[],
   order: NewOrder,
 ): OneTimeFindRightDriversForOrderResponse {
-  const drivers = [] as (DriverEntity & {uid: string; deliveryFees: number})[];
+  const drivers = [] as (DriverEntity & {uid: string; driverFees: number})[];
   const requiredVehicles =
     order.requiredVehicles?.map((v) => ({
       type: v.type,
       quantity: v.quantity,
-      deliveryFees: v.fees,
+      driverFees: v.fees,
     })) ?? [];
   for (const doc of snapshots) {
     const driver: DriverEntity & {uid: string} = {...doc.data(), uid: doc.id};
@@ -44,11 +44,10 @@ export function onetimeFindRightDriversForOrder(
     if (requiredVehicle && requiredVehicle.quantity) {
       drivers.push({
         ...driver,
-        deliveryFees:
-          ((requiredVehicle.deliveryFees / requiredVehicle.quantity) * FIXED_DRIVER_SERVICE_FEE_PERCENT) / 100,
+        driverFees: ((requiredVehicle.driverFees / requiredVehicle.quantity) * FIXED_DRIVER_SERVICE_FEE_PERCENT) / 100,
       });
       requiredVehicle.quantity--;
-      requiredVehicle.deliveryFees -= requiredVehicle.deliveryFees / requiredVehicle.quantity;
+      requiredVehicle.driverFees -= requiredVehicle.driverFees / requiredVehicle.quantity;
     }
   }
 
@@ -59,14 +58,14 @@ export function onetimeFindRightDriversForOrder(
           Array(v.quantity).fill([
             v.type,
             {
-              deliveryFees: (v.deliveryFees * FIXED_DRIVER_SERVICE_FEE_PERCENT) / 100,
+              driverFees: (v.driverFees * FIXED_DRIVER_SERVICE_FEE_PERCENT) / 100,
             },
           ] as const),
         );
       }
       return acc;
     },
-    <readonly [VehicleType, {deliveryFees: number}][]>[],
+    <readonly [VehicleType, {driverFees: number}][]>[],
   );
   return [drivers, unassignedVehicles] as const;
 }

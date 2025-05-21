@@ -10,7 +10,7 @@ describe("computeTheMinimumRequiredVehiclesAndFees", () => {
   it("should calculate the fees correctly", () => {
     const products = [
       {
-        name: "TEST SUV",
+        description: "TEST SUV",
         estimatedDimensions: {
           widthInInches: 33,
           heightInInches: 33,

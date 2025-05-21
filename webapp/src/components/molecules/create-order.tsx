@@ -24,6 +24,8 @@ import { RemoteConfigKeys } from "~/utils/constants";
 import { formatPrice } from "~/utils/functions";
 import { AIAssistedForm } from "./ai-assisted-form";
 import { PaymentButton } from "./new-order-payment-button";
+import { ManualOrderingForm } from "./manual-ordering-form";
+import { DisplayRequiredVehicles } from "./display-vehicles";
 
 const tabTheme = {
   tablist: {
@@ -195,7 +197,7 @@ const ManualForm: React.FC<{
     setPackages((previousPackages) => [
       ...previousPackages,
       {
-        name: "",
+        description: "",
         estimatedDimensions: {
           heightInInches: 0,
           widthInInches: 0,
@@ -319,7 +321,7 @@ const ManualForm: React.FC<{
                 type="text"
                 name="name"
                 id={`package-name-input-${index}`}
-                value={packageProps.name}
+                value={packageProps.description}
                 onChange={handlePackageChange(index)}
                 className={`block w-full rounded-xl border p-3 text-center text-lg text-black placeholder:text-lg focus:border-red-400 focus:outline-none focus:ring-transparent ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
                 placeholder="Enter package name"
@@ -422,10 +424,14 @@ const ManualForm: React.FC<{
           className={`block w-full text-wrap rounded-xl border  p-3 text-sm  focus:outline-none focus:ring-transparent sm:text-[16px] ${brightness === "dark" ? "border-gray-300 bg-amber-400/30 text-white focus:border-red-400" : "border-gray-300 bg-amber-200/30 text-secondary-900 focus:border-red-900"}`}
         >
           <span className="block">
-            Required Vehicle Type:{" "}
-            {estimations?.vehicles
-              ?.map((v) => `${v.quantity}*${v.type}`)
-              .join(", ") || "N/A"}
+            {estimations?.vehicle && (
+              <div className="flex flex-col  justify-between">
+                <h5 className="mb-2 font-medium">Required Vehicle</h5>
+                <div className="flex flex-wrap gap-2">
+                  <DisplayRequiredVehicles vehicles={[estimations.vehicle]} />
+                </div>
+              </div>
+            )}
           </span>
           <span className="block">
             Estimated Delivery Cost:{" "}
@@ -533,7 +539,7 @@ export const CreateOrderForm: React.FC<{
     case "manual":
     default:
       return (
-        <ManualForm
+        <ManualOrderingForm
           brightness={brightness}
           className={className}
           onOrderCreated={onOrderCreated}

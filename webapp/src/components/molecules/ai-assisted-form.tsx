@@ -6,7 +6,6 @@ import {
   LATEST_PLATFORM_SETTINGS_PATH,
   Location,
   OrderPriority,
-  RequiredVehicleEntity,
   type,
 } from "@freedmen-s-trucking/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -14,11 +13,6 @@ import { Badge, Dropdown } from "flowbite-react";
 import { ArrowRight } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
-import { BsTrainFreightFront } from "react-icons/bs";
-import { GiTruck } from "react-icons/gi";
-import { IoCarOutline } from "react-icons/io5";
-import { PiVanBold } from "react-icons/pi";
-import { TbCarSuv } from "react-icons/tb";
 import { Heading2 } from "~/components/atoms";
 import { useDbOperations } from "~/hooks/use-firestore";
 import { fetchPlaceDetails } from "~/hooks/use-geocoding";
@@ -27,6 +21,7 @@ import { useServerRequest } from "~/hooks/use-server-request";
 import { formatPrice } from "~/utils/functions";
 import { TextArea, TextInput } from "../atoms/base";
 import { PaymentButton } from "./new-order-payment-button";
+import { DisplayRequiredVehicles } from "./display-vehicles";
 
 export const AIAssistedForm: React.FC<{
   brightness: "dark" | "light";
@@ -433,7 +428,7 @@ export const AIAssistedForm: React.FC<{
               <span className="block text-xs">
                 Order:{" "}
                 <span className="font-bold">
-                  {reqInfo?.items?.[0]?.name}
+                  {reqInfo?.items?.[0]?.description}
                   {(reqInfo?.items?.[0]?.quantity || 0) > 1
                     ? ` x ${reqInfo?.items?.[0]?.quantity}`
                     : ""}
@@ -456,7 +451,7 @@ export const AIAssistedForm: React.FC<{
                 />
               </span>
               <div className="flex items-center">
-                <DisplayRequiredVehicles vehicles={estimations?.vehicles} />
+                <DisplayRequiredVehicles vehicles={[estimations?.vehicle]} />
               </div>
               <span className="block pt-2 text-xl font-bold text-primary-900">
                 {estimations?.fees !== undefined
@@ -503,33 +498,6 @@ export const AIAssistedForm: React.FC<{
           />
         )}
       </div>
-    </div>
-  );
-};
-
-const DisplayRequiredVehicles: React.FC<{
-  vehicles: RequiredVehicleEntity[] | undefined;
-}> = ({ vehicles }) => {
-  const vehicleIcons: Record<RequiredVehicleEntity["type"], React.ReactNode> = {
-    SEDAN: <IoCarOutline size={24} className="inline" />,
-    SUV: <TbCarSuv size={24} className="inline" />,
-    VAN: <PiVanBold size={24} className="inline" />,
-    TRUCK: <GiTruck size={24} className="inline" />,
-    FREIGHT: <BsTrainFreightFront size={24} className="inline" />,
-  };
-  return (
-    <div className="flex items-center gap-2">
-      {(vehicles || []).map((vehicle) => (
-        <span key={vehicle.type} className="flex items-center">
-          {vehicle.quantity > 1 && (
-            <span className="text-sm">{vehicle.quantity}&nbsp;*&nbsp;</span>
-          )}
-          {vehicleIcons[vehicle.type]}-
-          {vehicle.quantity <= 1 && (
-            <span className="text-sm">{vehicle.type}</span>
-          )}
-        </span>
-      ))}
     </div>
   );
 };

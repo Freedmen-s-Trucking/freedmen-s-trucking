@@ -130,7 +130,7 @@ export const requiredVehicleEntity = type({
   type: vehicleType,
   quantity: "number",
   fees: "number",
-  weightToBeUsedInLbs: "number[]",
+  weightToBeUsedInLbs: "number",
 });
 
 export type RequiredVehicleEntity = typeof requiredVehicleEntity.infer;
@@ -246,7 +246,9 @@ export enum OrderEntityFields {
   pickupLocation = "pickupLocation",
   deliveryLocation = "deliveryLocation",
   requiredVehicles = "requiredVehicles",
+  requiredVehicle = "requiredVehicle",
   priceInUSD = "priceInUSD",
+  driverFeesInUSD = "driverFeesInUSD",
   packageToDeliver = "packageToDeliver",
   priority = "priority",
   status = "status",
@@ -278,11 +280,9 @@ export const newOrderEntity = type({
   [OrderEntityFields.ownerId]: "string",
   [OrderEntityFields.pickupLocation]: locationType,
   [OrderEntityFields.deliveryLocation]: locationType,
-  [OrderEntityFields.requiredVehicles]: requiredVehicleEntity
-    .array()
-    .or("null")
-    .optional(),
+  [OrderEntityFields.requiredVehicle]: requiredVehicleEntity,
   [OrderEntityFields.priceInUSD]: "number",
+  [OrderEntityFields.driverFeesInUSD]: "number",
   [OrderEntityFields.packageToDeliver]: productType
     .partial()
     .or("null")
@@ -326,7 +326,7 @@ export const orderEntity = newOrderEntity.merge({
   [OrderEntityFields.paymentRef]: "string",
   // [OrderEntityFields.unassignedVehiclesTypes]: vehicleType.array(),
   // [OrderEntityFields.unassignedVehicles]: type({
-  //   deliveryFees: "number",
+  //   driverFees: "number",
   // }).array(),
   // [OrderEntityFields.assignedDriverIds]: "string[]",
   [OrderEntityFields.assignedDriverId]: "string | null",

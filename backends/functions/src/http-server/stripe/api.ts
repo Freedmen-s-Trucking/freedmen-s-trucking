@@ -178,7 +178,7 @@ router.post("/webhook", async (c) => {
         //       [OrderEntityFields.driverName]: driver.displayName || "",
         //       [OrderEntityFields.driverEmail]: driver.email || "",
         //       [OrderEntityFields.driverPhone]: driver.phoneNumber || "",
-        //       [OrderEntityFields.deliveryFee]: driver.deliveryFees,
+        //       [OrderEntityFields.deliveryFee]: driver.driverFees,
         //       [OrderEntityFields.driverStatus]: DriverOrderStatus.WAITING,
         //       [OrderEntityFields.createdAt]: FieldValue.serverTimestamp(),
         //       [OrderEntityFields.updatedAt]: FieldValue.serverTimestamp(),
