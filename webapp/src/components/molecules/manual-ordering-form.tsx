@@ -35,8 +35,16 @@ export const ManualOrderingForm: React.FC<{
   const { data: availableCities } = useQuery({
     initialData: null,
     queryKey: [LATEST_PLATFORM_SETTINGS_PATH],
-    queryFn: fetchPlatformSettings,
+    queryFn: () => {
+      console.warn("fetching");
+      return fetchPlatformSettings();
+    },
+    throwOnError(error, query) {
+      console.error(error, query);
+      return true;
+    },
     select: (result) => {
+      console.log({ result });
       return (result?.data || DEFAULT_PLATFORM_SETTINGS).availableCities || [];
     },
   });
@@ -60,11 +68,13 @@ export const ManualOrderingForm: React.FC<{
 
   const serverRequest = useServerRequest();
 
-  const { data: distanceData } = useQuery({
+  const { data: distanceData, error: distanceError } = useQuery({
     queryKey: [
       "distance-data",
-      reqInfo.pickupLocation,
-      reqInfo.dropoffLocation,
+      reqInfo.pickupLocation?.latitude,
+      reqInfo.pickupLocation?.longitude,
+      reqInfo.dropoffLocation?.latitude,
+      reqInfo.dropoffLocation?.longitude,
     ],
     queryFn: async () => {
       if (!reqInfo.pickupLocation || !reqInfo.dropoffLocation) {
@@ -106,7 +116,13 @@ export const ManualOrderingForm: React.FC<{
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       if (!distanceData) {
-        setError(new Error("Failed to get distance data"));
+        if (distanceError) {
+          setError(new Error("Failed to get distance data"));
+          console.error(distanceError);
+        }
+        setTimeout(() => {
+          autoDetectRequestAndEstimateFees(ev);
+        }, 1000);
         return null;
       }
 
@@ -242,7 +258,7 @@ export const ManualOrderingForm: React.FC<{
             }}
           >
             <Heading2 className="text-center">
-              Describe What You Need Delivered - We'll Handle The Rest
+              Schedule a Delivery — Just Tell Us Where & We'll Handle the Rest
             </Heading2>
           </motion.div>
           <motion.div
@@ -277,7 +293,7 @@ export const ManualOrderingForm: React.FC<{
               )}
               id="pickup-location-input"
               maxLength={250}
-              className={`block w-full rounded-xl border p-3 text-center text-sm text-black placeholder:text-lg focus:border-red-400 focus:outline-none focus:ring-transparent ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
+              className={`block w-full rounded-xl border p-3 text-center text-sm text-black placeholder:text-sm focus:border-red-400 focus:outline-none focus:ring-transparent ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
               placeholder="Enter pickup location"
               // className={`block w-full border px-[8px] py-1 text-xs text-black placeholder:text-xs focus:border-red-400 focus:outline-none focus:ring-transparent xs:py-2 sm:py-3 md:h-auto ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
               // placeholder={'Enter the description of your order'}
@@ -315,7 +331,7 @@ export const ManualOrderingForm: React.FC<{
               )}
               id="dropoff-location-input"
               maxLength={250}
-              className={`block w-full rounded-xl border p-3 text-center text-sm text-black placeholder:text-lg focus:border-red-400 focus:outline-none focus:ring-transparent ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
+              className={`block w-full rounded-xl border p-3 text-center text-sm text-black placeholder:text-sm focus:border-red-400 focus:outline-none focus:ring-transparent ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
               placeholder="Enter dropoff location"
               // className={`block w-full border px-[8px] py-1 text-xs text-black placeholder:text-xs focus:border-red-400 focus:outline-none focus:ring-transparent xs:py-2 sm:py-3 md:h-auto ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
               // placeholder={'Enter the description of your order'}
@@ -358,7 +374,9 @@ export const ManualOrderingForm: React.FC<{
               // readOnly={i + 1 !== qas.length}
               rows={2}
               className={`block w-full border px-[8px] py-1 text-xs text-black placeholder:text-xs focus:border-red-400 focus:outline-none focus:ring-transparent xs:py-2 sm:py-3 md:h-auto ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
-              placeholder={"Enter the description of your order (optional)"}
+              placeholder={
+                "Enter order number or additional details (optional)"
+              }
             />
           </motion.div>
           {estimations && (

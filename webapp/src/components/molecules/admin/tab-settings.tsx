@@ -223,7 +223,7 @@ const AddCityBtn: React.FC<{
                         type="number"
                         required
                         step={0.01}
-                        readOnly={index + 1 < cityPrices.length}
+                        // readOnly={index + 1 < cityPrices.length}
                         className="min-w-16"
                         min={cityPrices[index - 1]?.maxMiles ?? 0}
                         max={
@@ -262,7 +262,7 @@ const AddCityBtn: React.FC<{
                         className="min-w-16"
                         required
                         step={0.01}
-                        readOnly={index + 1 < cityPrices.length}
+                        // readOnly={index + 1 < cityPrices.length}
                         value={price.maxMiles ?? ""}
                         onChange={(e) => {
                           const val = e.target.value
@@ -372,7 +372,7 @@ const AddCityBtn: React.FC<{
                       setCityPrices((prev) => [
                         ...prev,
                         {
-                          minMiles: prev[prev.length - 1]?.minMiles ?? null,
+                          minMiles: prev[prev.length - 1]?.maxMiles ?? null,
                           maxMiles: null,
                           customerFees: 0,
                           driverFees: 0,
