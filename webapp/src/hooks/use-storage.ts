@@ -54,7 +54,7 @@ export const useStorageOperations = () => {
         { uid, profile },
         type({
           uid: "string",
-          profile: "File",
+          profile: "object",
         }),
         "FStorageError:: The uid or profile must not be empty or null or undefined",
       );
@@ -91,7 +91,7 @@ export const useStorageOperations = () => {
         { uid, license, docType },
         type({
           uid: "string",
-          license: "File",
+          license: "object",
           docType:
             "'driver-license-front' | 'driver-license-back' | 'driver-insurance'",
         }),
