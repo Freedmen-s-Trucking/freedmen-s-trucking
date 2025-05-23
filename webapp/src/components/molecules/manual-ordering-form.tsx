@@ -155,6 +155,10 @@ export const ManualOrderingForm: React.FC<{
       );
 
       const feeMap = priceInPickupCity || priceInDropoffCity;
+      if (distanceData.distanceInMiles > 12) {
+        setError(new Error("Distance is too long"));
+        return null;
+      }
       if (!feeMap) {
         const error = new Error("Failed to get price");
         setError(error);
