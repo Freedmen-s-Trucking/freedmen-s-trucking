@@ -120,7 +120,19 @@ export function getDriverVerificationStatus(
   driver: DriverEntity,
 ): VerificationStatus {
   if (driver.verificationStatus === "pending") {
-    return driver.driverLicenseVerificationStatus || "failed";
+    if (
+      driver.driverLicenseVerificationStatus === "failed" ||
+      driver.driverInsuranceVerificationStatus === "failed"
+    ) {
+      return "failed";
+    }
+    if (
+      driver.driverLicenseVerificationStatus === "verified" &&
+      driver.driverInsuranceVerificationStatus === "verified"
+    ) {
+      return "verified";
+    }
+    return "pending";
   }
   return driver.verificationStatus || "failed";
 }
