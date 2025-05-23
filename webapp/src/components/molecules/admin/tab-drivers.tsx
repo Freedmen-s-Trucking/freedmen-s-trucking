@@ -696,10 +696,10 @@ const DriverManagement: React.FC = () => {
                   <Button
                     theme={btTheme}
                     color="success"
-                    disabled={
-                      getDriverVerificationStatus(currentDriver.data) ===
-                      "verified"
-                    }
+                    // disabled={
+                    //   getDriverVerificationStatus(currentDriver.data) ===
+                    //   "verified"
+                    // }
                     onClick={() =>
                       setNextStatusInfo({
                         status: "verified",
@@ -715,10 +715,10 @@ const DriverManagement: React.FC = () => {
 
                   <Button
                     color="failure"
-                    disabled={
-                      getDriverVerificationStatus(currentDriver.data) ===
-                      "failed"
-                    }
+                    // disabled={
+                    //   getDriverVerificationStatus(currentDriver.data) ===
+                    //   "failed"
+                    // }
                     onClick={() =>
                       setNextStatusInfo({
                         status: "failed",

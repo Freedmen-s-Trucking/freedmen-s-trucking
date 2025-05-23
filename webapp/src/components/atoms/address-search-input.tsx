@@ -1,9 +1,9 @@
-import { Popover } from "flowbite-react";
 import { useGeocoding } from "~/hooks/use-geocoding";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { TextInput } from "./base";
 import { useQuery } from "@tanstack/react-query";
 import { MinPlaceLocation, PlaceLocation } from "@freedmen-s-trucking/types";
+import { CustomPopover } from "./popover";
 
 export type OnAddressChangedParams = {
   possibleValues: MinPlaceLocation[];
@@ -102,7 +102,6 @@ export const AddressSearchInput: React.FC<AddressSearchInputProps> = ({
             primaryTypes,
           },
         });
-        setSearchOptionOpen(query.length > 1);
         setTimeout(() => inputRef.current?.focus(), 10);
       };
       inputRef.current.onblur = () => {
@@ -110,9 +109,9 @@ export const AddressSearchInput: React.FC<AddressSearchInputProps> = ({
           inputRef.current?.focus();
         }
       };
-      inputRef.current.onfocus = () => {
-        setTimeout(() => inputRef.current?.focus(), 10);
-      };
+      // inputRef.current.onfocus = () => {
+      //   setTimeout(() => inputRef.current?.focus(), 10);
+      // };
     }
   }, [
     query,
@@ -125,30 +124,35 @@ export const AddressSearchInput: React.FC<AddressSearchInputProps> = ({
   return (
     <>
       <div className="relative w-full">
-        <Popover
+        <CustomPopover
+          autoFocus={false}
+          trigger={["focus"]}
           arrow={false}
           open={searchOptionsOpen}
           onOpenChange={setSearchOptionOpen}
-          className="top-[-18px!important] z-10 max-h-60 w-full overflow-y-auto overflow-x-hidden rounded-b-lg border border-secondary-500 bg-primary-50 shadow-lg shadow-primary-900/50"
+          className={`top-[-18px!important] z-10 max-h-60 w-full overflow-y-auto overflow-x-hidden rounded-b-lg border bg-primary-50 shadow-lg shadow-primary-900/50 ${query.length > 2 ? "border-secondary-500" : "border-transparent"}`}
           content={
-            <div className="text-sm text-secondary-800">
-              {dataCached.length === 0 && (
-                <div className="w-full rounded-b-lg bg-primary-50 px-4 py-2 text-center">
-                  No result found
-                </div>
-              )}
-              {dataCached.map((item) => (
-                <span key={item.placeId}>
-                  <hr className="border-gray-300" />
-                  <button
-                    onClick={() => onItemClick(item)}
-                    className="w-full cursor-pointer px-4 py-2 text-sm hover:bg-primary-100"
-                  >
-                    {item.address}
-                  </button>
-                </span>
-              ))}
-            </div>
+            (query.length > 2 && (
+              <div className="text-sm text-secondary-800">
+                {dataCached.length === 0 && (
+                  <div className="w-full rounded-b-lg bg-primary-50 px-4 py-2 text-center">
+                    No result found
+                  </div>
+                )}
+                {dataCached.map((item) => (
+                  <span key={item.placeId}>
+                    <hr className="border-gray-300" />
+                    <button
+                      onClick={() => onItemClick(item)}
+                      className="w-full cursor-pointer px-4 py-2 text-sm hover:bg-primary-100"
+                    >
+                      {item.address}
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )) ||
+            null
           }
         >
           <TextInput
@@ -159,7 +163,7 @@ export const AddressSearchInput: React.FC<AddressSearchInputProps> = ({
             type="text"
             autoComplete="off"
           />
-        </Popover>
+        </CustomPopover>
       </div>
     </>
   );
