@@ -94,7 +94,6 @@ export const AddressSearchInput: React.FC<AddressSearchInputProps> = ({
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.oninput = () => {
-        console.log(inputRef.current?.value);
         searchPlaceOSM({
           query: inputRef.current?.value || "",
           options: {
@@ -102,16 +101,7 @@ export const AddressSearchInput: React.FC<AddressSearchInputProps> = ({
             primaryTypes,
           },
         });
-        // setTimeout(() => inputRef.current?.focus(), 10);
       };
-      // inputRef.current.onblur = () => {
-      //   if (searchOptionsOpen) {
-      //     inputRef.current?.focus();
-      //   }
-      // };
-      // inputRef.current.onfocus = () => {
-      //   setTimeout(() => inputRef.current?.focus(), 10);
-      // };
     }
   }, [searchPlaceOSM, restrictedGMARecBounds, primaryTypes]);
 
