@@ -102,24 +102,18 @@ export const AddressSearchInput: React.FC<AddressSearchInputProps> = ({
             primaryTypes,
           },
         });
-        setTimeout(() => inputRef.current?.focus(), 10);
+        // setTimeout(() => inputRef.current?.focus(), 10);
       };
-      inputRef.current.onblur = () => {
-        if (searchOptionsOpen) {
-          inputRef.current?.focus();
-        }
-      };
+      // inputRef.current.onblur = () => {
+      //   if (searchOptionsOpen) {
+      //     inputRef.current?.focus();
+      //   }
+      // };
       // inputRef.current.onfocus = () => {
       //   setTimeout(() => inputRef.current?.focus(), 10);
       // };
     }
-  }, [
-    query,
-    searchOptionsOpen,
-    searchPlaceOSM,
-    restrictedGMARecBounds,
-    primaryTypes,
-  ]);
+  }, [searchPlaceOSM, restrictedGMARecBounds, primaryTypes]);
 
   return (
     <>
