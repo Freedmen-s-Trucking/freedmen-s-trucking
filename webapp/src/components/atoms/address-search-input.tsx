@@ -4,6 +4,8 @@ import { TextInput } from "./base";
 import { useQuery } from "@tanstack/react-query";
 import { MinPlaceLocation, PlaceLocation } from "@freedmen-s-trucking/types";
 import { CustomPopover } from "./popover";
+import { twMerge } from "tailwind-merge";
+import { Placement } from "@floating-ui/react";
 
 export type OnAddressChangedParams = {
   possibleValues: MinPlaceLocation[];
@@ -17,6 +19,7 @@ export type AddressSearchInputProps = {
   // Primary types can be found here: https://developers.google.com/maps/documentation/places/web-service/place-types
   primaryTypes?: string[];
   geocodingType?: "OSRM" | "GMAP";
+  placement?: "auto" | Placement;
 } & Omit<
   React.ComponentProps<"input">,
   "onChange" | "type" | "ref" | "autoComplete"
@@ -27,6 +30,7 @@ export const AddressSearchInput: React.FC<AddressSearchInputProps> = ({
   restrictedGMARecBounds,
   primaryTypes,
   geocodingType = "GMAP",
+  placement = "bottom",
   ...inputProps
 }) => {
   const { searchPlaceOSM, fetchPlaceDetails, data, query, isFetching } =
@@ -112,9 +116,13 @@ export const AddressSearchInput: React.FC<AddressSearchInputProps> = ({
           autoFocus={false}
           trigger={["focus"]}
           arrow={false}
+          placement={placement ?? "auto"}
           open={searchOptionsOpen}
           onOpenChange={setSearchOptionOpen}
-          className={`top-[-18px!important] z-10 max-h-60 w-full overflow-y-auto overflow-x-hidden rounded-b-lg border bg-primary-50 shadow-lg shadow-primary-900/50 ${query.length > 2 ? "border-secondary-500" : "border-transparent"}`}
+          className={twMerge(
+            "top-[-18px!important] z-10 max-h-60 w-full overflow-y-auto overflow-x-hidden rounded-b-lg border bg-primary-50 shadow-lg shadow-primary-900/50",
+            query.length > 2 ? "border-secondary-500" : "border-transparent",
+          )}
           content={
             (query.length > 2 && (
               <div className="text-sm text-secondary-800">

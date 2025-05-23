@@ -337,7 +337,7 @@ const AddCityBtn: React.FC<{
                     {index > 0 && (
                       <div className="absolute -bottom-1 -right-5">
                         <button
-                          className={`m-0 inline-block h-11 bg-transparent p-0 transition-all duration-100 `}
+                          className="m-0 inline-block h-11 bg-transparent p-0 transition-all duration-100"
                           onClick={() => {
                             setCityPrices((prev) => {
                               const newPrices = [...prev];
@@ -363,7 +363,7 @@ const AddCityBtn: React.FC<{
                   </ul>
                 </div>
                 <SecondaryButton
-                  className={`self-center rounded-xl border bg-transparent px-2 py-1 text-sm text-secondary-900 transition-all  duration-100 hover:text-secondary-900`}
+                  className="self-center rounded-xl border bg-transparent px-2 py-1 text-sm text-secondary-900 transition-all  duration-100 hover:text-secondary-900"
                   disabled={!cityPrices[cityPrices.length - 1]?.maxMiles}
                   onClick={(e) => {
                     e.preventDefault();

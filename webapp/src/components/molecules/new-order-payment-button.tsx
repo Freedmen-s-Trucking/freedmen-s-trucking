@@ -21,6 +21,9 @@ export const PaymentButton: React.FC<{
   deliveryPriority: OrderPriority | null;
   packageToDeliver: ProductWithQuantity[];
   disabled: boolean;
+  clientInfo?: {
+    clientPhone: string;
+  };
   estimations: {
     distanceInMiles?: number | undefined;
     durationInSeconds?: number | null;
@@ -38,6 +41,7 @@ export const PaymentButton: React.FC<{
   deliveryLocation,
   deliveryPriority,
   packageToDeliver,
+  clientInfo,
 }) => {
   const { user } = useAuth();
   const [isScheduling, setIsScheduling] = useState(false);
@@ -98,6 +102,7 @@ export const PaymentButton: React.FC<{
         priceInUSD: +estimations.fees,
         driverFeesInUSD: +estimations.driverFees,
         requiredVehicle: estimations.vehicle,
+        additionalClientInfo: clientInfo,
       });
     } catch (error) {
       console.error("Error creating order:", error);
@@ -113,6 +118,7 @@ export const PaymentButton: React.FC<{
     packageToDeliver,
     estimations,
     isScheduling,
+    clientInfo,
   ]);
 
   const validEstimations =

@@ -13,6 +13,7 @@ import { SignUp } from "~/components/molecules/sign-up";
 import SignIn from "~/components/molecules/sign-in";
 import { TbLayoutDashboard } from "react-icons/tb";
 import { FaHouseUser } from "react-icons/fa6";
+import { twMerge } from "tailwind-merge";
 
 const ProfileDropdown: React.FC = () => {
   const [authAction, setAuthAction] = useState<"login" | "signup" | null>(null);
@@ -64,7 +65,9 @@ const ProfileDropdown: React.FC = () => {
                 className="h-12 min-h-8 w-12 min-w-8 cursor-pointer rounded-full border-2 border-gray-300"
                 fallback={
                   <div
-                    className={`flex h-12 min-h-8 w-12 min-w-8 items-center justify-center rounded-full border-2 border-gray-300 bg-red-400/80 font-extrabold text-white`}
+                    className={
+                      "flex h-12 min-h-8 w-12 min-w-8 items-center justify-center rounded-full border-2 border-gray-300 bg-red-400/80 font-extrabold text-white"
+                    }
                   >
                     {userFirstLetter}
                   </div>
@@ -209,11 +212,12 @@ const AppNavbar: React.FC = () => {
           <Link
             key={index}
             to={item.href}
-            className={`min-w-64 ${
+            className={twMerge(
+              "min-w-64",
               router.location.pathname === item.href
                 ? activeClasses
-                : inactiveClasses
-            }`}
+                : inactiveClasses,
+            )}
           >
             {item.name}
           </Link>
@@ -234,11 +238,12 @@ const AppNavbar: React.FC = () => {
           <Link
             key={index}
             to={item.href}
-            className={`lg:mx-3 ${
+            className={twMerge(
+              "md:ml-0 lg:mx-3",
               router.location.pathname === item.href
                 ? activeClasses
-                : inactiveClasses
-            } md:ml-0`}
+                : inactiveClasses,
+            )}
           >
             {item.name}
           </Link>

@@ -7,6 +7,7 @@ import home3LogoBlured from "~/assets/images/home-3-blur.webp";
 import { PAGE_ROUTES } from "~/utils/constants";
 import { Link } from "@tanstack/react-router";
 import { AppImageBackground } from "~/components/atoms";
+import { twMerge } from "tailwind-merge";
 
 const ImportantLinksAndSubscription: React.FC = () => {
   const onEmailChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -147,11 +148,12 @@ const ImportantLinksAndSubscription: React.FC = () => {
                 <Link
                   key={index}
                   to={item.href}
-                  className={`bg-transparent py-2.5 ${
+                  className={twMerge(
+                    "bg-transparent py-2.5",
                     router.location.pathname === item.href
                       ? "pointer-events-none block rounded-sm text-red-400"
-                      : "block rounded-sm text-white hover:text-red-400 "
-                  }`}
+                      : "block rounded-sm text-white hover:text-red-400",
+                  )}
                 >
                   {item.name}
                 </Link>

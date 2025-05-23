@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { forwardRef } from "react";
+import { twMerge } from "tailwind-merge";
 import { useStorageOperations } from "~/hooks/use-storage";
 import { isDevMode } from "~/utils/envs";
 
@@ -73,7 +74,10 @@ export const AppImage = forwardRef<HTMLImageElement, ImageProps>(
         alt={alt}
         width={width}
         height={height}
-        className={`h-auto max-w-full object-cover transition-opacity duration-300 ease-in-out  ${className || ""}`}
+        className={twMerge(
+          "h-auto max-w-full object-cover transition-opacity duration-300 ease-in-out",
+          className || "",
+        )}
         {...otherProps}
       />
     );

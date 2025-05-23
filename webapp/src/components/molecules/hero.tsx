@@ -1,6 +1,7 @@
 import React from "react";
 import AppNavbar from "~/components/organisms/navbar";
 import { AppImageBackground } from "~/components/atoms";
+import { twMerge } from "tailwind-merge";
 
 const Hero: React.FC<{
   className?: string;
@@ -28,11 +29,14 @@ const Hero: React.FC<{
       <AppImageBackground
         src={image}
         placeholder={bluredImage}
-        className={`hero-section w-100 inset-0 ${className}`}
+        className={twMerge("hero-section w-100 inset-0", className)}
       >
         <div className="mx-auto max-w-screen-xl px-4 py-8  md:px-8 md:py-12 lg:px-16">
           <div
-            className={`fixed left-0 right-0 top-0 z-50 transition-colors duration-300 md:relative md:bg-transparent ${isScrolled ? "bg-secondary-950" : ""}`}
+            className={twMerge(
+              "fixed left-0 right-0 top-0 z-50 transition-colors duration-300 md:relative md:bg-transparent",
+              isScrolled ? "bg-secondary-950" : "",
+            )}
           >
             <AppNavbar />
           </div>

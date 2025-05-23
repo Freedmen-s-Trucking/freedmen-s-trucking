@@ -1,5 +1,6 @@
 import { HTMLMotionProps, motion } from "motion/react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { twMerge } from "tailwind-merge";
 
 // Primary Color #553A26;
 // Secondary Color #F2E7D8;
@@ -8,7 +9,10 @@ export const Heading1: React.FC<
   React.PropsWithChildren<{ className?: string }>
 > = ({ children, className = "" }) => (
   <h1
-    className={`mb-4 text-5xl font-bold text-primary-700 sm:text-6xl ${className}`}
+    className={twMerge(
+      "mb-4 text-5xl font-bold text-primary-700 sm:text-6xl",
+      className,
+    )}
   >
     {children}
   </h1>
@@ -17,7 +21,9 @@ export const Heading1: React.FC<
 export const Heading2: React.FC<
   React.PropsWithChildren<{ className?: string }>
 > = ({ children, className = "" }) => (
-  <h2 className={`mb-3 text-4xl font-bold text-primary-700 ${className}`}>
+  <h2
+    className={twMerge("mb-3 text-4xl font-bold text-primary-700", className)}
+  >
     {children}
   </h2>
 );
@@ -25,7 +31,7 @@ export const Heading2: React.FC<
 export const Heading3: React.FC<
   React.PropsWithChildren<{ className?: string }>
 > = ({ children, className = "" }) => (
-  <h3 className={`mb-2 text-lg font-bold text-primary-700 ${className}`}>
+  <h3 className={twMerge("mb-2 text-lg font-bold text-primary-700", className)}>
     {children}
   </h3>
 );
@@ -33,13 +39,15 @@ export const Heading3: React.FC<
 export const Tagline: React.FC<
   React.PropsWithChildren<{ className?: string }>
 > = ({ children, className = "" }) => (
-  <p className={`mb-1 text-2xl text-primary-700 ${className}`}>{children}</p>
+  <p className={twMerge("mb-1 text-2xl text-primary-700", className)}>
+    {children}
+  </p>
 );
 
 export const BodyText: React.FC<
   React.PropsWithChildren<{ className?: string }>
 > = ({ children, className = "" }) => (
-  <p className={`leading-relaxed text-primary-700 ${className} text-lg`}>
+  <p className={twMerge("text-lg leading-relaxed text-primary-700", className)}>
     {children}
   </p>
 );
@@ -86,7 +94,10 @@ export const PrimaryButton: React.FC<
       disabled={isDisabled}
       initial="initial"
       animate={isLoading ? "loading" : "initial"}
-      className={`flex flex-row items-center justify-center rounded-full p-4  font-medium text-primary-100 shadow-md transition-colors duration-300 ${className} bg-primary-700 hover:bg-primary-800 disabled:bg-opacity-80 `}
+      className={twMerge(
+        "flex flex-row items-center justify-center rounded-full bg-primary-700 p-4 font-medium text-primary-100 shadow-md transition-colors duration-300 hover:bg-primary-800 disabled:bg-opacity-80",
+        className,
+      )}
     >
       {isLoading ? (
         <motion.div
@@ -147,7 +158,10 @@ export const SecondaryButton: React.FC<
       disabled={isDisabled}
       initial="initial"
       animate={isLoading ? "loading" : "initial"}
-      className={`flex flex-row items-center justify-center rounded-full border-2 border-primary-700/80 bg-primary-100 p-4 font-medium text-primary-700 shadow-md transition-colors duration-300 ${className}`}
+      className={twMerge(
+        "flex flex-row items-center justify-center rounded-full border-2 border-primary-700/80 bg-primary-100 p-4 font-medium text-primary-700 shadow-md transition-colors duration-300",
+        className,
+      )}
     >
       {isLoading ? (
         <motion.div
@@ -192,7 +206,10 @@ export const TextInput = React.forwardRef<
       <span className="relative">
         <input
           {...inputProps}
-          className={`block w-full rounded-full border border-gray-300 bg-primary-50 p-2.5 text-secondary-950 focus:border-secondary-500 focus:ring-secondary-500 disabled:cursor-not-allowed disabled:opacity-50 ${className} text-sm`}
+          className={twMerge(
+            "block w-full rounded-full border border-gray-300 bg-primary-50 p-2.5 text-sm text-secondary-950 focus:border-secondary-500 focus:ring-secondary-500 disabled:cursor-not-allowed disabled:opacity-50",
+            className,
+          )}
           onFocus={(e) => {
             if (endIconShowCondition === "onFocus") {
               setCanShowEndIcon(true);
@@ -306,7 +323,10 @@ export const TextArea = React.forwardRef<
         rows={rows || 1}
         maxLength={maxLength}
         onInput={handleInput}
-        className={`block w-full resize-none overflow-hidden rounded-xl border border-gray-300 bg-primary-50 p-1 text-sm text-secondary-950 focus:border-secondary-500 focus:ring-secondary-500 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+        className={twMerge(
+          "block w-full resize-none overflow-hidden rounded-xl border border-gray-300 bg-primary-50 p-1 text-sm text-secondary-950 focus:border-secondary-500 focus:ring-secondary-500 disabled:cursor-not-allowed disabled:opacity-50",
+          className,
+        )}
         style={{ resize, ...textAreaProps.style }}
         onKeyDown={(e) => {
           if (e.key === "Enter") {
@@ -375,7 +395,12 @@ export const TextArea = React.forwardRef<
 export const Card: React.FC<
   React.PropsWithChildren<{ className?: string }>
 > = ({ children, className = "" }) => (
-  <div className={`overflow-hidden rounded-lg bg-white shadow-md ${className}`}>
+  <div
+    className={twMerge(
+      "overflow-hidden rounded-lg bg-white shadow-md",
+      className,
+    )}
+  >
     {children}
   </div>
 );
@@ -387,9 +412,9 @@ export const FeatureCard: React.FC<
     className?: string;
   }>
 > = ({ title, description, className = "" }) => (
-  <div className={`p-6 text-center ${className}`}>
-    <h3 className={`mb-2 text-xl font-medium text-primary-700`}>{title}</h3>
-    <p className={`text-primary-700`}>{description}</p>
+  <div className={twMerge("p-6 text-center", className)}>
+    <h3 className="mb-2 text-xl font-medium text-primary-700">{title}</h3>
+    <p className="text-primary-700">{description}</p>
   </div>
 );
 
@@ -397,5 +422,5 @@ export const FeatureCard: React.FC<
 export const Container: React.FC<
   React.PropsWithChildren<{ className?: string }>
 > = ({ children, className = "" }) => (
-  <div className={`mx-auto  px-3 ${className}`}>{children}</div>
+  <div className={twMerge("mx-auto px-3", className)}>{children}</div>
 );

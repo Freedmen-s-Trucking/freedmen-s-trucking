@@ -12,6 +12,7 @@ import {
   PlatformOverviewEntity,
 } from "@freedmen-s-trucking/types";
 import { customDateFormat } from "~/utils/functions";
+import { twMerge } from "tailwind-merge";
 
 const StatCard: React.FC<{
   title: string;
@@ -34,7 +35,13 @@ const StatCard: React.FC<{
             {value !== null ? value : <Spinner size="sm" />}
           </h3>
         </div>
-        <div className={`rounded-lg p-3 bg-${color}-100 text-${color}-600`}>
+        <div
+          className={twMerge(
+            "rounded-lg p-3",
+            `bg-${color}-100`,
+            `text-${color}-600`,
+          )}
+        >
           {icon}
         </div>
       </div>

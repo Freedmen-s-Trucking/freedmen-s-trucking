@@ -478,7 +478,7 @@ export const DriverProfile: React.FC<{ driverInfo: DriverEntity | null }> = ({
               onFocus={(e) => e.target.blur()}
               value={driverInfo.vehicles?.[0].type || ""}
               id="driver-vehicle-type"
-              className={`block w-full cursor-pointer border p-3 text-center text-lg text-black focus:border-red-400 focus:outline-none focus:ring-transparent`}
+              className="block w-full cursor-pointer border p-3 text-center text-lg text-black focus:border-red-400 focus:outline-none focus:ring-transparent"
               placeholder="Vehicle Type >"
             />
           )}

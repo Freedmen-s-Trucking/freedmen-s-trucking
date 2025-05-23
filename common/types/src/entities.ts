@@ -274,6 +274,7 @@ export enum OrderEntityFields {
   deliveryScreenshotPath = "deliveryScreenshotPath",
   driverPositions = "driverPositions",
   payoutPaymentRef = "payoutPaymentRef",
+  additionalClientInfo = "additionalClientInfo",
   task = "task",
 }
 export const newOrderEntity = type({
@@ -289,6 +290,11 @@ export const newOrderEntity = type({
     .optional(),
   [OrderEntityFields.priority]: type.valueOf(OrderPriority),
   [OrderEntityFields.distanceInMiles]: "number",
+  [OrderEntityFields.additionalClientInfo]: type({
+    [OrderEntityFields.clientName]: "string?",
+    [OrderEntityFields.clientEmail]: "string?",
+    [OrderEntityFields.clientPhone]: "string?",
+  }).optional(),
   [OrderEntityFields.distanceMeasurement]: type.valueOf(DistanceMeasurement),
 });
 export type NewOrder = typeof newOrderEntity.infer;

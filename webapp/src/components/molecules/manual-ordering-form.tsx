@@ -15,7 +15,7 @@ import { useEffect, useRef, useState } from "react";
 import { AddressSearchInput, Heading2 } from "~/components/atoms";
 import { useDbOperations } from "~/hooks/use-firestore";
 import { formatPrice } from "~/utils/functions";
-import { PrimaryButton, TextArea } from "../atoms/base";
+import { PrimaryButton, TextArea, TextInput } from "../atoms/base";
 import { PaymentButton } from "./new-order-payment-button";
 import { useServerRequest } from "~/hooks/use-server-request";
 import {
@@ -36,7 +36,6 @@ export const ManualOrderingForm: React.FC<{
     initialData: null,
     queryKey: [LATEST_PLATFORM_SETTINGS_PATH],
     queryFn: () => {
-      console.warn("fetching");
       return fetchPlatformSettings();
     },
     throwOnError(error, query) {
@@ -44,7 +43,6 @@ export const ManualOrderingForm: React.FC<{
       return true;
     },
     select: (result) => {
-      console.log({ result });
       return (result?.data || DEFAULT_PLATFORM_SETTINGS).availableCities || [];
     },
   });
@@ -53,6 +51,7 @@ export const ManualOrderingForm: React.FC<{
     product?: ProductWithQuantity;
     pickupLocation?: Location;
     dropoffLocation?: Location;
+    clientPhoneNumber?: string;
     urgencyLevel?: OrderPriority;
   };
   const [reqInfo, setReqInfo] = useState<RequestInfo>({});
@@ -293,7 +292,8 @@ export const ManualOrderingForm: React.FC<{
               )}
               id="pickup-location-input"
               maxLength={250}
-              className={`block w-full rounded-xl border p-3 text-center text-sm text-black placeholder:text-sm focus:border-red-400 focus:outline-none focus:ring-transparent ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
+              placement="bottom"
+              className={`block w-full rounded-full border p-3 text-center text-sm text-black placeholder:text-sm focus:border-red-400 focus:outline-none focus:ring-transparent ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
               placeholder="Enter pickup location"
               // className={`block w-full border px-[8px] py-1 text-xs text-black placeholder:text-xs focus:border-red-400 focus:outline-none focus:ring-transparent xs:py-2 sm:py-3 md:h-auto ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
               // placeholder={'Enter the description of your order'}
@@ -325,16 +325,57 @@ export const ManualOrderingForm: React.FC<{
                   pickupLocation: params.place ?? undefined,
                 });
               }}
+              placement="bottom"
               required
               restrictedGMARecBounds={availableCities?.map(
                 (city) => city.viewPort,
               )}
               id="dropoff-location-input"
               maxLength={250}
-              className={`block w-full rounded-xl border p-3 text-center text-sm text-black placeholder:text-sm focus:border-red-400 focus:outline-none focus:ring-transparent ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
+              className={`block w-full rounded-full border p-3 text-center text-sm text-black placeholder:text-sm focus:border-red-400 focus:outline-none focus:ring-transparent ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
               placeholder="Enter dropoff location"
               // className={`block w-full border px-[8px] py-1 text-xs text-black placeholder:text-xs focus:border-red-400 focus:outline-none focus:ring-transparent xs:py-2 sm:py-3 md:h-auto ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
               // placeholder={'Enter the description of your order'}
+            />
+          </motion.div>
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: { opacity: 0, y: 10 },
+              visible: {
+                opacity: 1,
+                y: 0,
+                transition: {
+                  duration: 0.5,
+                  delay: 0.55,
+                  ease: "easeOut",
+                  delayChildren: 0.5,
+                  staggerChildren: 0.2,
+                },
+              },
+            }}
+            className="w-full py-1 md:px-12"
+          >
+            <TextInput
+              name="text"
+              type="tel"
+              required
+              minLength={8}
+              value={reqInfo?.clientPhoneNumber || ""}
+              onEnter={() => autoDetectRequestAndEstimateFees(null)}
+              onChange={(e) => {
+                const purifiedPhoneNumber = e.target.value.replace(
+                  /[^0-9\s-+()]/g,
+                  "",
+                );
+                setReqInfo({
+                  ...reqInfo,
+                  clientPhoneNumber: purifiedPhoneNumber,
+                });
+              }}
+              className={`block w-full border px-[8px] py-1 text-center text-sm text-black placeholder:text-sm focus:border-red-400 focus:outline-none focus:ring-transparent xs:py-2 sm:py-3 md:h-auto ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
+              placeholder={"Enter phone number"}
             />
           </motion.div>
           <motion.div
@@ -371,9 +412,8 @@ export const ManualOrderingForm: React.FC<{
                   },
                 })
               }
-              // readOnly={i + 1 !== qas.length}
               rows={2}
-              className={`block w-full border px-[8px] py-1 text-xs text-black placeholder:text-xs focus:border-red-400 focus:outline-none focus:ring-transparent xs:py-2 sm:py-3 md:h-auto ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
+              className={`block w-full rounded-full border px-[8px] py-1 text-center text-xs text-black placeholder:text-xs focus:border-red-400 focus:outline-none focus:ring-transparent xs:py-2 sm:py-3 md:h-auto ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
               placeholder={
                 "Enter order number or additional details (optional)"
               }
@@ -459,6 +499,7 @@ export const ManualOrderingForm: React.FC<{
             disabled={!!error}
             isLoading={isPending}
             estimations={estimations || null}
+            clientInfo={{ clientPhone: reqInfo.clientPhoneNumber! }}
             pickupLocation={reqInfo.pickupLocation || null}
             deliveryLocation={reqInfo.dropoffLocation || null}
             deliveryPriority={reqInfo.urgencyLevel || null}

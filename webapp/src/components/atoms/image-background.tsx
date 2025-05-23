@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { twMerge } from "tailwind-merge";
 
 interface ImageProps {
   src: string;
@@ -35,7 +36,10 @@ export const AppImageBackground = ({
       style={{
         backgroundImage: `${gradient}, url('${currentSrc}')`,
       }}
-      className={`bg-black bg-cover bg-fixed bg-center bg-no-repeat ${className || ""}`}
+      className={twMerge(
+        "bg-black bg-cover bg-fixed bg-center bg-no-repeat",
+        className || "",
+      )}
     >
       {children}
     </div>
