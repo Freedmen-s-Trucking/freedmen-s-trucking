@@ -31,6 +31,7 @@ import {
   VerificationStatus,
   UserEntity,
   ApiReqSendBatchMessage,
+  type,
 } from "@freedmen-s-trucking/types";
 import { AppImage } from "~/components/atoms";
 import { MdHideImage } from "react-icons/md";
@@ -50,6 +51,8 @@ import { TbMessageUser } from "react-icons/tb";
 import { useServerRequest } from "~/hooks/use-server-request";
 import { TextArea } from "~/components/atoms/base";
 import { FaSms } from "react-icons/fa";
+import { showInfoBubble } from "~/stores/controllers/app-ctrl";
+import { useAppDispatch } from "~/stores/hooks";
 
 const btTheme = {
   base: "group relative flex items-stretch justify-center p-0.5 text-center font-medium transition-[color,background-color,border-color,text-decoration-color,fill,stroke,box-shadow] focus:z-10 focus:outline-none",
@@ -319,6 +322,7 @@ const DriverManagement: React.FC = () => {
       },
     });
 
+  const dispatch = useAppDispatch();
   const serverRequest = useServerRequest();
   const {
     mutate: sendMessageToDriver,
@@ -330,7 +334,7 @@ const DriverManagement: React.FC = () => {
         ev.currentTarget || (ev.target as HTMLFormElement),
       );
       const message = fd.get("message")?.toString() || "";
-      await serverRequest("/messaging/sms/send-batch-message-to-drivers", {
+      return serverRequest("/messaging/sms/send-batch-message-to-drivers", {
         method: "POST",
         body: {
           uids: currentDriver?.data.user?.uid
@@ -338,9 +342,62 @@ const DriverManagement: React.FC = () => {
             : filteredDrivers.map((driver) => driver.data.user.uid),
           message,
         } satisfies ApiReqSendBatchMessage,
+        schema: type({
+          successes: type({
+            body: "unknown?",
+            numSegments: "unknown?",
+            direction: "string",
+            from: "string",
+            to: "string",
+            dateUpdated: "string",
+            price: "unknown?",
+            errorMessage: "unknown?",
+            uri: "string",
+            accountSid: "string",
+            numMedia: "unknown?",
+            status: "string",
+            messagingServiceSid: "string | null ?",
+            sid: "string",
+            dateSent: "string | null ?",
+            dateCreated: "string",
+            errorCode: "string | null ?",
+            priceUnit: "unknown?",
+            apiVersion: "unknown?",
+            "+": "ignore",
+          }).array(),
+
+          failures: type("object[]").optional(),
+        }),
       });
     },
-    onSuccess() {
+    onSuccess(data) {
+      const hasError = !!data?.failures?.length;
+      const hasSuccess = !!data?.successes?.length;
+      if (hasError && !hasSuccess) {
+        dispatch(
+          showInfoBubble({
+            title: "Error",
+            message: "Message sent failed",
+            type: "failure",
+          }),
+        );
+      } else if (!hasError && hasSuccess) {
+        dispatch(
+          showInfoBubble({
+            title: "Success",
+            message: "Message sent successfully",
+            type: "success",
+          }),
+        );
+      } else {
+        dispatch(
+          showInfoBubble({
+            title: "Warning",
+            message: `Message sent to ${data?.successes?.length} drivers. ${data?.failures?.length} failed.`,
+            type: "warning",
+          }),
+        );
+      }
       setShowMessageModal(null);
       setCurrentDriver(null);
     },
@@ -516,15 +573,17 @@ const DriverManagement: React.FC = () => {
             {filteredDrivers.map((driver) => (
               <Table.Row key={driver.data.user?.uid}>
                 <Table.Cell className="flex items-center gap-2">
-                  <SecondaryButton
-                    className="border-none bg-secondary-50 p-1 text-2xl text-secondary-700 "
-                    onClick={() => {
-                      setCurrentDriver({ ...driver });
-                      setShowMessageModal("single");
-                    }}
-                  >
-                    <FaSms />
-                  </SecondaryButton>
+                  {driver.data.phoneNumber && (
+                    <SecondaryButton
+                      className="border-none bg-secondary-50 p-1 text-2xl text-secondary-700 "
+                      onClick={() => {
+                        setCurrentDriver({ ...driver });
+                        setShowMessageModal("single");
+                      }}
+                    >
+                      <FaSms />
+                    </SecondaryButton>
+                  )}
                   <Button
                     color="primary"
                     size="sm"
@@ -884,10 +943,12 @@ const DriverManagement: React.FC = () => {
             {showMessageModal === "single" ? "a" : "a group"} message to{" "}
             {showMessageModal === "group"
               ? filteredDrivers.length + " drivers"
-              : currentDriver?.data.displayName ||
-                currentDriver?.data.firstName +
-                  " " +
-                  currentDriver?.data.lastName}
+              : (currentDriver?.data.displayName ||
+                  currentDriver?.data.firstName +
+                    " " +
+                    currentDriver?.data.lastName) +
+                " " +
+                currentDriver?.data.phoneNumber}
           </p>
           <form onSubmit={sendMessageToDriver} className="flex flex-col gap-8">
             <label className="text-sm">

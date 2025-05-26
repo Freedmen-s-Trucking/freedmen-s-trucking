@@ -63,7 +63,7 @@ const RootRouteComponent: React.FC = () => {
             dispatch(showInfoBubble(null));
           }}
           rounded
-          className="absolute z-[60] m-2"
+          className="absolute left-1/2 z-[60] w-72 max-w-sm -translate-x-1/2"
         >
           <span className="font-bold">{infoBubble?.title}</span>
         </Alert>
