@@ -38,6 +38,12 @@ export const apiResSetupConnectedAccount = driverEntity
     refreshUrl: "string.url",
   });
 
+export const apiReqSendBatchMessage = type({
+  uids: "string[]",
+  message: "string",
+});
+export type ApiReqSendBatchMessage = typeof apiReqSendBatchMessage.infer;
+
 export type ApiResSetupConnectedAccount =
   typeof apiResSetupConnectedAccount.infer;
 

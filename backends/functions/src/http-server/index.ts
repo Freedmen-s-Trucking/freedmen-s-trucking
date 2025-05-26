@@ -13,6 +13,7 @@ import {getAuth} from "firebase-admin/auth";
 import {Variables} from "../utils/types";
 import {slackNotify} from "~src/utils/slack-notification";
 import backfillsApiRouter from "./backfills/api";
+import messagingApiRouter from "./messaging/api";
 
 export const customLogger = (message: string, ...rest: string[]) => {
   console.log(message, ...rest);
@@ -52,6 +53,7 @@ apiV1Route.route("/ai-agent", aiAgentApiRouter);
 apiV1Route.route("/authenticate", authenticateApiRouter);
 apiV1Route.route("/order", orderApiRouter);
 apiV1Route.route("/user", userApiRouter);
+apiV1Route.route("/messaging", messagingApiRouter);
 apiV1Route.route("/backfills", backfillsApiRouter);
 apiV1Route.post("/logs", async (c) => {
   const body = await c.req.json();

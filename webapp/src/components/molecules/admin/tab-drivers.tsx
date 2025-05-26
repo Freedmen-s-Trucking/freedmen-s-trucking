@@ -30,9 +30,11 @@ import {
   DriverEntity,
   VerificationStatus,
   UserEntity,
+  ApiReqSendBatchMessage,
 } from "@freedmen-s-trucking/types";
 import { AppImage } from "~/components/atoms";
 import { MdHideImage } from "react-icons/md";
+// import { ImCancelCircle } from "react-icons/im";
 import { useStorageOperations } from "~/hooks/use-storage";
 import { tabTheme } from "~/utils/constants";
 import { SecondaryButton, TextInput } from "~/components/atoms";
@@ -44,6 +46,10 @@ import {
   Pin,
   useAdvancedMarkerRef,
 } from "@vis.gl/react-google-maps";
+import { TbMessageUser } from "react-icons/tb";
+import { useServerRequest } from "~/hooks/use-server-request";
+import { TextArea } from "~/components/atoms/base";
+import { FaSms } from "react-icons/fa";
 
 const btTheme = {
   base: "group relative flex items-stretch justify-center p-0.5 text-center font-medium transition-[color,background-color,border-color,text-decoration-color,fill,stroke,box-shadow] focus:z-10 focus:outline-none",
@@ -254,6 +260,10 @@ const DriverManagement: React.FC = () => {
     requireExplanation: boolean;
   } | null>(null);
 
+  const [showMessageModal, setShowMessageModal] = useState<
+    "group" | "single" | null
+  >(null);
+
   const { mutate: updateDriverStatus, isPending: isUpdateDriverStatusPending } =
     useMutation({
       mutationFn: async (args: {
@@ -308,6 +318,36 @@ const DriverManagement: React.FC = () => {
         console.error({ error, variables, context });
       },
     });
+
+  const serverRequest = useServerRequest();
+  const {
+    mutate: sendMessageToDriver,
+    isPending: isSendMessageToDriverPending,
+  } = useMutation({
+    mutationFn: async (ev: React.FormEvent<HTMLFormElement>) => {
+      ev.preventDefault();
+      const fd = new FormData(
+        ev.currentTarget || (ev.target as HTMLFormElement),
+      );
+      const message = fd.get("message")?.toString() || "";
+      await serverRequest("/messaging/sms/send-batch-message-to-drivers", {
+        method: "POST",
+        body: {
+          uids: currentDriver?.data.user?.uid
+            ? [currentDriver.data.user.uid]
+            : filteredDrivers.map((driver) => driver.data.user.uid),
+          message,
+        } satisfies ApiReqSendBatchMessage,
+      });
+    },
+    onSuccess() {
+      setShowMessageModal(null);
+      setCurrentDriver(null);
+    },
+    onError(error, variables, context) {
+      console.error({ error, variables, context });
+    },
+  });
 
   if (isLoading) {
     return (
@@ -431,12 +471,41 @@ const DriverManagement: React.FC = () => {
             <option value="failed">Failed</option>
           </Select>
         </div>
+
+        <div className="w-full sm:w-64">
+          <SecondaryButton
+            className="border-secondary-950 bg-secondary-50 p-2 text-secondary-700 "
+            onClick={() => setShowMessageModal("group")}
+          >
+            <TbMessageUser />
+          </SecondaryButton>
+        </div>
       </div>
 
       <div className="overflow-x-auto rounded-lg shadow-sm">
         <Table striped>
           <Table.Head>
-            <Table.HeadCell>Actions</Table.HeadCell>
+            <Table.HeadCell className="flex items-center justify-center gap-2">
+              {/* {multiSelectMode && (
+                <TextInput className="max-w-2 border-2 p-2" type="checkbox" />
+              )}
+              {multiSelectMode ? (
+                <SecondaryButton
+                  className="m-1 inline border-none bg-orange-50 p-1 text-orange-700 "
+                  onClick={() => setMultiSelectMode(false)}
+                >
+                  <ImCancelCircle size={18} className="inline" />
+                </SecondaryButton>
+              ) : (
+                <SecondaryButton
+                  className="inline border-none bg-secondary-50 p-2 text-secondary-700 "
+                  onClick={() => setMultiSelectMode(true)}
+                >
+                  <MdLibraryAddCheck size={18} className="inline" />
+                </SecondaryButton>
+              )} */}
+              Actions
+            </Table.HeadCell>
             <Table.HeadCell>Driver</Table.HeadCell>
             <Table.HeadCell>Verification Status</Table.HeadCell>
             <Table.HeadCell>Vehicles</Table.HeadCell>
@@ -446,7 +515,16 @@ const DriverManagement: React.FC = () => {
           <Table.Body>
             {filteredDrivers.map((driver) => (
               <Table.Row key={driver.data.user?.uid}>
-                <Table.Cell>
+                <Table.Cell className="flex items-center gap-2">
+                  <SecondaryButton
+                    className="border-none bg-secondary-50 p-1 text-2xl text-secondary-700 "
+                    onClick={() => {
+                      setCurrentDriver({ ...driver });
+                      setShowMessageModal("single");
+                    }}
+                  >
+                    <FaSms />
+                  </SecondaryButton>
                   <Button
                     color="primary"
                     size="sm"
@@ -504,7 +582,10 @@ const DriverManagement: React.FC = () => {
       {/* Driver Details Modal */}
       <Modal
         show={showModal}
-        onClose={() => setShowModal(false)}
+        onClose={() => {
+          setShowModal(false);
+          setCurrentDriver(null);
+        }}
         size="5xl"
         // className=" bg-black bg-opacity-30 [&>div>div]:bg-primary-50 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-end md:[&>div]:h-auto"
       >
@@ -786,6 +867,48 @@ const DriverManagement: React.FC = () => {
               </div>
             </div>
           )}
+        </Modal.Body>
+      </Modal>
+
+      <Modal
+        size="sm"
+        show={!!showMessageModal}
+        onClose={() => setShowMessageModal(null)}
+      >
+        <Modal.Header className="[&>button]:rounded-full [&>button]:bg-accent-400 [&>button]:p-[1px] [&>button]:text-primary-100 [&>button]:transition-all  [&>button]:duration-300  hover:[&>button]:scale-110 hover:[&>button]:text-primary-950 ">
+          <span className="text-lg font-medium">Message Driver</span>
+        </Modal.Header>
+        <Modal.Body className="text-secondary-950">
+          <p className="mb-4">
+            You are about to send{" "}
+            {showMessageModal === "single" ? "a" : "a group"} message to{" "}
+            {showMessageModal === "group"
+              ? filteredDrivers.length + " drivers"
+              : currentDriver?.data.displayName ||
+                currentDriver?.data.firstName +
+                  " " +
+                  currentDriver?.data.lastName}
+          </p>
+          <form onSubmit={sendMessageToDriver} className="flex flex-col gap-8">
+            <label className="text-sm">
+              <TextArea
+                autoCorrect="true"
+                name="message"
+                autoFocus
+                rows={3}
+                placeholder="Please Provide Your Message"
+                minLength={5}
+                required
+              />
+            </label>
+            <SecondaryButton
+              type="submit"
+              isLoading={isSendMessageToDriverPending}
+              className="self-end border-teal-500 bg-teal-200 py-2 text-secondary-950"
+            >
+              Send Message
+            </SecondaryButton>
+          </form>
         </Modal.Body>
       </Modal>
     </div>
