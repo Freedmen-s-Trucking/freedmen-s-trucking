@@ -83,6 +83,9 @@ jobs:
           echo "SEND_GRID_API_KEY=${{ secrets.SEND_GRID_API_KEY_PROD }}" >> .env
           echo "PUBLIC_WEBAPP_URL=${{ vars.PUBLIC_WEBAPP_URL_PROD }}" >> .env
           echo "GOOGLE_MAPS_API_KEY_BACKEND=${{ secrets.GOOGLE_MAPS_API_KEY_BACKEND_PROD }}" >> .env
+          echo "TWILIO_ACCOUNT_SID=${{ secrets.TWILIO_ACCOUNT_SID_PROD }}" >> .env
+          echo "TWILIO_AUTH_TOKEN=${{ secrets.TWILIO_AUTH_TOKEN_PROD }}" >> .env
+          echo "TWILIO_PHONE_NUMBER=${{ secrets.TWILIO_PHONE_NUMBER_PROD }}" >> .env
 
       # Deploy Cloud Functions.
       # The double --force is not a mistake — the second one applies to artifact policy setup.
