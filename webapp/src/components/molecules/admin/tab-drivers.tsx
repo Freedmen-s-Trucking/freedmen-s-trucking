@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   Table,
   Badge,
@@ -29,7 +29,6 @@ import {
   EntityWithPath,
   DriverEntity,
   VerificationStatus,
-  UserEntity,
   ApiReqSendBatchMessage,
   type,
 } from "@freedmen-s-trucking/types";
@@ -174,28 +173,45 @@ const CustomMarker = ({
   driver,
 }: {
   position: google.maps.LatLng | google.maps.LatLngLiteral;
-  driver: EntityWithPath<DriverEntity & { user: UserEntity }>;
+  driver: EntityWithPath<DriverEntity>;
 }) => {
   const [markerRef, marker] = useAdvancedMarkerRef();
+  const [infoWindowShown, setInfoWindowShown] = useState(false);
+
+  const handleMarkerClick = useCallback(() => {
+    setInfoWindowShown((isShown) => !isShown);
+  }, []);
+
+  const handleClose = useCallback(() => {
+    setInfoWindowShown(false);
+  }, []);
+
   return (
     <>
-      <AdvancedMarker position={position} ref={markerRef}>
+      <AdvancedMarker
+        onClick={handleMarkerClick}
+        position={position}
+        ref={markerRef}
+      >
         <Pin
           background={"#FFAF01"}
           borderColor={"#FF9100"}
           glyphColor={"#FFC400"}
         />
       </AdvancedMarker>
-      <InfoWindow
-        anchor={marker}
-        className="m-0 p-0"
-        headerContent={<span>{driver.data.user.displayName}</span>}
-      >
-        <div className="flex flex-col gap-2">
-          <span>{driver.data.user.email}</span>
-          <span>{driver.data.user.phoneNumber}</span>
-        </div>
-      </InfoWindow>
+      {infoWindowShown && (
+        <InfoWindow
+          anchor={marker}
+          className="m-0 p-0"
+          headerContent={<span>{driver.data.displayName}</span>}
+          onClose={handleClose}
+        >
+          <div className="flex flex-col gap-2">
+            <span>{driver.data.email}</span>
+            <span>{driver.data.phoneNumber}</span>
+          </div>
+        </InfoWindow>
+      )}
     </>
   );
 };
@@ -206,9 +222,8 @@ const DriverManagement: React.FC = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [currentDriver, setCurrentDriver] = useState<EntityWithPath<
-    DriverEntity & { user: UserEntity }
-  > | null>(null);
+  const [currentDriver, setCurrentDriver] =
+    useState<EntityWithPath<DriverEntity> | null>(null);
   const [showModal, setShowModal] = useState(false);
 
   const { data: drivers, isLoading } = useQuery({
@@ -283,14 +298,11 @@ const DriverManagement: React.FC = () => {
           statusHint = fd.get("statusHint")?.toString() || null;
         }
         console.log("updateDriverStatus2");
-        if (
-          !currentDriver?.data.user?.uid ||
-          currentDriver?.path !== args.path
-        ) {
+        if (!currentDriver?.data.uid || currentDriver?.path !== args.path) {
           return {};
         }
         console.log("updateDriverStatu3");
-        await _updateDriver(currentDriver.data.user.uid, {
+        await _updateDriver(currentDriver.path.split("/").pop() || "", {
           verificationStatus: args.status,
           verificationMessage: statusHint,
         });
@@ -337,9 +349,9 @@ const DriverManagement: React.FC = () => {
       return serverRequest("/messaging/sms/send-batch-message-to-drivers", {
         method: "POST",
         body: {
-          uids: currentDriver?.data.user?.uid
-            ? [currentDriver.data.user.uid]
-            : filteredDrivers.map((driver) => driver.data.user.uid),
+          uids: currentDriver?.data.uid
+            ? [currentDriver.data.uid]
+            : filteredDrivers.map((driver) => driver.data.uid),
           message,
         } satisfies ApiReqSendBatchMessage,
         schema: type({
@@ -422,10 +434,10 @@ const DriverManagement: React.FC = () => {
   }
   const filteredDrivers = drivers.filter((driver) => {
     const matchesSearch =
-      driver.data.user?.displayName
+      driver.data.displayName
         ?.toLowerCase()
         .includes(searchTerm.toLowerCase()) ||
-      driver.data.user?.email?.toLowerCase().includes(searchTerm.toLowerCase());
+      driver.data.email?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus =
       statusFilter === "all" ||
       getDriverVerificationStatus(driver.data) === statusFilter;
@@ -571,7 +583,7 @@ const DriverManagement: React.FC = () => {
           </Table.Head>
           <Table.Body>
             {filteredDrivers.map((driver) => (
-              <Table.Row key={driver.data.user?.uid}>
+              <Table.Row key={driver.path}>
                 <Table.Cell className="flex items-center gap-2">
                   {driver.data.phoneNumber && (
                     <SecondaryButton
@@ -597,18 +609,18 @@ const DriverManagement: React.FC = () => {
                 </Table.Cell>
                 <Table.Cell className="whitespace-nowrap font-medium">
                   <div className="flex items-center space-x-3">
-                    <Avatar
-                      img={
-                        driver.data.user?.photoURL ||
-                        "https://via.placeholder.com/40"
-                      }
-                      rounded
-                      size="sm"
+                    <AppImage
+                      src={{
+                        url: driver.data.photoURL,
+                        storage: driver.data.uploadedProfileStoragePath || null,
+                      }}
+                      alt={driver.data.displayName || ""}
+                      fallback={<Avatar size="md" rounded />}
                     />
                     <div>
-                      <div>{driver.data.user?.displayName}</div>
+                      <div>{driver.data.displayName}</div>
                       <div className="text-xs text-gray-500">
-                        {driver.data.user?.email}
+                        {driver.data.email}
                       </div>
                     </div>
                   </div>
@@ -655,17 +667,18 @@ const DriverManagement: React.FC = () => {
               <div className="mb-6 flex flex-col items-start gap-6 md:flex-row">
                 <div className="w-full md:w-1/3">
                   <div className="mb-4 flex items-center gap-4">
-                    <Avatar
-                      img={
-                        currentDriver.data.user?.photoURL ||
-                        "https://via.placeholder.com/80"
-                      }
-                      size="lg"
-                      rounded
+                    <AppImage
+                      src={{
+                        url: currentDriver.data.photoURL,
+                        storage:
+                          currentDriver.data.uploadedProfileStoragePath || null,
+                      }}
+                      alt={currentDriver.data.displayName || ""}
+                      fallback={<Avatar size="md" rounded />}
                     />
                     <div>
                       <h3 className="text-xl font-bold">
-                        {currentDriver.data.user?.displayName}
+                        {currentDriver.data.displayName}
                       </h3>
                       <div className="mt-1 flex items-center">
                         {renderStatusBadge(
@@ -683,16 +696,13 @@ const DriverManagement: React.FC = () => {
                     <div className="space-y-3">
                       <div className="flex items-center gap-2">
                         <HiMail className="text-gray-500" />
-                        <span>
-                          {currentDriver.data.user?.email || "No email"}
-                        </span>
+                        <span>{currentDriver.data.email || "No email"}</span>
                       </div>
 
                       <div className="flex items-center gap-2">
                         <HiPhone className="text-gray-500" />
                         <span>
-                          {currentDriver.data.user?.phoneNumber ||
-                            "No phone number"}
+                          {currentDriver.data.phoneNumber || "No phone number"}
                         </span>
                       </div>
 

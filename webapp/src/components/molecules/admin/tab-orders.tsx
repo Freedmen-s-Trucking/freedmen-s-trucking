@@ -6,35 +6,73 @@ import {
   TextInput,
   Select,
   Spinner,
+  Avatar,
 } from "flowbite-react";
 import { HiSearch, HiCurrencyDollar, HiCheck, HiTruck } from "react-icons/hi";
 import {
   EntityWithPath,
-  OrderEntity,
-  OrderEntityFields,
-  OrderPriority,
-  OrderStatus,
+  TaskGroupEntity,
+  TaskGroupEntityFields,
+  TaskGroupStatus,
 } from "@freedmen-s-trucking/types";
 import { useDbOperations } from "~/hooks/use-firestore";
 import { useQuery } from "@tanstack/react-query";
-import { Order } from "~/components/molecules/order-details";
+import { Task } from "~/components/molecules/task-details";
 import { customDateFormat } from "~/utils/functions";
+import { AppImage } from "~/components/atoms";
+
+const renderStatusBadge = (status: TaskGroupStatus) => {
+  switch (status) {
+    case TaskGroupStatus.COMPLETED:
+      return (
+        <Badge color="success" icon={HiCheck}>
+          Completed
+        </Badge>
+      );
+    case TaskGroupStatus.IN_PROGRESS:
+      return (
+        <Badge color="info" icon={HiTruck}>
+          In Progress
+        </Badge>
+      );
+    case TaskGroupStatus.IDLE:
+      return (
+        <Badge color="warning" icon={HiCurrencyDollar}>
+          Idle
+        </Badge>
+      );
+    default:
+      return <Badge color="gray">Unknown</Badge>;
+  }
+};
 
 const Orders: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [currentOrder, setCurrentOrder] =
-    useState<EntityWithPath<OrderEntity> | null>(null);
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "in-progress" | "completed" | "unassigned" | "idle"
+  >("all");
+  const [currentTask, setCurrentTask] =
+    useState<EntityWithPath<TaskGroupEntity> | null>(null);
   const [showModal, setShowModal] = useState(false);
-  const { fetchOrders } = useDbOperations();
+  const { fetchTaskGroups } = useDbOperations();
 
-  const { data, isLoading } = useQuery({
+  // const { data: ordersData, isLoading: ordersLoading } = useQuery({
+  //   initialData: [],
+  //   queryKey: ["orders"],
+  //   queryFn: fetchOrders,
+  // });
+
+  const { data: taskGroupsData, isLoading: taskGroupsLoading } = useQuery({
     initialData: [],
-    queryKey: ["orders"],
-    queryFn: fetchOrders,
+    queryKey: ["task-groups"],
+    queryFn: fetchTaskGroups,
+    throwOnError(error) {
+      console.error(error);
+      return false;
+    },
   });
 
-  if (isLoading) {
+  if (taskGroupsLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
         <Spinner size="xl" color="purple" />
@@ -42,7 +80,7 @@ const Orders: React.FC = () => {
     );
   }
 
-  if (!data || data.length === 0) {
+  if (!taskGroupsData || taskGroupsData.length === 0) {
     return (
       <div className="flex h-64 items-center justify-center">
         <p className="text-gray-500">No orders found</p>
@@ -50,68 +88,35 @@ const Orders: React.FC = () => {
     );
   }
 
-  const filteredOrders = data.filter((order) => {
-    const matchesSearch =
-      order.data.clientName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.data.clientEmail
-        ?.toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      order.data.pickupLocation?.address
-        ?.toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      order.data.deliveryLocation?.address
-        ?.toLowerCase()
-        .includes(searchTerm.toLowerCase());
+  const filteredTasks = taskGroupsData.filter((taskGroup) => {
+    const matchesSearch = Object.values(
+      taskGroup.data[TaskGroupEntityFields.orderIdValueMap],
+    ).find((order) => {
+      return (
+        order.clientName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.clientEmail?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.pickupLocation?.address
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        order.deliveryLocation?.address
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase())
+      );
+    });
 
     const matchesStatus =
       statusFilter === "all" ||
-      (statusFilter === "active" &&
-        order.data.status === OrderStatus.TASKS_ASSIGNED) ||
+      (statusFilter === "in-progress" &&
+        taskGroup.data.status === TaskGroupStatus.IN_PROGRESS) ||
       (statusFilter === "completed" &&
-        order.data.status === OrderStatus.COMPLETED) ||
+        taskGroup.data.status === TaskGroupStatus.COMPLETED) ||
       (statusFilter === "unassigned" &&
-        order.data.status === OrderStatus.PAYMENT_RECEIVED);
+        !taskGroup.data[TaskGroupEntityFields.driverId]) ||
+      (statusFilter === "idle" &&
+        taskGroup.data.status === TaskGroupStatus.IDLE);
 
-    return matchesSearch && matchesStatus;
+    return !!matchesSearch && matchesStatus;
   });
-
-  const renderStatusBadge = (status: OrderStatus) => {
-    switch (status) {
-      case OrderStatus.COMPLETED:
-        return (
-          <Badge color="success" icon={HiCheck}>
-            Completed
-          </Badge>
-        );
-      case OrderStatus.TASKS_ASSIGNED:
-        return (
-          <Badge color="info" icon={HiTruck}>
-            Assigned
-          </Badge>
-        );
-      case OrderStatus.PAYMENT_RECEIVED:
-        return (
-          <Badge color="warning" icon={HiCurrencyDollar}>
-            Paid
-          </Badge>
-        );
-      default:
-        return <Badge color="gray">Unknown</Badge>;
-    }
-  };
-
-  const renderPriorityBadge = (priority: OrderPriority) => {
-    switch (priority) {
-      case OrderPriority.URGENT:
-        return <Badge color="red">Urgent</Badge>;
-      case OrderPriority.EXPEDITED:
-        return <Badge color="yellow">Expedited</Badge>;
-      case OrderPriority.STANDARD:
-        return <Badge color="gray">Standard</Badge>;
-      default:
-        return null;
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -134,12 +139,15 @@ const Orders: React.FC = () => {
         <div className="w-full sm:w-64">
           <Select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) =>
+              setStatusFilter(e.target.value as typeof statusFilter)
+            }
           >
             <option value="all">All Statuses</option>
-            <option value="active">Active</option>
-            <option value="completed">Completed</option>
             <option value="unassigned">Unassigned</option>
+            <option value="idle">Idle</option>
+            <option value="in-progress">In Progress</option>
+            <option value="completed">Completed</option>
           </Select>
         </div>
       </div>
@@ -148,51 +156,45 @@ const Orders: React.FC = () => {
         <Table striped>
           <Table.Head>
             <Table.HeadCell>Actions</Table.HeadCell>
-            <Table.HeadCell>Order Info</Table.HeadCell>
-            <Table.HeadCell>Customer</Table.HeadCell>
             <Table.HeadCell>Status</Table.HeadCell>
             <Table.HeadCell>Driver</Table.HeadCell>
-            <Table.HeadCell>Price</Table.HeadCell>
+            <Table.HeadCell>Total Price</Table.HeadCell>
+            <Table.HeadCell>Driver Fees</Table.HeadCell>
+            <Table.HeadCell>Order Count</Table.HeadCell>
+            <Table.HeadCell className="min-w-32">Created At</Table.HeadCell>
+            <Table.HeadCell className="min-w-32">Updated At</Table.HeadCell>
           </Table.Head>
           <Table.Body>
-            {filteredOrders.map((order) => (
-              <Table.Row key={order.path}>
+            {filteredTasks.map((task) => (
+              <Table.Row key={task.path} className="text-xs">
                 <Table.Cell>
                   <Button
                     color="primary"
                     size="sm"
                     onClick={() => {
-                      setCurrentOrder(order);
+                      setCurrentTask(task);
                       setShowModal(true);
                     }}
                   >
                     <u>View Details</u>
                   </Button>
                 </Table.Cell>
+                <Table.Cell>{renderStatusBadge(task.data.status)}</Table.Cell>
                 <Table.Cell>
-                  <div className="font-medium">
-                    {order.path.substring(0, 8)}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {customDateFormat(order.data.createdAt || "")}
-                  </div>
-                  <div className="mt-1">
-                    {renderPriorityBadge(order.data.priority)}
-                  </div>
-                </Table.Cell>
-                <Table.Cell>
-                  <div>{order.data.clientName}</div>
-                  <div className="text-xs text-gray-500">
-                    {order.data.clientEmail}
-                  </div>
-                </Table.Cell>
-                <Table.Cell>{renderStatusBadge(order.data.status)}</Table.Cell>
-                <Table.Cell>
-                  {order.data?.[OrderEntityFields.assignedDriverId] ? (
+                  {task.data?.driverId && task.data.driverInfo ? (
                     <div className="flex items-center space-x-2">
+                      <AppImage
+                        src={{
+                          url: task.data.driverInfo.photoURL,
+                          storage:
+                            task.data.driverInfo.uploadedProfileStoragePath ||
+                            null,
+                        }}
+                        alt={task.data.driverInfo.displayName || ""}
+                        fallback={<Avatar size="md" rounded />}
+                      />
                       <span>
-                        {order.data?.[OrderEntityFields.task]?.driverName ||
-                          "Unknown Driver"}
+                        {task.data.driverInfo.displayName || "Unknown Driver"}
                       </span>
                     </div>
                   ) : (
@@ -201,24 +203,41 @@ const Orders: React.FC = () => {
                 </Table.Cell>
                 <Table.Cell>
                   <div className="font-medium">
-                    ${order.data.priceInUSD || 0}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {order.data.distanceInMiles?.toFixed(1)} miles
+                    $
+                    {Object.values(
+                      task.data[TaskGroupEntityFields.orderIdValueMap],
+                    ).reduce((acc, order) => acc + order.priceInUSD, 0)}
                   </div>
                 </Table.Cell>
+                <Table.Cell>
+                  <div className="font-medium">
+                    $
+                    {Object.values(
+                      task.data[TaskGroupEntityFields.orderIdValueMap],
+                    ).reduce((acc, order) => acc + order.driverFeesInUSD, 0)}
+                  </div>
+                </Table.Cell>
+                <Table.Cell>
+                  {
+                    Object.values(
+                      task.data[TaskGroupEntityFields.orderIdValueMap],
+                    ).length
+                  }
+                </Table.Cell>
+                <Table.Cell>{customDateFormat(task.data.createdAt)}</Table.Cell>
+                <Table.Cell>{customDateFormat(task.data.updatedAt)}</Table.Cell>
               </Table.Row>
             ))}
           </Table.Body>
         </Table>
       </div>
 
-      {/* Order Details Modal */}
-      {showModal && currentOrder && (
-        <Order.Details
+      {/* Task Group Details Modal */}
+      {showModal && currentTask && (
+        <Task.Details
           showInModal
           onClose={() => setShowModal(false)}
-          order={currentOrder}
+          task={currentTask}
           viewType="admin"
         />
       )}

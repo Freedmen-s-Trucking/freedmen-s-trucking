@@ -259,8 +259,9 @@ const GetDeliveryCode: React.FC<{
 
 const OrderDetailsView: React.FC<{
   order: EntityWithPath<OrderEntity>;
+  disableMap?: boolean;
   viewType: AccountType;
-}> = ({ order, viewType }) => {
+}> = ({ order, viewType, disableMap }) => {
   const [pickupMarkerRef, pickupMarker] = useAdvancedMarkerRef();
   const [deliveryMarkerRef, deliveryMarker] = useAdvancedMarkerRef();
   const pickupPosition = useMemo(() => {
@@ -453,7 +454,6 @@ const OrderDetailsView: React.FC<{
                       </Table.Cell>
                     )}
                   </Table.Row>
-                  {/* ))} */}
                 </Table.Body>
               </Table>
             </div>
@@ -592,78 +592,80 @@ const OrderDetailsView: React.FC<{
             </div>
           </div>
         </div>
-        <Accordion collapseAll className="w-full border-none">
-          <Accordion.Panel className="border-none">
-            <Accordion.Title className="border-b-[1px] bg-transparent p-0 text-secondary-950 hover:bg-transparent focus:right-0 focus:bg-transparent focus:ring-transparent [&>h2]:w-full">
-              <span className="text-base font-semibold">View On Map</span>
-            </Accordion.Title>
-            <Accordion.Content className="border-none px-0">
-              {center ? null : (
-                <div className="flex h-64 items-center justify-center">
-                  <p className="text-gray-500">No location data available</p>
-                </div>
-              )}
-              {(center && (
-                /* viewType === "driver" && */ <Map
-                  mapId={"DEMO_MAP_ID"}
-                  style={{ width: "100%", height: "50vh" }}
-                  defaultCenter={center}
-                  defaultZoom={10}
-                  minZoom={7}
-                  gestureHandling={"greedy"}
-                  disableDefaultUI={true}
-                >
-                  <AdvancedMarker
-                    position={pickupPosition}
-                    ref={pickupMarkerRef}
+        {!disableMap && (
+          <Accordion collapseAll className="w-full border-none">
+            <Accordion.Panel className="border-none">
+              <Accordion.Title className="border-b-[1px] bg-transparent p-0 text-secondary-950 hover:bg-transparent focus:right-0 focus:bg-transparent focus:ring-transparent [&>h2]:w-full">
+                <span className="text-base font-semibold">View On Map</span>
+              </Accordion.Title>
+              <Accordion.Content className="border-none px-0">
+                {center ? null : (
+                  <div className="flex h-64 items-center justify-center">
+                    <p className="text-gray-500">No location data available</p>
+                  </div>
+                )}
+                {(center && (
+                  /* viewType === "driver" && */ <Map
+                    mapId={"DEMO_MAP_ID"}
+                    style={{ width: "100%", height: "50vh" }}
+                    defaultCenter={center}
+                    defaultZoom={10}
+                    minZoom={7}
+                    gestureHandling={"greedy"}
+                    disableDefaultUI={true}
                   >
-                    <Pin
-                      background={"#0f9d58"}
-                      borderColor={"#006425"}
-                      glyphColor={"#60d98f"}
+                    <AdvancedMarker
+                      position={pickupPosition}
+                      ref={pickupMarkerRef}
+                    >
+                      <Pin
+                        background={"#0f9d58"}
+                        borderColor={"#006425"}
+                        glyphColor={"#60d98f"}
+                      />
+                    </AdvancedMarker>
+                    <InfoWindow
+                      anchor={pickupMarker}
+                      className="m-0 p-0"
+                      headerContent={<span>Pickup Location</span>}
                     />
-                  </AdvancedMarker>
-                  <InfoWindow
-                    anchor={pickupMarker}
-                    className="m-0 p-0"
-                    headerContent={<span>Pickup Location</span>}
-                  />
-                  <AdvancedMarker
-                    position={deliveryPosition}
-                    ref={deliveryMarkerRef}
-                  />
-                  <InfoWindow
-                    anchor={deliveryMarker}
-                    className="m-0 p-0"
-                    headerContent={<span>Delivery Location</span>}
-                  />
-                  {/* {(order.data[OrderEntityFields.assignedDriverIds] || []).map(
+                    <AdvancedMarker
+                      position={deliveryPosition}
+                      ref={deliveryMarkerRef}
+                    />
+                    <InfoWindow
+                      anchor={deliveryMarker}
+                      className="m-0 p-0"
+                      headerContent={<span>Delivery Location</span>}
+                    />
+                    {/* {(order.data[OrderEntityFields.assignedDriverIds] || []).map(
                     (driverId, index) => (
                       <> */}
-                  {Object.entries(
-                    order.data[OrderEntityFields.task]?.driverPositions || {},
-                  ).map(([status, position]) => (
-                    <AdvancedMarker
-                      key={`${status}`}
-                      position={{
-                        lat: position.latitude,
-                        lng: position.longitude,
-                      }}
-                      anchorPoint={AdvancedMarkerAnchorPoint.CENTER}
-                    >
-                      <TbTruckDelivery size={32} color="#472E1E" />
-                    </AdvancedMarker>
-                  ))}
-                  {/* </>
+                    {Object.entries(
+                      order.data[OrderEntityFields.task]?.driverPositions || {},
+                    ).map(([status, position]) => (
+                      <AdvancedMarker
+                        key={`${status}`}
+                        position={{
+                          lat: position.latitude,
+                          lng: position.longitude,
+                        }}
+                        anchorPoint={AdvancedMarkerAnchorPoint.CENTER}
+                      >
+                        <TbTruckDelivery size={32} color="#472E1E" />
+                      </AdvancedMarker>
+                    ))}
+                    {/* </>
                     ),
                   )} */}
-                </Map>
-              )) ||
-                null}
-              {(center && <>{null}</>) || <StaticMap url={staticMapsUrl} />}
-            </Accordion.Content>
-          </Accordion.Panel>
-        </Accordion>
+                  </Map>
+                )) ||
+                  null}
+                {(center && <>{null}</>) || <StaticMap url={staticMapsUrl} />}
+              </Accordion.Content>
+            </Accordion.Panel>
+          </Accordion>
+        )}
         {order.data?.[OrderEntityFields.task]?.[
           OrderEntityFields.deliveredOrderConfirmationImage
         ] && (
@@ -764,23 +766,33 @@ export const Order: React.FC<{
         <div className="flex items-start justify-between">
           <div>
             <h5 className="text-lg font-bold tracking-tight text-secondary-950">
-              {order.data.clientName}
+              From: {order.data.clientName}
+              {order.data[OrderEntityFields.additionalClientInfo]
+                ?.clientPhone && (
+                <span className="ml-2 text-sm text-gray-500">
+                  {
+                    order.data[OrderEntityFields.additionalClientInfo]
+                      ?.clientPhone
+                  }
+                </span>
+              )}
             </h5>
             <div className="mb-2 font-normal text-secondary-800 dark:text-gray-400">
-              <span>
-                ORD:{order.path.split("/").pop()?.slice(0, 8)}-****-****
-              </span>
-              <div>
+              <span>ORD:{order.path.split("/").pop()?.slice(0, 8)}</span>
+              {/* <div>
                 <DisplayRequiredVehicles
                   vehicles={[order.data.requiredVehicle]}
                 />
-              </div>
+              </div> */}
             </div>
           </div>
           <div className="flex flex-col items-end gap-2">
             <StatusBadge status={order.data.status} className="text-end" />
             <p className="text-lg font-bold text-secondary-950">
-              {formatPrice(order.data.priceInUSD)}
+              {viewType !== "driver" && formatPrice(order.data.priceInUSD)}
+              {viewType === "admin" && "/"}
+              {viewType !== "customer" &&
+                formatPrice(order.data.driverFeesInUSD)}
             </p>
           </div>
         </div>
@@ -802,7 +814,7 @@ export const Order: React.FC<{
                 Dropoff Location
               </span>
               <div className="mb-0 flex items-center gap-2">
-                <FaMapMarkerAlt className="mt-1 flex-shrink-0 text-xl text-red-700" />
+                <FaMapMarkerAlt className="mt-1 flex-shrink-0 text-xl text-orange-600" />
                 <span className="text-xs">
                   {order.data.deliveryLocation?.address}
                 </span>

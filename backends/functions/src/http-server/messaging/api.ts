@@ -30,23 +30,15 @@ router.post("/sms/send-batch-message-to-drivers", async (c) => {
 
   const driverDocs = await Promise.all(driverRefs.map((ref) => ref.get()));
 
-  const promises = driverDocs.map((doc) => {
+  const promises = driverDocs.map(async (doc) => {
     const phone = doc.data()?.phoneNumber;
     if (phone) {
       try {
-        return smsClient.messages
-          .create({
-            body: sms,
-            from: process.env.TWILIO_PHONE_NUMBER,
-            to: phone,
-          })
-          .then((result) => {
-            return result;
-          })
-          .catch((error) => {
-            console.error(error);
-            return error;
-          });
+        return await smsClient.messages.create({
+          body: sms,
+          from: process.env.TWILIO_PHONE_NUMBER,
+          to: phone,
+        });
       } catch (error) {
         console.error(error);
         return Promise.reject(error);

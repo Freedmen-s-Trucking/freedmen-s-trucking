@@ -14,6 +14,7 @@ import {Variables} from "../utils/types";
 import {slackNotify} from "~src/utils/slack-notification";
 import backfillsApiRouter from "./backfills/api";
 import messagingApiRouter from "./messaging/api";
+import taskGroupApiRouter from "./task-group/api";
 
 export const customLogger = (message: string, ...rest: string[]) => {
   console.log(message, ...rest);
@@ -55,6 +56,7 @@ apiV1Route.route("/order", orderApiRouter);
 apiV1Route.route("/user", userApiRouter);
 apiV1Route.route("/messaging", messagingApiRouter);
 apiV1Route.route("/backfills", backfillsApiRouter);
+apiV1Route.route("/task-group", taskGroupApiRouter);
 apiV1Route.post("/logs", async (c) => {
   const body = await c.req.json();
   slackNotify("frontend", body, body);

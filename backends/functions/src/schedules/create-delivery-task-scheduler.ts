@@ -46,7 +46,7 @@ interface ProximityPair {
 const findNearestDriver = async (
   taskGroup: TaskGroupEntity,
   driverAssignmentRadiusInMeters: number,
-): Promise<string | null> => {
+): Promise<{driverId: string; driver: DriverEntity} | null> => {
   const bounds = getGeohashQueryBounds(
     [
       taskGroup[TaskGroupEntityFields.pickupCenterCoordinate].latitude,
@@ -100,10 +100,18 @@ const findNearestDriver = async (
 
   const firstDriverWithoutActiveTasks = drivers.find((driver) => (driver.data()?.activeTasks ?? 0) <= 0);
   if (firstDriverWithoutActiveTasks) {
-    return firstDriverWithoutActiveTasks.id;
+    return {
+      driverId: firstDriverWithoutActiveTasks.id,
+      driver: firstDriverWithoutActiveTasks.data(),
+    };
   }
 
-  return drivers[0]?.id || null;
+  return drivers[0]?.id
+    ? {
+        driverId: drivers[0].id,
+        driver: drivers[0].data(),
+      }
+    : null;
 };
 
 /**
@@ -373,9 +381,16 @@ export const scheduleGroupTaskInOrder = onSchedule("*/5 * * * *", async () => {
     for (const taskGroup of updatedTaskGroups.taskGroups) {
       if (!taskGroup.data[TaskGroupEntityFields.driverId]) {
         // find the nearest driver for the task.
-        const nearestDriverId = await findNearestDriver(taskGroup.data, maxDriverRadiusInMeters);
-        if (nearestDriverId) {
-          taskGroup.data[TaskGroupEntityFields.driverId] = nearestDriverId;
+        const nearestDriver = await findNearestDriver(taskGroup.data, maxDriverRadiusInMeters);
+        if (nearestDriver) {
+          taskGroup.data[TaskGroupEntityFields.driverId] = nearestDriver.driverId;
+          taskGroup.data[TaskGroupEntityFields.driverInfo] = {
+            displayName: nearestDriver.driver.displayName,
+            photoURL: nearestDriver.driver.photoURL || null,
+            uploadedProfileStoragePath: nearestDriver.driver.uploadedProfileStoragePath || null,
+            phoneNumber: nearestDriver.driver.phoneNumber || null,
+            email: nearestDriver.driver.email || null,
+          };
         }
       }
       if (!taskGroup.id) {

@@ -156,7 +156,7 @@ export const ManualOrderingForm: React.FC<{
 
       const feeMap = priceInPickupCity || priceInDropoffCity;
       if (distanceData.distanceInMiles > 12) {
-        setError(new Error("Distance is too long"));
+        setError(new Error("Out of range"));
         return null;
       }
       if (!feeMap) {
@@ -233,6 +233,10 @@ export const ManualOrderingForm: React.FC<{
       });
     }
   }, [estimations]); // Only run when qas.length changes
+
+  useEffect(() => {
+    setError(null);
+  }, [reqInfo]);
 
   return (
     <div

@@ -34,7 +34,7 @@ import {
   getDriverVerificationStatus,
 } from "~/utils/functions";
 
-const tabs = ["overview", "active-orders", "history", "profile"] as const;
+const tabs = ["overview", "active-tasks", "history", "profile"] as const;
 
 const statusMap: Record<
   DriverOrderStatus,
@@ -334,20 +334,18 @@ const DriverDashboard = () => {
             </Card>
           </div>
 
-          {/* Active Orders */}
+          {/* Active Tasks */}
           <div className="mb-6">
-            <h2 className="mb-3 text-xl font-bold">Current Active Orders</h2>
+            <h2 className="mb-3 text-xl font-bold">Current Active Tasks</h2>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {isActiveOrdersLoading && (
-                <p className="text-xs text-gray-500">
-                  Loading active orders...
-                </p>
+                <p className="text-xs text-gray-500">Loading active tasks...</p>
               )}
               {activeOrders.length === 0 && (
                 <Card>
                   <div className="py-4 text-center">
                     <p className="text-gray-500">
-                      No active orders at the moment.
+                      No active tasks at the moment.
                     </p>
                   </div>
                 </Card>
@@ -414,10 +412,10 @@ const DriverDashboard = () => {
         </Tabs.Item>
 
         <Tabs.Item
-          active={activeTab === "active-orders"}
+          active={activeTab === "active-tasks"}
           title={
             <div className="flex items-center">
-              <span>Active Orders</span>
+              <span>Active Tasks</span>
               {hasUpdatedOrders && (
                 <Badge color="info" className="ml-2">
                   New
@@ -427,10 +425,10 @@ const DriverDashboard = () => {
           }
           icon={HiAdjustments}
         >
-          <h2 className="mb-4 text-xl font-bold">Active Orders</h2>
+          <h2 className="mb-4 text-xl font-bold">Active Tasks</h2>
           <div className="mb-8 space-y-4">
             {isActiveOrdersLoading && (
-              <p className="text-xs text-gray-500">Loading active orders...</p>
+              <p className="text-xs text-gray-500">Loading active tasks...</p>
             )}
             {activeOrders.map((order) => (
               <Order.Details
@@ -445,7 +443,7 @@ const DriverDashboard = () => {
               <Card>
                 <div className="py-4 text-center">
                   <p className="text-gray-500">
-                    No active orders at the moment.
+                    No active tasks at the moment.
                   </p>
                 </div>
               </Card>
@@ -458,7 +456,7 @@ const DriverDashboard = () => {
           title="History"
           icon={HiClipboardList}
         >
-          <h2 className="mb-4 text-xl font-bold">Order History</h2>
+          <h2 className="mb-4 text-xl font-bold">Task History</h2>
           <div className="space-y-4">
             {historyOrdersLoading && (
               <div className="flex items-center justify-center">
@@ -469,11 +467,9 @@ const DriverDashboard = () => {
             {historyOrders.length === 0 && (
               <Card>
                 <div className="flex flex-col items-center justify-center py-4">
+                  <p className="text-gray-500">No task history at the moment</p>
                   <p className="text-gray-500">
-                    No order history at the moment
-                  </p>
-                  <p className="text-gray-500">
-                    As you complete orders, you will see them appear here.
+                    As you complete tasks, you will see them appear here.
                   </p>
                 </div>
               </Card>

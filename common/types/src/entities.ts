@@ -345,6 +345,7 @@ export type OrderEntity = /*TaskMap & */ typeof orderEntity.infer;
 
 export enum TaskGroupEntityFields {
   driverId = "driverId",
+  driverInfo = "driverInfo",
   orderIds = "orderIds",
   orderIdValueMap = "orderIdValueMap",
   status = "status",
@@ -357,6 +358,16 @@ export enum TaskGroupEntityFields {
 }
 export const taskGroupEntity = type({
   [TaskGroupEntityFields.driverId]: "string | null",
+  [TaskGroupEntityFields.driverInfo]: driverEntity
+    .pick(
+      "displayName",
+      "photoURL",
+      "email",
+      "phoneNumber",
+      "uploadedProfileStoragePath"
+    )
+    .or("null")
+    .optional(),
   [TaskGroupEntityFields.orderIds]: "string[]",
   [TaskGroupEntityFields.orderIdValueMap]: {
     "[string]": orderEntity

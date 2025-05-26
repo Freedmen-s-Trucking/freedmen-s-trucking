@@ -72,7 +72,7 @@ const AdminDashboard: React.FC = () => {
         routeParams.set("tab", "driverManagement");
         break;
       case 2:
-        routeParams.set("tab", "orders");
+        routeParams.set("tab", "ordersGroups");
         break;
       case 3:
         routeParams.set("tab", "transactions");
@@ -155,10 +155,10 @@ const AdminDashboard: React.FC = () => {
             title={
               <div className="flex items-center gap-2">
                 <MdShoppingCart className="h-5 w-5" />
-                <span>Orders</span>
+                <span>Orders Groups</span>
               </div>
             }
-            active={activeTab === "orders"}
+            active={activeTab === "ordersGroups"}
           >
             <motion.div
               initial="hidden"
