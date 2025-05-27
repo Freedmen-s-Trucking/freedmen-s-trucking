@@ -7,6 +7,7 @@ import {
   Firestore,
   getDoc,
   getDocs,
+  getCountFromServer,
   limit,
   onSnapshot,
   PartialWithFieldValue,
@@ -17,6 +18,8 @@ import {
   updateDoc,
   where,
   WithFieldValue,
+  // or,
+  // and,
 } from "firebase/firestore";
 import {
   DriverEntity,
@@ -438,6 +441,34 @@ const adminDbOperations = (db: Firestore) => {
     return result;
   };
 
+  const countOrderOfUser = async (uid: string) => {
+    const q = query(
+      collection(db, CollectionName.ORDERS),
+      where(OrderEntityFields.ownerId satisfies keyof OrderEntity, "==", uid),
+    );
+    const res = await getCountFromServer<OrderEntity, OrderEntity>(
+      q as Query<OrderEntity, OrderEntity>,
+    );
+    return res.data().count;
+  };
+
+  // const countVerifiedDriver = async () => {
+  //   const q = query(
+  //     collection(db, CollectionName.DRIVERS),
+  //     or(
+  //       where("verificationStatus" satisfies keyof DriverEntity, "==", "verified"),
+  //       and(
+  //         where("driverLicenseVerificationStatus" satisfies keyof DriverEntity, "==", "verified"),
+  //         where("driverInsuranceVerificationStatus" satisfies keyof DriverEntity, "==", "verified"),
+  //       ),
+  //     ),
+  //   );
+  //   const res = await getCountFromServer<DriverEntity, DriverEntity>(
+  //     q as Query<DriverEntity, DriverEntity>,
+  //   );
+  //   return res.data().count;
+  // };
+
   /**
    * Fetches the overview of the platform.
    * Note: Firebase security rules is the one responsible to grant access to the data, not client code.
@@ -545,6 +576,7 @@ const adminDbOperations = (db: Firestore) => {
     fetchTaskGroups,
     fetchDrivers,
     watchPlatformOverview,
+    countOrderOfUser,
     fetchPayments,
     updatePlatformSettings,
     fetchPlatformSettings,
@@ -571,6 +603,7 @@ export const useDbOperations = () => {
   const {
     fetchOrders,
     fetchTaskGroups,
+    countOrderOfUser,
     fetchDrivers,
     watchPlatformOverview,
     fetchPayments,
@@ -590,6 +623,7 @@ export const useDbOperations = () => {
     updateOrderStatus: updateOrderStatus,
     updatePlatformSettings: updatePlatformSettings,
     fetchOrders,
+    countOrderOfUser,
     fetchTaskGroups,
     fetchDrivers,
     watchPlatformOverview,

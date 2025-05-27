@@ -2,14 +2,14 @@ import {
   createRootRouteWithContext,
   NotFoundRouteComponent,
   Outlet,
-  useRouterState,
+  // useRouterState,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 
 import { AppUser } from "~/stores/controllers/auth-ctrl";
 import { RouteProviders } from "~/provider/providers";
 import { useEffect } from "react";
-import { useAuth } from "~/hooks/use-auth";
+// import { useAuth } from "~/hooks/use-auth";
 import { Alert, Badge, Flowbite } from "flowbite-react";
 import { getFlowbiteTheme } from "~/utils/functions";
 import { APP_ENV } from "~/utils/envs";
@@ -17,6 +17,8 @@ import { motion } from "motion/react";
 import { useAppSelector, useAppDispatch } from "~/stores/hooks";
 import { HiInformationCircle } from "react-icons/hi";
 import { showInfoBubble } from "~/stores/controllers/app-ctrl";
+import { useAuth } from "~/hooks/use-auth";
+import { useRouterState } from "@tanstack/react-router";
 
 const RootRouteComponent: React.FC = () => {
   const { user } = useAuth();
@@ -37,7 +39,9 @@ const RootRouteComponent: React.FC = () => {
       (!user || user.isAnonymous) &&
       routeState.location.pathname.startsWith("/app")
     ) {
-      window.location.href = "/";
+      if (!routeState.location.pathname.startsWith("/app/customer")) {
+        window.location.href = "/";
+      }
     }
   }, [user, routeState]);
 

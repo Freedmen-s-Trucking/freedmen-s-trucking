@@ -81,9 +81,10 @@ const betaBadgeVariants: Variants = {
     transition: { duration: 0.5, ease: "easeOut", delay: 1.5 },
   },
   pulse: {
+    opacity: 1,
     scale: [0.9, 1, 0.9],
     transition: {
-      duration: 3,
+      duration: 2,
       repeat: Infinity,
       repeatType: "reverse",
     },
@@ -203,16 +204,33 @@ function Index() {
               <Heading1 className="mb-2">
                 FREEDMEN'S <span className="inline-block">LAST MILE</span>
                 {/* Alternate beta badge placement near the title */}
-                <motion.span
-                  className="absolute bottom-11"
+                <motion.div
                   variants={betaBadgeVariants}
-                  initial="hidden"
-                  animate={["visible", "pulse"]}
+                  initial="visible"
+                  animate="pulse"
+                  className="absolute bottom-11 m-0 inline-flex"
                 >
-                  <Badge color="indigo" className="inline text-sm shadow-lg">
-                    BETA
-                  </Badge>
-                </motion.span>
+                  <motion.div
+                    className={"relative inline-flex rounded-lg shadow-lg"}
+                    initial={{ boxShadow: "0 0 0 0 rgba(99, 102, 241, 0.7)" }}
+                    animate={{
+                      boxShadow: [
+                        "0 0 0 0 rgba(99, 102, 241, 0.7)",
+                        "0 0 0 8px rgba(99, 102, 241, 0)",
+                        "0 0 0 0 rgba(99, 102, 241, 0)",
+                      ],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
+                  >
+                    <Badge color="indigo" className="inline text-sm shadow-lg">
+                      BETA
+                    </Badge>
+                  </motion.div>
+                </motion.div>
               </Heading1>
             </motion.div>
             <motion.div variants={headingVariants}>
@@ -246,13 +264,30 @@ function Index() {
               className="w-full max-w-sm xs:flex-1 sm:flex-1"
               variants={itemVariants}
             >
-              <SecondaryButton
-                onClick={scheduleDelivery}
-                className="text-md w-full px-1 sm:text-xl"
+              <motion.div
+                className={"relative rounded-full shadow-lg shadow-primary-950"}
+                initial={{ boxShadow: "0 0 0 0 #331D1099" }}
+                animate={{
+                  boxShadow: [
+                    "0 0 0 0 #331D1099",
+                    "0 0 0 12px #331D1000",
+                    "0 0 0 0 #331D1099",
+                  ],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "linear",
+                }}
               >
-                {">"}
-                Place a Delivery
-              </SecondaryButton>
+                <SecondaryButton
+                  onClick={scheduleDelivery}
+                  className="text-md w-full px-1 sm:text-xl"
+                >
+                  {">"}
+                  Place a Delivery
+                </SecondaryButton>
+              </motion.div>
               <BodyText className="mt-4 text-center text-sm sm:text-lg">
                 Fast, reliable, professional logistics. Trusted by businesses
                 and individuals across the country.

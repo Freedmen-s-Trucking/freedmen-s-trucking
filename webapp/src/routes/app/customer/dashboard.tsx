@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Avatar, Badge, Card, Spinner, Tabs, Tooltip } from "flowbite-react";
 import React, { useEffect, useState } from "react";
 import { BsBicycle } from "react-icons/bs";
@@ -23,8 +23,12 @@ const tabs = ["active-orders", "history"] as const;
 
 const CustomerDashboard = () => {
   const { fetchImage, uploadProfile } = useStorageOperations();
-  const { insertUser, fetchCurrentActiveOrders, fetchCompletedOrder } =
-    useDbOperations();
+  const {
+    insertUser,
+    countOrderOfUser,
+    fetchCurrentActiveOrders,
+    fetchCompletedOrder,
+  } = useDbOperations();
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number] | null>(
     "active-orders",
   );
@@ -37,6 +41,16 @@ const CustomerDashboard = () => {
     await signOut();
     window.location.href = "/";
   };
+
+  const { data: orderCount, isFetched: orderCountFetched } = useQuery({
+    initialData: 0,
+    queryKey: ["orderCount", user.info.uid],
+    queryFn: () => countOrderOfUser(user.info.uid),
+    throwOnError(error, query) {
+      console.warn({ ref: "orderCount", error, query });
+      return false;
+    },
+  });
 
   const [activeOrders, setActiveOrders] = useState<
     { path: string; data: OrderEntity }[]
@@ -108,6 +122,11 @@ const CustomerDashboard = () => {
       );
     }
   };
+
+  if (orderCountFetched && orderCount === 0 && user.isAnonymous) {
+    window.location.href = "/";
+    return null;
+  }
 
   return (
     <div className="mx-auto w-full max-w-5xl p-4">
@@ -294,9 +313,9 @@ export const Route = createFileRoute("/app/customer/dashboard")({
     if (context.user?.isAnonymous === false) {
       return;
     }
-    throw redirect({
-      to: "/",
-    });
+    // throw redirect({
+    //   to: "/",
+    // });
   },
   component: CustomerDashboard,
 });

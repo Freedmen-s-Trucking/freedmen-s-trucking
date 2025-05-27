@@ -9,9 +9,9 @@ import {
 import React, { useCallback, useState } from "react";
 import { PrimaryButton } from "~/components/atoms";
 import StripePayment from "~/components/molecules/stripe-payment";
-import { useAuth } from "~/hooks/use-auth";
-import { setRequestedAuthAction } from "~/stores/controllers/app-ctrl";
-import { useAppDispatch } from "~/stores/hooks";
+// import { useAuth } from "~/hooks/use-auth";
+// import { setRequestedAuthAction } from "~/stores/controllers/app-ctrl";
+// import { useAppDispatch } from "~/stores/hooks";
 
 export const PaymentButton: React.FC<{
   isLoading: boolean;
@@ -22,7 +22,9 @@ export const PaymentButton: React.FC<{
   packageToDeliver: ProductWithQuantity[];
   disabled: boolean;
   clientInfo?: {
-    clientPhone: string;
+    clientPhone?: string;
+    clientEmail?: string;
+    clientFullName?: string;
   };
   estimations: {
     distanceInMiles?: number | undefined;
@@ -43,7 +45,7 @@ export const PaymentButton: React.FC<{
   packageToDeliver,
   clientInfo,
 }) => {
-  const { user } = useAuth();
+  // const { user } = useAuth();
   const [isScheduling, setIsScheduling] = useState(false);
   const [processPayment, setProcessPayment] = useState<
     ApiReqScheduleDeliveryIntent["metadata"] | null
@@ -55,14 +57,14 @@ export const PaymentButton: React.FC<{
       onOrderCreated();
     }
   };
-  const dispatch = useAppDispatch();
-  const requestSignIn = useCallback(
-    () =>
-      dispatch(
-        setRequestedAuthAction({ type: "login", targetAccount: "customer" }),
-      ),
-    [dispatch],
-  );
+  // const dispatch = useAppDispatch();
+  // const requestSignIn = useCallback(
+  //   () =>
+  //     dispatch(
+  //       setRequestedAuthAction({ type: "login", targetAccount: "customer" }),
+  //     ),
+  //   [dispatch],
+  // );
 
   const handleScheduleDelivery = useCallback(async () => {
     console.log("handleScheduleDelivery");
@@ -78,10 +80,10 @@ export const PaymentButton: React.FC<{
     ) {
       return;
     }
-    if (!user || user.isAnonymous) {
-      requestSignIn();
-      return;
-    }
+    // if (!user || user.isAnonymous) {
+    //   requestSignIn();
+    //   return;
+    // }
     setIsScheduling(true);
     try {
       setProcessPayment({
@@ -112,8 +114,8 @@ export const PaymentButton: React.FC<{
   }, [
     pickupLocation,
     deliveryLocation,
-    user,
-    requestSignIn,
+    // user,
+    // requestSignIn,
     deliveryPriority,
     packageToDeliver,
     estimations,
@@ -127,11 +129,14 @@ export const PaymentButton: React.FC<{
     estimations?.distanceInMiles !== undefined &&
     estimations?.durationInSeconds !== undefined;
 
-  if (!user || user.isAnonymous) {
-    return (
-      <PrimaryButton onClick={requestSignIn}>Sign In To Continue</PrimaryButton>
-    );
-  }
+  // if (!user || user.isAnonymous) {
+  //   return (
+  //     <PrimaryButton className="py-2" onClick={requestSignIn}>
+  //       Sign In To Continue
+  //     </PrimaryButton>
+  //   );
+  // }
+
   return (
     <>
       {estimations && processPayment && (

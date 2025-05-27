@@ -52,6 +52,8 @@ export const ManualOrderingForm: React.FC<{
     pickupLocation?: Location;
     dropoffLocation?: Location;
     clientPhoneNumber?: string;
+    clientEmail?: string;
+    clientFullName?: string;
     urgencyLevel?: OrderPriority;
   };
   const [reqInfo, setReqInfo] = useState<RequestInfo>({});
@@ -226,7 +228,7 @@ export const ManualOrderingForm: React.FC<{
   useEffect(() => {
     // Scroll to bottom whenever qas changes
     console.log(formContainerRef.current);
-    if (formContainerRef.current) {
+    if (estimations && formContainerRef.current) {
       formContainerRef.current.scrollTo({
         top: formContainerRef.current.scrollHeight,
         behavior: "smooth",
@@ -366,12 +368,10 @@ export const ManualOrderingForm: React.FC<{
             className="w-full py-1 md:px-12"
           >
             <TextInput
-              name="text"
+              name="clientPhoneNumber"
               type="tel"
-              required
               minLength={8}
               value={reqInfo?.clientPhoneNumber || ""}
-              onEnter={() => autoDetectRequestAndEstimateFees(null)}
               onChange={(e) => {
                 const purifiedPhoneNumber = e.target.value.replace(
                   /[^0-9\s-+()]/g,
@@ -383,7 +383,75 @@ export const ManualOrderingForm: React.FC<{
                 });
               }}
               className={`block w-full border px-[8px] py-1 text-center text-sm text-black placeholder:text-sm focus:border-red-400 focus:outline-none focus:ring-transparent xs:py-2 sm:py-3 md:h-auto ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
-              placeholder={"Enter phone number"}
+              placeholder={"Enter phone number (optional)"}
+            />
+          </motion.div>
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: { opacity: 0, y: 10 },
+              visible: {
+                opacity: 1,
+                y: 0,
+                transition: {
+                  duration: 0.5,
+                  delay: 0.55,
+                  ease: "easeOut",
+                  delayChildren: 0.5,
+                  staggerChildren: 0.2,
+                },
+              },
+            }}
+            className="w-full py-1 md:px-12"
+          >
+            <TextInput
+              name="clientFullName"
+              type="text"
+              minLength={5}
+              value={reqInfo?.clientFullName || ""}
+              onChange={(e) => {
+                setReqInfo({
+                  ...reqInfo,
+                  clientFullName: e.target.value,
+                });
+              }}
+              className={`block w-full border px-[8px] py-1 text-center text-sm text-black placeholder:text-sm focus:border-red-400 focus:outline-none focus:ring-transparent xs:py-2 sm:py-3 md:h-auto ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
+              placeholder={"Client name (optional)"}
+            />
+          </motion.div>
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: { opacity: 0, y: 10 },
+              visible: {
+                opacity: 1,
+                y: 0,
+                transition: {
+                  duration: 0.5,
+                  delay: 0.55,
+                  ease: "easeOut",
+                  delayChildren: 0.5,
+                  staggerChildren: 0.2,
+                },
+              },
+            }}
+            className="w-full py-1 md:px-12"
+          >
+            <TextInput
+              name="clientEmail"
+              type="email"
+              minLength={5}
+              value={reqInfo?.clientEmail || ""}
+              onChange={(e) => {
+                setReqInfo({
+                  ...reqInfo,
+                  clientEmail: e.target.value,
+                });
+              }}
+              className={`block w-full border px-[8px] py-1 text-center text-sm text-black placeholder:text-sm focus:border-red-400 focus:outline-none focus:ring-transparent xs:py-2 sm:py-3 md:h-auto ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
+              placeholder={"Client email (optional)"}
             />
           </motion.div>
           <motion.div
@@ -409,7 +477,6 @@ export const ManualOrderingForm: React.FC<{
               name="text"
               value={reqInfo?.product?.description || ""}
               minLength={10}
-              onEnter={() => autoDetectRequestAndEstimateFees(null)}
               onChange={(e) =>
                 setReqInfo({
                   ...reqInfo,
@@ -507,7 +574,23 @@ export const ManualOrderingForm: React.FC<{
             disabled={!!error}
             isLoading={isPending}
             estimations={estimations || null}
-            clientInfo={{ clientPhone: reqInfo.clientPhoneNumber! }}
+            clientInfo={
+              reqInfo.clientPhoneNumber ||
+              reqInfo.clientEmail ||
+              reqInfo.clientFullName
+                ? {
+                    ...(reqInfo.clientPhoneNumber
+                      ? ({ clientPhone: reqInfo.clientPhoneNumber } as const)
+                      : {}),
+                    ...(reqInfo.clientEmail
+                      ? ({ clientEmail: reqInfo.clientEmail } as const)
+                      : {}),
+                    ...(reqInfo.clientFullName
+                      ? ({ clientFullName: reqInfo.clientFullName } as const)
+                      : {}),
+                  }
+                : undefined
+            }
             pickupLocation={reqInfo.pickupLocation || null}
             deliveryLocation={reqInfo.dropoffLocation || null}
             deliveryPriority={reqInfo.urgencyLevel || null}

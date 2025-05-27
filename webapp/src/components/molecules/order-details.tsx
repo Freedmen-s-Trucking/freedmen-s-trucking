@@ -208,7 +208,7 @@ const GetDeliveryCode: React.FC<{
     <>
       <PrimaryButton
         onClick={() => setShowModal(true)}
-        className={`${className} w-52 bg-green-400 py-2`}
+        className={`${className} w-52 py-2`}
       >
         Get Delivery Code
       </PrimaryButton>
@@ -779,11 +779,11 @@ export const Order: React.FC<{
             </h5>
             <div className="mb-2 font-normal text-secondary-800 dark:text-gray-400">
               <span>ORD:{order.path.split("/").pop()?.slice(0, 8)}</span>
-              {/* <div>
-                <DisplayRequiredVehicles
-                  vehicles={[order.data.requiredVehicle]}
-                />
-              </div> */}
+              {order.data[OrderEntityFields.packageToDeliver]?.description && (
+                <span className="ml-2 text-xs">
+                  {order.data[OrderEntityFields.packageToDeliver]?.description}
+                </span>
+              )}
             </div>
           </div>
           <div className="flex flex-col items-end gap-2">

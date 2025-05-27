@@ -554,7 +554,8 @@ const DriverManagement: React.FC = () => {
       <div className="overflow-x-auto rounded-lg shadow-sm">
         <Table striped>
           <Table.Head>
-            <Table.HeadCell className="flex items-center justify-center gap-2">
+            <Table.HeadCell /*className="flex items-center justify-center gap-2"*/
+            >
               {/* {multiSelectMode && (
                 <TextInput className="max-w-2 border-2 p-2" type="checkbox" />
               )}
@@ -610,6 +611,7 @@ const DriverManagement: React.FC = () => {
                 <Table.Cell className="whitespace-nowrap font-medium">
                   <div className="flex items-center space-x-3">
                     <AppImage
+                      className="max-h-10 w-auto rounded-xl object-contain"
                       src={{
                         url: driver.data.photoURL,
                         storage: driver.data.uploadedProfileStoragePath || null,
@@ -668,6 +670,7 @@ const DriverManagement: React.FC = () => {
                 <div className="w-full md:w-1/3">
                   <div className="mb-4 flex items-center gap-4">
                     <AppImage
+                      className="max-h-10 w-auto rounded-xl object-contain"
                       src={{
                         url: currentDriver.data.photoURL,
                         storage:
