@@ -29,13 +29,19 @@ import { offset, autoPlacement, flip, shift, arrow } from "@floating-ui/react";
 const getMiddleware = ({
   arrowRef,
   placement,
+  disablePlacementFlip,
 }: {
   arrowRef: React.RefObject<Element>;
   placement: Placement | "auto";
+  disablePlacementFlip?: boolean;
 }) => {
   const middleware = [];
   middleware.push(offset(8));
-  middleware.push(placement === "auto" ? autoPlacement() : flip());
+  if (placement === "auto") {
+    middleware.push(autoPlacement());
+  } else if (!disablePlacementFlip) {
+    middleware.push(flip());
+  }
   middleware.push(shift({ padding: 8 }));
   if (arrowRef?.current) {
     middleware.push(arrow({ element: arrowRef.current }));
@@ -52,18 +58,20 @@ const useBaseFLoating = ({
   arrowRef,
   placement = "top",
   setOpen,
+  disablePlacementFlip,
 }: {
   open: boolean;
   arrowRef: React.RefObject<Element>;
   placement: Placement | "auto";
   setOpen: Dispatch<SetStateAction<boolean>>;
+  disablePlacementFlip?: boolean;
 }) => {
   return useFloating({
     placement: getPlacement({ placement }),
     open,
     onOpenChange: setOpen,
     whileElementsMounted: autoUpdate,
-    middleware: getMiddleware({ placement, arrowRef }),
+    middleware: getMiddleware({ placement, arrowRef, disablePlacementFlip }),
   });
 };
 
@@ -100,6 +108,7 @@ interface PopoverProps
   children: React.FunctionComponentElement<Element>;
   open?: boolean;
   onOpenChange?: Dispatch<SetStateAction<boolean>>;
+  disablePlacementFlip?: boolean;
 }
 
 const isFocusTrigger = (trigger: Trigger | Trigger[]) => {
@@ -133,6 +142,7 @@ export const CustomPopover: React.FC<PopoverProps> = ({
   open: controlledOpen,
   onOpenChange: setControlledOpen,
   placement: theirPlacement = "bottom",
+  disablePlacementFlip,
   ...props
 }) => {
   const [uncontrolledOpen, setUncontrolledOpen] = useState(
@@ -147,6 +157,7 @@ export const CustomPopover: React.FC<PopoverProps> = ({
     placement: theirPlacement,
     arrowRef,
     setOpen,
+    disablePlacementFlip,
   });
   const {
     floatingStyles,

@@ -116,6 +116,7 @@ export const AddressSearchInput: React.FC<AddressSearchInputProps> = ({
           autoFocus={false}
           trigger={["focus"]}
           arrow={false}
+          disablePlacementFlip
           placement={placement ?? "auto"}
           open={searchOptionsOpen}
           onOpenChange={setSearchOptionOpen}
