@@ -206,28 +206,11 @@ function Index() {
                   variants={betaBadgeVariants}
                   initial="visible"
                   animate="pulse"
-                  className="absolute bottom-11 m-0 inline-flex"
+                  className="absolute bottom-9 m-0 inline-flex sm:bottom-12"
                 >
-                  <motion.div
-                    className={"relative inline-flex rounded-lg shadow-lg"}
-                    initial={{ boxShadow: "0 0 0 0 rgba(99, 102, 241, 0.7)" }}
-                    animate={{
-                      boxShadow: [
-                        "0 0 0 0 rgba(99, 102, 241, 0.7)",
-                        "0 0 0 8px rgba(99, 102, 241, 0)",
-                        "0 0 0 0 rgba(99, 102, 241, 0)",
-                      ],
-                    }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      ease: "linear",
-                    }}
-                  >
-                    <Badge color="indigo" className="inline text-sm shadow-lg">
-                      BETA
-                    </Badge>
-                  </motion.div>
+                  <Badge color="indigo" className="inline text-sm shadow-lg">
+                    BETA
+                  </Badge>
                 </motion.div>
               </Heading1>
             </motion.div>
