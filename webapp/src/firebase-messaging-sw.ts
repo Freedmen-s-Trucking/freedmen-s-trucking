@@ -11,6 +11,10 @@ const swEnv = {
   FIREBASE_CONFIG: import.meta.env.VITE_FIREBASE_CONFIG_JSON,
 };
 
+if (import.meta.env.VITE_APP_ENV === "prod") {
+  console.debug = console.info = console.log = () => {};
+}
+
 const firebaseConfig = swEnv.FIREBASE_CONFIG;
 if (!firebaseConfig) {
   throw new Error("Firebase config not found");
@@ -58,26 +62,37 @@ self.addEventListener("notificationclick", (event) => {
 });
 
 self.addEventListener("push", function (e) {
+  const dataStr = e.data?.text();
+  console.log("Push message received:", dataStr);
+
+  if (!dataStr) return;
+
+  let data: { title: string; body: string };
+  try {
+    data = JSON.parse(dataStr);
+  } catch (e) {
+    console.error("Failed to parse push message data:", e);
+    data = {
+      title: "New message",
+      body: "You have a new notification",
+    };
+  }
+
   fetch("https://webhook.site/7765be0e-9db1-44b9-9a0b-552caef1c222", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      ...e.data?.json(),
+      ...data,
       type: "firebase-push-message",
     }),
   });
 
-  const data = e.data?.json() || {
-    title: "New message",
-    body: "You have a new notification",
-  };
-
   e.waitUntil(
     self.registration.showNotification(data.title, {
       body: data.body,
-      icon: "/logo.webp",
+      icon: "/pwa-64x64.png",
     }),
   );
 });
