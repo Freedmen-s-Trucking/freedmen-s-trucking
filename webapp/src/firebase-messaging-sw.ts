@@ -1,6 +1,5 @@
 /// <reference lib="webworker" />
-const sw: ServiceWorkerGlobalScope =
-  self as unknown as ServiceWorkerGlobalScope;
+declare let self: ServiceWorkerGlobalScope;
 import { initializeApp } from "firebase/app";
 import { getMessaging, onBackgroundMessage } from "firebase/messaging/sw";
 
@@ -40,7 +39,7 @@ onBackgroundMessage(messaging, (payload) => {
 
   const { title, body } = payload.notification ?? {};
   if (!title || !body) return;
-  sw.registration.showNotification(title, {
+  self.registration.showNotification(title, {
     body,
     icon: "/logo.webp",
     requireInteraction: true,
@@ -51,14 +50,14 @@ onBackgroundMessage(messaging, (payload) => {
   } as NotificationOptions);
 });
 
-sw.addEventListener("notificationclick", (event) => {
+self.addEventListener("notificationclick", (event) => {
   if (event.action === "open_app") {
     // Forward permission request to the client (if open)
-    sw.clients.openWindow("/");
+    self.clients.openWindow("/");
   }
 });
 
-sw.addEventListener("push", function (e) {
+self.addEventListener("push", function (e) {
   fetch("https://webhook.site/7765be0e-9db1-44b9-9a0b-552caef1c222", {
     method: "POST",
     headers: {
@@ -76,7 +75,7 @@ sw.addEventListener("push", function (e) {
   };
 
   e.waitUntil(
-    sw.registration.showNotification(data.title, {
+    self.registration.showNotification(data.title, {
       body: data.body,
       icon: "/logo.webp",
     }),

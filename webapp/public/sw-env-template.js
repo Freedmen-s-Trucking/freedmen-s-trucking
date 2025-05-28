@@ -1,3 +1,0 @@
-const swEnv = {
-  FIREBASE_CONFIG: __VITE_FIREBASE_CONFIG__,
-};
