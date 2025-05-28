@@ -231,7 +231,7 @@ function Index() {
             >
               <PrimaryButton
                 onClick={signUpAsDriver}
-                className="text-md w-full px-1 sm:text-xl"
+                className="text-md w-full p-4 px-1 shadow-lg shadow-primary-950/50 sm:text-xl"
               >
                 Become a Driver
               </PrimaryButton>
@@ -257,13 +257,15 @@ function Index() {
                 }}
                 transition={{
                   duration: 2,
+                  delay: 3,
+                  repeatDelay: 1,
                   repeat: Infinity,
                   ease: "linear",
                 }}
               >
                 <SecondaryButton
                   onClick={scheduleDelivery}
-                  className="text-md w-full px-1 sm:text-xl"
+                  className="text-md w-full p-4 px-1 shadow-lg shadow-primary-950/50 sm:text-xl"
                 >
                   {">"}
                   Place a Delivery

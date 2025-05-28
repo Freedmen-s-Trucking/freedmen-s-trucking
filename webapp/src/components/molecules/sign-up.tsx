@@ -308,7 +308,7 @@ const SignUpUser: React.FC<{
         <PrimaryButton
           type="submit"
           isLoading={isLoading}
-          className="self-center justify-self-end px-8 py-3 text-xl"
+          className="self-center justify-self-end px-8 text-xl"
         >
           {isLoading && <Spinner aria-label="Spinner" size="sm" />}
           Sign Up{isLoading ? "..." : ""}
