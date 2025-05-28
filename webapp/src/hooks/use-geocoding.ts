@@ -216,7 +216,7 @@ export const useGeocoding = (type: "OSRM" | "GMAP" = "OSRM") => {
     initialData: <MinPlaceLocation[]>[],
     retry: false,
     refetchOnMount: false,
-    enabled: query.trim().length > 2,
+    enabled: query.trim().length >= 1,
     queryFn: async () => {
       if (type === "OSRM") {
         // for (const viewport of restrictedGMAViewports) {

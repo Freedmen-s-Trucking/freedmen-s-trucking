@@ -1,10 +1,10 @@
 /// <reference lib="webworker" />
 import {
   cleanupOutdatedCaches,
-  // createHandlerBoundToURL,
+  createHandlerBoundToURL,
   precacheAndRoute,
 } from "workbox-precaching";
-// import { NavigationRoute, registerRoute } from "workbox-routing";
+import { NavigationRoute, registerRoute } from "workbox-routing";
 
 declare let self: ServiceWorkerGlobalScope;
 
@@ -19,16 +19,16 @@ cleanupOutdatedCaches();
 precacheAndRoute(self.__WB_MANIFEST || []);
 
 /** @type {RegExp[] | undefined} */
-// let allowlist;
+let allowlist;
 // in dev mode, we disable precaching to avoid caching issues
-// if (import.meta.env.DEV) allowlist = [/^\/$/];
+if (import.meta.env.DEV) allowlist = [/^\/$/];
 
-// // to allow work offline
-// if (!import.meta.env.DEV) {
-//   registerRoute(
-//     new NavigationRoute(
-//       createHandlerBoundToURL("index.html"),
-//       allowlist && { allowlist },
-//     ),
-//   );
-// }
+// to allow work offline
+if (!import.meta.env.DEV) {
+  registerRoute(
+    new NavigationRoute(
+      createHandlerBoundToURL("index.html"),
+      allowlist && { allowlist },
+    ),
+  );
+}

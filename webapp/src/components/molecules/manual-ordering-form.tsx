@@ -293,7 +293,7 @@ export const ManualOrderingForm: React.FC<{
               onAddressChanged={(params) => {
                 setReqInfo({
                   ...reqInfo,
-                  dropoffLocation: params.place ?? undefined,
+                  pickupLocation: params.place ?? undefined,
                 });
               }}
               required
@@ -332,7 +332,7 @@ export const ManualOrderingForm: React.FC<{
               onAddressChanged={(params) => {
                 setReqInfo({
                   ...reqInfo,
-                  pickupLocation: params.place ?? undefined,
+                  dropoffLocation: params.place ?? undefined,
                 });
               }}
               placement="bottom"

@@ -122,10 +122,10 @@ export const AddressSearchInput: React.FC<AddressSearchInputProps> = ({
           onOpenChange={setSearchOptionOpen}
           className={twMerge(
             "top-[-18px!important] z-10 max-h-60 w-full overflow-y-auto overflow-x-hidden rounded-b-lg border bg-primary-50 shadow-lg shadow-primary-900/50",
-            query.length > 2 ? "border-secondary-500" : "border-transparent",
+            query.length >= 1 ? "border-secondary-500" : "border-transparent",
           )}
           content={
-            (query.length > 2 && (
+            (query.length >= 1 && (
               <div className="text-sm text-secondary-800">
                 {dataCached.length === 0 && (
                   <div className="w-full rounded-b-lg bg-primary-50 px-4 py-2 text-center">

@@ -6,7 +6,9 @@ import {
 export default defineConfig({
   headLinkOptions: {
     preset: "2023",
+    includeId: true,
   },
+  overrideAssets: true,
   preset,
-  images: ["public/icons/icon-512x512.png"],
+  images: ["public/logo-lg.png"],
 });

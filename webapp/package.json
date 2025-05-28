@@ -12,7 +12,8 @@
     "test": "vitest",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "generate-pwa-assets": "pwa-assets-generator --preset minimal-2023 public/icons/icon-512x512.png"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.11",
