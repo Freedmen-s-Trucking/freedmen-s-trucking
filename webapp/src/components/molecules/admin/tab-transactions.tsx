@@ -253,7 +253,7 @@ const Transactions = () => {
         size="5xl"
         // className=" bg-black bg-opacity-30 [&>div>div]:bg-primary-50 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-end md:[&>div]:h-auto"
       >
-        <Modal.Header>Transaction Details</Modal.Header>
+        <Modal.Header className="p-3 [&>button]:rounded-full [&>button]:bg-primary-100 [&>button]:p-[1px] [&>button]:text-primary-950 [&>button]:transition-all [&>button]:duration-300 hover:[&>button]:scale-110 hover:[&>button]:text-orange-700">Transaction Details</Modal.Header>
         <Modal.Body className="max-h-[70vh] overflow-y-auto p-4">
           {currentTransaction && (
             <div className="space-y-6">

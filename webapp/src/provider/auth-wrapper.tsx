@@ -44,7 +44,7 @@ export const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({
         position="center"
         // className="[&>div]:mt-safe-top [&>div]:pb-safe-bottom bg-black bg-opacity-30 [&>div>div]:max-h-[80svh] [&>div>div]:bg-primary-50/95 [&>div]:flex [&>div]:flex-col [&>div]:justify-center md:[&>div]:h-auto"
       >
-        <Modal.Header>
+        <Modal.Header className="p-3 [&>button]:rounded-full [&>button]:bg-primary-100 [&>button]:p-[1px] [&>button]:text-primary-950 [&>button]:transition-all [&>button]:duration-300 hover:[&>button]:scale-110 hover:[&>button]:text-orange-700">
           {authAction === "login" ? "Login" : "Sign Up"}
         </Modal.Header>
         <Modal.Body className="p-2 xs:p-3 sm:p-4 md:p-5 lg:p-6">
