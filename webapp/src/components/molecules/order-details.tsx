@@ -34,6 +34,7 @@ import { useQuery } from "@tanstack/react-query";
 import { isResponseError } from "up-fetch";
 import { useDbOperations } from "~/hooks/use-firestore";
 import { DisplayRequiredVehicles } from "./display-vehicles";
+import { modalAnimatedClassName } from "~/utils/constants";
 
 const driverStatusMap: Record<
   DriverOrderStatus,
@@ -228,6 +229,7 @@ const GetDeliveryCode: React.FC<{
           show
           dismissible
           onClose={() => setShowModal(false)}
+          className={modalAnimatedClassName}
         >
           <Modal.Header className="[&>button]:rounded-full [&>button]:bg-accent-400 [&>button]:p-[1px] [&>button]:text-primary-100 [&>button]:transition-all [&>button]:duration-300 hover:[&>button]:scale-110 hover:[&>button]:text-primary-950">
             <span className="text-lg font-medium">
@@ -750,6 +752,7 @@ const OrderDetails: React.FC<{
           show={showInModal}
           onClose={onClose}
           size="5xl"
+          className={modalAnimatedClassName}
           // className=" bg-black bg-opacity-30 [&>div>div]:bg-primary-50 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-end md:[&>div]:h-auto"
         >
           <Modal.Header className="p-3 [&>button]:rounded-full [&>button]:bg-primary-100 [&>button]:p-[1px] [&>button]:text-primary-950 [&>button]:transition-all [&>button]:duration-300 hover:[&>button]:scale-110 hover:[&>button]:text-orange-700">

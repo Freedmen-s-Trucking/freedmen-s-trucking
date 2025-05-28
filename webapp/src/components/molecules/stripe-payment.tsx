@@ -15,6 +15,7 @@ import {
   apiResScheduleDeliveryIntent,
 } from "@freedmen-s-trucking/types";
 import { useServerRequest } from "~/hooks/use-server-request";
+import { modalAnimatedClassName } from "~/utils/constants";
 
 const stripePromise = loadStripe(STRIPE_CLIENT_SECRET!);
 
@@ -48,6 +49,7 @@ const StripePayment: React.FC<{
         show={showModal}
         onClose={onCloseModal}
         size={"md"}
+        className={modalAnimatedClassName}
         // className=" bg-black bg-opacity-30 [&>div>div]:bg-primary-100 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-center md:[&>div]:h-auto"
       >
         <Modal.Header className="p-3 [&>button]:rounded-full [&>button]:bg-primary-100 [&>button]:p-[1px] [&>button]:text-primary-950 [&>button]:transition-all [&>button]:duration-300 hover:[&>button]:scale-110 hover:[&>button]:text-orange-700">

@@ -1,4 +1,5 @@
 import flowbite from "flowbite-react/tailwind";
+import tailwindAnimated from "tailwindcss-animated";
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -77,5 +78,5 @@ export default {
       },
     },
   },
-  plugins: [flowbite.plugin()],
+  plugins: [flowbite.plugin(), tailwindAnimated],
 };

@@ -262,6 +262,7 @@ export const ManualOrderingForm: React.FC<{
                 transition: {
                   duration: 0.5,
                   ease: "easeIn",
+                  delay: 0.2,
                 },
               },
             }}
@@ -280,7 +281,7 @@ export const ManualOrderingForm: React.FC<{
                 y: 0,
                 transition: {
                   duration: 0.5,
-                  delay: 0.3,
+                  delay: 0.5,
                   ease: "easeOut",
                   delayChildren: 0.5,
                   staggerChildren: 0.2,
@@ -319,7 +320,7 @@ export const ManualOrderingForm: React.FC<{
                 y: 0,
                 transition: {
                   duration: 0.5,
-                  delay: 0.4,
+                  delay: 0.6,
                   ease: "easeOut",
                   delayChildren: 0.5,
                   staggerChildren: 0.2,
@@ -358,7 +359,7 @@ export const ManualOrderingForm: React.FC<{
                 y: 0,
                 transition: {
                   duration: 0.5,
-                  delay: 0.55,
+                  delay: 0.65,
                   ease: "easeOut",
                   delayChildren: 0.5,
                   staggerChildren: 0.2,
@@ -382,7 +383,7 @@ export const ManualOrderingForm: React.FC<{
                   clientPhoneNumber: purifiedPhoneNumber,
                 });
               }}
-              className={`block w-full border px-[8px] py-1 text-center text-sm text-black placeholder:text-sm focus:border-red-400 focus:outline-none focus:ring-transparent xs:py-2 sm:py-3 md:h-auto ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
+              className={`block w-full border px-[8px] py-2 text-center text-sm text-black placeholder:text-sm focus:border-red-400 focus:outline-none focus:ring-transparent xs:py-2 sm:py-3 md:h-auto ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
               placeholder={"Enter phone number (optional)"}
             />
           </motion.div>
@@ -396,7 +397,7 @@ export const ManualOrderingForm: React.FC<{
                 y: 0,
                 transition: {
                   duration: 0.5,
-                  delay: 0.55,
+                  delay: 0.7,
                   ease: "easeOut",
                   delayChildren: 0.5,
                   staggerChildren: 0.2,
@@ -416,7 +417,7 @@ export const ManualOrderingForm: React.FC<{
                   clientFullName: e.target.value,
                 });
               }}
-              className={`block w-full border px-[8px] py-1 text-center text-sm text-black placeholder:text-sm focus:border-red-400 focus:outline-none focus:ring-transparent xs:py-2 sm:py-3 md:h-auto ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
+              className={`block w-full border px-[8px] py-2 text-center text-sm text-black placeholder:text-sm focus:border-red-400 focus:outline-none focus:ring-transparent xs:py-2 sm:py-3 md:h-auto ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
               placeholder={"Client name (optional)"}
             />
           </motion.div>
@@ -430,7 +431,7 @@ export const ManualOrderingForm: React.FC<{
                 y: 0,
                 transition: {
                   duration: 0.5,
-                  delay: 0.55,
+                  delay: 0.75,
                   ease: "easeOut",
                   delayChildren: 0.5,
                   staggerChildren: 0.2,
@@ -450,7 +451,7 @@ export const ManualOrderingForm: React.FC<{
                   clientEmail: e.target.value,
                 });
               }}
-              className={`block w-full border px-[8px] py-1 text-center text-sm text-black placeholder:text-sm focus:border-red-400 focus:outline-none focus:ring-transparent xs:py-2 sm:py-3 md:h-auto ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
+              className={`block w-full border px-[8px] py-2 text-center text-sm text-black placeholder:text-sm focus:border-red-400 focus:outline-none focus:ring-transparent xs:py-2 sm:py-3 md:h-auto ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
               placeholder={"Client email (optional)"}
             />
           </motion.div>
@@ -464,7 +465,7 @@ export const ManualOrderingForm: React.FC<{
                 y: 0,
                 transition: {
                   duration: 0.5,
-                  delay: 0.55,
+                  delay: 0.8,
                   ease: "easeOut",
                   delayChildren: 0.5,
                   staggerChildren: 0.2,
@@ -488,7 +489,7 @@ export const ManualOrderingForm: React.FC<{
                 })
               }
               rows={2}
-              className={`block w-full rounded-full border px-[8px] py-1 text-center text-xs text-black placeholder:text-xs focus:border-red-400 focus:outline-none focus:ring-transparent xs:py-2 sm:py-3 md:h-auto ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
+              className={`block w-full rounded-full border px-[8px] py-2 text-center text-xs text-black placeholder:text-xs focus:border-red-400 focus:outline-none focus:ring-transparent xs:py-2 sm:py-3 md:h-auto ${brightness === "dark" ? "border-gray-300 bg-gray-200" : ""}`}
               placeholder={
                 "Enter order number or additional details (optional)"
               }

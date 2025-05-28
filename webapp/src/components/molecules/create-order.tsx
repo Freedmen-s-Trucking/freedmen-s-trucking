@@ -20,7 +20,7 @@ import {
 import { useDbOperations } from "~/hooks/use-firestore";
 import { useComputeDeliveryEstimation } from "~/hooks/use-price-calculator";
 import { useGetRemoteConfig } from "~/hooks/use-remote-config";
-import { RemoteConfigKeys } from "~/utils/constants";
+import { modalAnimatedClassName, RemoteConfigKeys } from "~/utils/constants";
 import { formatPrice } from "~/utils/functions";
 import { AIAssistedForm } from "./ai-assisted-form";
 import { PaymentButton } from "./new-order-payment-button";
@@ -70,7 +70,12 @@ export const CreateOrder: React.FC<{
   };
   if (showInModal) {
     return (
-      <Modal show={showModal} onClose={onCloseModal} size={"lg"} className="">
+      <Modal
+        show={showModal}
+        onClose={onCloseModal}
+        size={"lg"}
+        className={modalAnimatedClassName}
+      >
         <Modal.Header className="p-3 [&>button]:rounded-full [&>button]:bg-accent-400 [&>button]:p-[1px] [&>button]:text-primary-100 [&>button]:transition-all [&>button]:duration-300 hover:[&>button]:scale-110 hover:[&>button]:text-primary-950">
           <motion.span
             initial="hidden"

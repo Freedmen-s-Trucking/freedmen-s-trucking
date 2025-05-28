@@ -208,3 +208,6 @@ export const vehicleTypes: Record<
 };
 
 export const isAuthenticateMockApi = isDevMode;
+
+export const modalAnimatedClassName =
+  "[&>div[role='dialog']>div]:animate-duration-[400ms] [&>div[role='dialog']>div]:animate-ease-in [&>div[role='dialog']>div]:animate-fade-down [&>div[role='dialog']>div]:animate-once animate-once animate-fade animate-duration-300 animate-ease-in";

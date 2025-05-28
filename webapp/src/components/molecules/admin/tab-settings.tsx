@@ -15,6 +15,7 @@ import { PiPlus } from "react-icons/pi";
 import { CheckIcon } from "lucide-react";
 import { customDateFormat } from "~/utils/functions";
 import { FaTrash } from "react-icons/fa";
+import { modalAnimatedClassName } from "~/utils/constants";
 
 const tableTheme = {
   root: {
@@ -78,9 +79,9 @@ const RemoveCityBtn: React.FC<{
       {canDeleteCity && (
         <Modal
           size="sm"
-          // className=" bg-black bg-opacity-70 [&>div>div]:bg-primary-50 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-end md:[&>div]:h-auto"
           show={!!canDeleteCity}
           onClose={() => setCanDeleteCity(false)}
+          className={modalAnimatedClassName}
         >
           <Modal.Header className="[&>button]:rounded-full [&>button]:bg-accent-400 [&>button]:p-[1px] [&>button]:text-primary-100 [&>button]:transition-all  [&>button]:duration-300  hover:[&>button]:scale-110 hover:[&>button]:text-primary-950 ">
             <span className="text-lg font-medium">Delete City</span>
@@ -161,12 +162,12 @@ const AddCityBtn: React.FC<{
       {canAddCity && (
         <Modal
           size="sm"
-          // className=" bg-black bg-opacity-70 [&>div>div]:bg-primary-50 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-end md:[&>div]:h-auto"
           show={!!canAddCity}
           onClose={() => {
             setCanAddCity(false);
             setCurrentCity(null);
           }}
+          className={modalAnimatedClassName}
         >
           <Modal.Header className="[&>button]:rounded-full [&>button]:bg-accent-400 [&>button]:p-[1px] [&>button]:text-primary-100 [&>button]:transition-all  [&>button]:duration-300  hover:[&>button]:scale-110 hover:[&>button]:text-primary-950 ">
             <span className="text-lg font-medium">Add City</span>

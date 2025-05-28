@@ -36,7 +36,7 @@ import { AppImage } from "~/components/atoms";
 import { MdHideImage } from "react-icons/md";
 // import { ImCancelCircle } from "react-icons/im";
 import { useStorageOperations } from "~/hooks/use-storage";
-import { tabTheme } from "~/utils/constants";
+import { modalAnimatedClassName, tabTheme } from "~/utils/constants";
 import { SecondaryButton, TextInput } from "~/components/atoms";
 import { formatPrice, getDriverVerificationStatus } from "~/utils/functions";
 import {
@@ -660,6 +660,7 @@ const DriverManagement: React.FC = () => {
           setCurrentDriver(null);
         }}
         size="5xl"
+        className={modalAnimatedClassName}
         // className=" bg-black bg-opacity-30 [&>div>div]:bg-primary-50 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-end md:[&>div]:h-auto"
       >
         <Modal.Header className="p-3 [&>button]:rounded-full [&>button]:bg-primary-100 [&>button]:p-[1px] [&>button]:text-primary-950 [&>button]:transition-all [&>button]:duration-300 hover:[&>button]:scale-110 hover:[&>button]:text-orange-700">
@@ -894,6 +895,7 @@ const DriverManagement: React.FC = () => {
                       // className=" bg-black bg-opacity-70 [&>div>div]:bg-primary-50 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-end md:[&>div]:h-auto"
                       show={!!nextStatusInfo}
                       onClose={() => setNextStatusInfo(null)}
+                      className={modalAnimatedClassName}
                     >
                       <Modal.Header className="[&>button]:rounded-full [&>button]:bg-accent-400 [&>button]:p-[1px] [&>button]:text-primary-100 [&>button]:transition-all  [&>button]:duration-300  hover:[&>button]:scale-110 hover:[&>button]:text-primary-950 ">
                         <span className="text-lg font-medium">
@@ -948,6 +950,7 @@ const DriverManagement: React.FC = () => {
         size="sm"
         show={!!showMessageModal}
         onClose={() => setShowMessageModal(null)}
+        className={modalAnimatedClassName}
       >
         <Modal.Header className="[&>button]:rounded-full [&>button]:bg-accent-400 [&>button]:p-[1px] [&>button]:text-primary-100 [&>button]:transition-all  [&>button]:duration-300  hover:[&>button]:scale-110 hover:[&>button]:text-primary-950 ">
           <span className="text-lg font-medium">Message Driver</span>

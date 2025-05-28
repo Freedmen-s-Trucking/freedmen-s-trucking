@@ -95,7 +95,7 @@ export const PrimaryButton: React.FC<
       initial="initial"
       animate={isLoading ? "loading" : "initial"}
       className={twMerge(
-        "flex flex-row items-center justify-center rounded-full bg-primary-700 p-3 font-medium text-primary-100 shadow-md transition-colors duration-300 hover:bg-primary-800 disabled:bg-opacity-80",
+        "flex flex-row items-center justify-center rounded-full bg-primary-700 p-3 px-4 font-medium text-primary-100 shadow-md transition-colors duration-300 hover:bg-primary-800 disabled:bg-opacity-80",
         className,
       )}
     >
@@ -159,7 +159,7 @@ export const SecondaryButton: React.FC<
       initial="initial"
       animate={isLoading ? "loading" : "initial"}
       className={twMerge(
-        "flex flex-row items-center justify-center rounded-full border-2 border-primary-700/80 bg-primary-100 p-3 font-medium text-primary-700 shadow-md transition-colors duration-300",
+        "flex flex-row items-center justify-center rounded-full border-2 border-primary-700/80 bg-primary-100 p-3 px-4 font-medium text-primary-700 shadow-md transition-colors duration-300",
         className,
       )}
     >

@@ -9,6 +9,7 @@ import { useServerRequest } from "~/hooks/use-server-request";
 import { isResponseError } from "up-fetch";
 import { BsExclamationCircle } from "react-icons/bs";
 import { useStorageOperations } from "~/hooks/use-storage";
+import { modalAnimatedClassName } from "~/utils/constants";
 
 function dataURLtoBlob(dataURL: string) {
   // Split the dataURL to get the base64 data and MIME type
@@ -424,7 +425,12 @@ const GetNextActionButton = ({
     });
 
     return (
-      <Modal size="md" show={showStatusChangeModal} onClose={handleModalClose}>
+      <Modal
+        size="md"
+        show={showStatusChangeModal}
+        onClose={handleModalClose}
+        className={modalAnimatedClassName}
+      >
         <Modal.Header className="[&>button]:rounded-full [&>button]:bg-accent-400 [&>button]:p-[1px] [&>button]:text-primary-100 [&>button]:transition-all [&>button]:duration-300 hover:[&>button]:scale-110 hover:[&>button]:text-primary-950">
           <span className="text-lg font-medium">Confirm Action</span>
         </Modal.Header>

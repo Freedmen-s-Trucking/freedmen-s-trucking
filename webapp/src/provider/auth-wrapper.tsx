@@ -6,6 +6,7 @@ import { useAppDispatch, useAppSelector } from "~/stores/hooks";
 import { setRequestedAuthAction } from "~/stores/controllers/app-ctrl";
 import { useAuth } from "~/hooks/use-auth";
 import { AppUser } from "~/stores/controllers/auth-ctrl";
+import { modalAnimatedClassName } from "~/utils/constants";
 
 export const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -42,11 +43,18 @@ export const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({
         onClose={onCloseModal}
         size="lg"
         position="center"
+        className={modalAnimatedClassName}
         // className="[&>div]:mt-safe-top [&>div]:pb-safe-bottom bg-black bg-opacity-30 [&>div>div]:max-h-[80svh] [&>div>div]:bg-primary-50/95 [&>div]:flex [&>div]:flex-col [&>div]:justify-center md:[&>div]:h-auto"
       >
+        {/* <Modal. */}
         <Modal.Header className="p-3 [&>button]:rounded-full [&>button]:bg-primary-100 [&>button]:p-[1px] [&>button]:text-primary-950 [&>button]:transition-all [&>button]:duration-300 hover:[&>button]:scale-110 hover:[&>button]:text-orange-700">
           {authAction === "login" ? "Login" : "Sign Up"}
         </Modal.Header>
+        {/* <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 5 }}
+        > */}
         <Modal.Body className="p-2 xs:p-3 sm:p-4 md:p-5 lg:p-6">
           <div className="w-full">
             {authAction === "login" && (
@@ -83,6 +91,7 @@ export const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({
             )}
           </div>
         </Modal.Body>
+        {/* </motion.div> */}
       </Modal>
     </>
   );

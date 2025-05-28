@@ -45,6 +45,7 @@
     "react-redux": "^9.2.0",
     "redux-persist": "^6.0.0",
     "tailwind-merge": "^3.3.0",
+    "tailwindcss-animated": "^2.0.0",
     "up-fetch": "^2.0.1",
     "vaul": "^1.1.2"
   },

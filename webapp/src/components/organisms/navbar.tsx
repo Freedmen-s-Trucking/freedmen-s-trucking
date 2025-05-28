@@ -5,7 +5,7 @@ import { AppImage } from "~/components/atoms";
 import logotiny from "~/assets/images/logo-blur.webp";
 import logo from "~/assets/images/logo.webp";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { PAGE_ROUTES } from "~/utils/constants";
+import { modalAnimatedClassName, PAGE_ROUTES } from "~/utils/constants";
 import { useAuth } from "~/hooks/use-auth";
 import { HiLogout } from "react-icons/hi";
 import { useState } from "react";
@@ -117,7 +117,7 @@ const ProfileDropdown: React.FC = () => {
         onClose={onCloseModal}
         size="3xl"
         position="center"
-        // className="[&>div>div]:bg-white/95 [&>div]:flex [&>div]:h-full [&>div]:flex-col [&>div]:justify-end md:[&>div]:h-auto"
+        className={modalAnimatedClassName}
       >
         <Modal.Header className="h-12 p-3 text-center">
           {authAction === "login" ? "Login" : "Sign Up"}
