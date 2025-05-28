@@ -128,13 +128,11 @@ export const Route = createFileRoute("/")({
       throw redirect({
         to: "/app/driver/dashboard",
       });
-    }
-    if (context.user?.info?.isAdmin) {
+    } else if (context.user?.info?.isAdmin) {
       throw redirect({
         to: "/app/admin/dashboard",
       });
-    }
-    if (context.user?.isAnonymous === false) {
+    } else if (context.user?.isAnonymous === false) {
       throw redirect({
         to: "/app/customer/dashboard",
       });

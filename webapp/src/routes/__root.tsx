@@ -19,6 +19,7 @@ import { HiInformationCircle } from "react-icons/hi";
 import { showInfoBubble } from "~/stores/controllers/app-ctrl";
 import { useAuth } from "~/hooks/use-auth";
 import { useRouterState } from "@tanstack/react-router";
+import ReloadPwaAlert from "~/components/molecules/reload-pwa";
 
 const RootRouteComponent: React.FC = () => {
   const { user } = useAuth();
@@ -58,6 +59,7 @@ const RootRouteComponent: React.FC = () => {
 
   return (
     <>
+      <ReloadPwaAlert />
       {infoBubble && (
         <Alert
           additionalContent={<p>{infoBubble?.message}</p>}
@@ -111,7 +113,7 @@ const NotFoundRoute: NotFoundRouteComponent = ({ data }) => {
     >
       <span className="block text-center text-5xl">Not Found</span>
       <button
-        className="btn btn-primary"
+        className="btn btn-primary underline"
         onClick={() => (window.location.href = "/")}
       >
         Go Home

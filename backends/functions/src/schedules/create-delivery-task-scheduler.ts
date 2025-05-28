@@ -419,6 +419,7 @@ export const scheduleGroupTaskInOrder = onSchedule("*/5 * * * *", async () => {
     await Promise.all(promiseTasks);
   } catch (error) {
     console.error("Error in scheduler for creating delivery tasks:", error);
+    throw error;
   }
   return;
 });

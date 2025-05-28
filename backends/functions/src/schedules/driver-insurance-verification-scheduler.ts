@@ -57,26 +57,31 @@ You're in good hands.`;
  * Runs every 5mins to check for drivers with pending insurance verification and verify them using authenticate API.
  */
 export const scheduleDriverInsuranceVerification = onSchedule("*/5 * * * *", async () => {
-  console.log("Running scheduler for insurance verification");
-  const firestore = getFirestore();
-  const driverCollection = firestore.collection(CollectionName.DRIVERS) as CollectionReference<
-    DriverEntity,
-    DriverEntity
-  >;
-  const driverSnapshots = await driverCollection
-    .where(
-      Filter.or(
-        Filter.where("driverInsuranceVerificationStatus" satisfies keyof DriverEntity, "==", "pending"),
-        Filter.where("driverInsuranceStoragePath" satisfies keyof DriverEntity, "==", null),
-      ),
-    )
-    .get();
+  try {
+    console.log("Running scheduler for insurance verification");
+    const firestore = getFirestore();
+    const driverCollection = firestore.collection(CollectionName.DRIVERS) as CollectionReference<
+      DriverEntity,
+      DriverEntity
+    >;
+    const driverSnapshots = await driverCollection
+      .where(
+        Filter.or(
+          Filter.where("driverInsuranceVerificationStatus" satisfies keyof DriverEntity, "==", "pending"),
+          Filter.where("driverInsuranceStoragePath" satisfies keyof DriverEntity, "==", null),
+        ),
+      )
+      .get();
 
-  const tasks: Promise<void>[] = [];
-  for (const driverSnapshot of driverSnapshots.docs) {
-    tasks.push(verifyDriverInsurance(driverSnapshot, driverCollection));
+    const tasks: Promise<void>[] = [];
+    for (const driverSnapshot of driverSnapshots.docs) {
+      tasks.push(verifyDriverInsurance(driverSnapshot, driverCollection));
+    }
+    await Promise.all(tasks);
+  } catch (error) {
+    console.error("Error caught while running scheduler for insurance verification", error);
+    throw error;
   }
-  await Promise.all(tasks);
 });
 
 /**

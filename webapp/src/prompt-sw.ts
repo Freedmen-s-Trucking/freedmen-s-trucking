@@ -13,7 +13,7 @@ self.addEventListener("message", (event) => {
 });
 
 // self.__WB_MANIFEST is the default injection point
-precacheAndRoute(self.__WB_MANIFEST);
+precacheAndRoute(self.__WB_MANIFEST || []);
 
 // clean old assets
 cleanupOutdatedCaches();
@@ -24,6 +24,11 @@ let allowlist;
 if (import.meta.env.DEV) allowlist = [/^\/$/];
 
 // to allow work offline
-registerRoute(
-  new NavigationRoute(createHandlerBoundToURL("index.html"), { allowlist }),
-);
+if (!import.meta.env.DEV) {
+  registerRoute(
+    new NavigationRoute(
+      createHandlerBoundToURL("index.html"),
+      allowlist && { allowlist },
+    ),
+  );
+}

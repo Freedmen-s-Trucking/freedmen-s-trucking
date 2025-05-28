@@ -634,7 +634,7 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
         </label>
         <label className="block">
           <span className="block text-sm font-medium text-secondary-800">
-            Phone Number
+            Phone Number:
           </span>
           <TextInput
             type="text"
@@ -643,6 +643,12 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
             onChange={onPhoneNumberChanged}
             // className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
           />
+          <span className="text-xs text-secondary-500">
+            Note: By submitting your phone number, you agree to receive
+            recurring delivery updates, onboarding alerts, and payout
+            notifications via SMS from Freedmen's Trucking. Message frequency
+            varies. Msg & data rates may apply. Reply STOP to unsubscribe.
+          </span>
         </label>
         <span className="block text-sm font-medium text-secondary-800">
           Vehicle Type
