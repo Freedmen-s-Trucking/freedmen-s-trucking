@@ -347,68 +347,73 @@ const TaskDetailsView: React.FC<{
           <StatusBadge status={task.data.status} />
         </div>
       </div>
-      <div>
-        <Card className="shadow-none [&>div]:justify-start [&>div]:p-2">
-          <h4 className="text-sm font-semibold md:text-base">Driver</h4>
-          {task.data?.driverId ? (
-            <div>
-              <div className="flex items-center gap-3 overflow-hidden">
-                <AppImage
-                  src={{
-                    url: task.data?.driverInfo?.photoURL,
-                    storage:
-                      task.data?.driverInfo?.uploadedProfileStoragePath ?? null,
-                  }}
-                  alt="Driver"
-                  fallback={<Avatar size="md" rounded />}
-                />
-                <div className="flex flex-col">
-                  <div className="text-xs font-medium md:text-sm">
-                    {task.data?.driverInfo?.displayName || "Unknown Driver"}
+      {viewType !== "driver" && (
+        <div>
+          <Card className="shadow-none [&>div]:justify-start [&>div]:p-2">
+            <h4 className="text-sm font-semibold md:text-base">Driver</h4>
+            {task.data?.driverId ? (
+              <div>
+                <div className="flex items-center gap-3 overflow-hidden">
+                  <AppImage
+                    src={{
+                      url: task.data?.driverInfo?.photoURL,
+                      storage:
+                        task.data?.driverInfo?.uploadedProfileStoragePath ??
+                        null,
+                    }}
+                    alt="Driver"
+                    fallback={<Avatar size="md" rounded />}
+                  />
+                  <div className="flex flex-col">
+                    <div className="text-xs font-medium md:text-sm">
+                      {task.data?.driverInfo?.displayName || "Unknown Driver"}
+                    </div>
+                    <span className="text-ellipsis text-nowrap break-all text-xs text-gray-500">
+                      ID: {task.data?.driverId?.slice(0, 5)}
+                    </span>
                   </div>
-                  <span className="text-ellipsis text-nowrap break-all text-xs text-gray-500">
-                    ID: {task.data?.driverId?.slice(0, 5)}
-                  </span>
                 </div>
+                {(task.data?.driverInfo?.email ||
+                  task.data?.driverInfo?.phoneNumber) && (
+                  <div className="space-y-2 p-2 text-xs md:text-sm">
+                    {task.data?.driverInfo?.email && (
+                      <div className="flex items-center gap-2">
+                        <HiMail className="text-gray-500" />
+                        <span>{task.data?.driverInfo?.email}</span>
+                      </div>
+                    )}
+                    {task.data?.driverInfo?.phoneNumber && (
+                      <div className="flex items-center gap-2">
+                        <HiPhone className="text-gray-500" />
+                        <span>{task.data?.driverInfo?.phoneNumber}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-              {(task.data?.driverInfo?.email ||
-                task.data?.driverInfo?.phoneNumber) && (
-                <div className="space-y-2 p-2 text-xs md:text-sm">
-                  {task.data?.driverInfo?.email && (
-                    <div className="flex items-center gap-2">
-                      <HiMail className="text-gray-500" />
-                      <span>{task.data?.driverInfo?.email}</span>
-                    </div>
-                  )}
-                  {task.data?.driverInfo?.phoneNumber && (
-                    <div className="flex items-center gap-2">
-                      <HiPhone className="text-gray-500" />
-                      <span>{task.data?.driverInfo?.phoneNumber}</span>
-                    </div>
+            ) : (
+              <p className="text-center text-gray-500">No driver assigned</p>
+            )}
+            {viewType === "admin" &&
+              task.data[TaskGroupEntityFields.status] !==
+                TaskGroupStatus.COMPLETED && (
+                <div className="flex w-full items-center justify-center gap-2">
+                  <AssignDriverButton onClose={onClose} task={task} />
+                  {task.data?.driverId && (
+                    <PrimaryButton
+                      isLoading={isRemovingDriver}
+                      loadingText=""
+                      className="flex items-center gap-1 bg-orange-700 p-2 text-[13px] hover:bg-orange-800 active:bg-orange-800"
+                      onClick={() => removeDriver(task.path)}
+                    >
+                      <HiTrash size={16} /> Remove
+                    </PrimaryButton>
                   )}
                 </div>
               )}
-            </div>
-          ) : (
-            <p className="text-center text-gray-500">No driver assigned</p>
-          )}
-          {viewType === "admin" && (
-            <div className="flex w-full items-center justify-center gap-2">
-              <AssignDriverButton onClose={onClose} task={task} />
-              {task.data?.driverId && (
-                <PrimaryButton
-                  isLoading={isRemovingDriver}
-                  loadingText=""
-                  className="flex items-center gap-1 bg-orange-700 p-2 text-[13px] hover:bg-orange-800 active:bg-orange-800"
-                  onClick={() => removeDriver(task.path)}
-                >
-                  <HiTrash size={16} /> Remove
-                </PrimaryButton>
-              )}
-            </div>
-          )}
-        </Card>
-      </div>
+          </Card>
+        </div>
+      )}
       <Accordion collapseAll className="w-full border-none">
         <Accordion.Panel className="border-none">
           <Accordion.Title className="border-b-[1px] bg-transparent p-0 text-secondary-950 hover:bg-transparent focus:right-0 focus:bg-transparent focus:ring-transparent [&>h2]:w-full">
@@ -442,9 +447,8 @@ const TaskDetailsView: React.FC<{
                 {Object.entries(
                   task.data[TaskGroupEntityFields.orderIdValueMap],
                 ).map(([id, order]) => (
-                  <>
+                  <div key={id}>
                     <CustomMarker
-                      key={id + "01"}
                       position={{
                         lat: order.pickupLocation.latitude,
                         lng: order.pickupLocation.longitude,
@@ -461,7 +465,6 @@ const TaskDetailsView: React.FC<{
                       />
                     </CustomMarker>
                     <CustomMarker
-                      key={id + "02"}
                       position={{
                         lat: order.deliveryLocation.latitude,
                         lng: order.deliveryLocation.longitude,
@@ -477,7 +480,7 @@ const TaskDetailsView: React.FC<{
                         glyphColor={"#d98f60"}
                       />
                     </CustomMarker>
-                  </>
+                  </div>
                 ))}
               </Map>
             )) ||
@@ -496,6 +499,21 @@ const TaskDetailsView: React.FC<{
                     ...order,
                     status: OrderStatus.TASKS_ASSIGNED,
                     assignedDriverId: task.data[TaskGroupEntityFields.driverId],
+                    task: {
+                      taskId: task.path.split("/").pop() || "",
+                      driverId: task.data[TaskGroupEntityFields.driverId] || "",
+                      driverName: task.data?.driverInfo?.displayName || "",
+                      driverEmail: task.data?.driverInfo?.email || "",
+                      driverPhotoURL: task.data?.driverInfo?.photoURL || "",
+                      driverPhone: task.data?.driverInfo?.phoneNumber || "",
+                      deliveryFee: order.driverFeesInUSD,
+                      driverStatus: order.driverStatus,
+                      driverPositions: order.driverPositions,
+                      driverConfirmationCode: order.driverConfirmationCode,
+                      deliveredOrderConfirmationImage:
+                        order.deliveredOrderConfirmationImage,
+                      payoutPaymentRef: order.payoutPaymentRef,
+                    },
                   },
                 }}
                 viewType={viewType}
@@ -515,7 +533,7 @@ const TaskDetails: React.FC<{
   viewType: AccountType;
 }> = ({ showInModal, onClose, task, viewType }) => {
   return (
-    <>
+    <div>
       {showInModal ? null : <TaskDetailsView task={task} viewType={viewType} />}
       {showInModal && (
         <Modal
@@ -535,17 +553,18 @@ const TaskDetails: React.FC<{
           </Modal.Body>
         </Modal>
       )}
-    </>
+    </div>
   );
 };
 
 export const Task: React.FC<{
   task: EntityWithPath<TaskGroupEntity>;
-  // viewType: AccountType;
+  viewType: AccountType;
 }> & {
   Details: typeof TaskDetails;
-} = ({ task /*, viewType */ }) => {
+} = ({ task, viewType }) => {
   // const { user } = useAuth();
+  console.log(viewType);
 
   return (
     <>

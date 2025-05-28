@@ -44,6 +44,7 @@ export type UserEntity = typeof userEntity.infer;
 //userEntity /*.partial()*/
 export const driverEntity = userEntity.and({
   authenticateAccessCode: "string?",
+  isSmsCtaAccepted: "boolean?",
   consents: type({
     isBackgroundDisclosureAccepted: "boolean",
     GLBPurposeAndDPPAPurpose: "boolean",
@@ -258,9 +259,10 @@ export enum OrderEntityFields {
   distanceInMiles = "distanceInMiles",
   distanceMeasurement = "distanceMeasurement",
   driverId = "driverId",
+  taskId = "taskId",
   createdAt = "createdAt",
-  photoURL = "photoURL",
-  uploadedProfileStoragePath = "uploadedProfileStoragePath",
+  driverPhotoURL = "driverPhotoURL",
+  driverUploadedProfileStoragePath = "driverUploadedProfileStoragePath",
   deliveryFee = "deliveryFee",
   updatedAt = "updatedAt",
   paymentRef = "paymentRef",
@@ -271,7 +273,6 @@ export enum OrderEntityFields {
   // unassignedVehicles = "unassignedVehicles",
   // assignedDriverIds = "assignedDriverIds",
   assignedDriverId = "assignedDriverId",
-  deliveryScreenshotPath = "deliveryScreenshotPath",
   driverPositions = "driverPositions",
   payoutPaymentRef = "payoutPaymentRef",
   additionalClientInfo = "additionalClientInfo",
@@ -300,15 +301,16 @@ export const newOrderEntity = type({
 export type NewOrder = typeof newOrderEntity.infer;
 
 const orderTaskType = type({
+  [OrderEntityFields.taskId]: "string",
   [OrderEntityFields.driverId]: "string",
   [OrderEntityFields.driverName]: "string",
   [OrderEntityFields.driverEmail]: "string",
-  [OrderEntityFields.photoURL]: "string | null",
-  [OrderEntityFields.uploadedProfileStoragePath]:
+  [OrderEntityFields.driverPhotoURL]: "string | null",
+  [OrderEntityFields.driverUploadedProfileStoragePath]:
     type("string | null").optional(),
   [OrderEntityFields.driverPhone]: "string",
   [OrderEntityFields.deliveryFee]: "number",
-  [OrderEntityFields.payoutPaymentRef]: type("string").optional(),
+  [OrderEntityFields.payoutPaymentRef]: type("string | null").optional(),
   [OrderEntityFields.driverStatus]: type.valueOf(DriverOrderStatus),
   [OrderEntityFields.driverConfirmationCode]: "string | null ?",
   [OrderEntityFields.deliveredOrderConfirmationImage]: "string | null ?",
@@ -319,8 +321,9 @@ const orderTaskType = type({
     [DriverOrderStatus.ON_THE_WAY_TO_PICKUP]: coordinateType,
     [DriverOrderStatus.ON_THE_WAY_TO_DELIVER]: coordinateType,
     [DriverOrderStatus.DELIVERED]: coordinateType,
-  }).optional(),
-  [OrderEntityFields.deliveryScreenshotPath]: "string | null",
+  })
+    .partial()
+    .optional(),
 });
 export const orderEntity = newOrderEntity.merge({
   [OrderEntityFields.clientName]: "string",
@@ -336,7 +339,7 @@ export const orderEntity = newOrderEntity.merge({
   // }).array(),
   // [OrderEntityFields.assignedDriverIds]: "string[]",
   [OrderEntityFields.assignedDriverId]: "string | null",
-  [OrderEntityFields.task]: orderTaskType.optional(),
+  [OrderEntityFields.task]: orderTaskType.or("null").optional(),
 });
 // type TaskMap = {
 //   [key: `task-${string}`]: typeof taskEntity.infer;
@@ -377,6 +380,13 @@ export const taskGroupEntity = type({
         OrderEntityFields.status
       )
       .merge({
+        [OrderEntityFields.driverStatus]: type.valueOf(DriverOrderStatus),
+        [OrderEntityFields.driverConfirmationCode]: "string | null",
+        [OrderEntityFields.deliveredOrderConfirmationImage]: "string | null",
+        [OrderEntityFields.driverPositions]: orderTaskType
+          .get(OrderEntityFields.driverPositions)
+          .optional(),
+        [OrderEntityFields.payoutPaymentRef]: "string | null ?",
         "+": "delete",
       }),
   },

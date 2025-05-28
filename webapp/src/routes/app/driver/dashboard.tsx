@@ -1,9 +1,4 @@
-import {
-  DriverEntity,
-  DriverOrderStatus,
-  OrderEntity,
-  OrderEntityFields,
-} from "@freedmen-s-trucking/types";
+import { DriverEntity } from "@freedmen-s-trucking/types";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { differenceInMinutes } from "date-fns";
@@ -23,73 +18,75 @@ import { IoLogOutOutline } from "react-icons/io5";
 import { TbLayoutDashboard } from "react-icons/tb";
 import { SecondaryButton } from "~/components/atoms";
 import { DriverProfile } from "~/components/molecules/driver/tab-profile";
-import { Order } from "~/components/molecules/order-details";
+import Tasks from "~/components/molecules/driver/tab-task";
+// import { Order } from "~/components/molecules/order-details";
+import { Task } from "~/components/molecules/task-details";
 import { useAuth } from "~/hooks/use-auth";
 import { useDbOperations } from "~/hooks/use-firestore";
 import { updateDriverInfo } from "~/stores/controllers/auth-ctrl";
 import { useAppDispatch } from "~/stores/hooks";
 import { driverVerificationBadges, tabTheme } from "~/utils/constants";
 import {
-  customDateFormat,
+  // customDateFormat,
   getDriverVerificationStatus,
 } from "~/utils/functions";
 
 const tabs = ["overview", "active-tasks", "history", "profile"] as const;
 
-const statusMap: Record<
-  DriverOrderStatus,
-  {
-    action: string;
-    color: string;
-    badge: React.ReactNode;
-    nextStatus: DriverOrderStatus | null;
-    nextStatusDescription: string;
-    nextStatusConfirmation: string;
-  }
-> = {
-  [DriverOrderStatus.WAITING]: {
-    action: "Accept Order",
-    color: "warning",
-    badge: <Badge color="warning">Waiting</Badge>,
-    nextStatus: DriverOrderStatus.ACCEPTED,
-    nextStatusDescription: "I accept the order",
-    nextStatusConfirmation: "You confirm to deliver the order on time.",
-  },
-  [DriverOrderStatus.ACCEPTED]: {
-    action: "On My Way To Pick Up",
-    color: "green",
-    badge: <Badge color="green">Accepted</Badge>,
-    nextStatus: DriverOrderStatus.ON_THE_WAY_TO_PICKUP,
-    nextStatusDescription: "Are you on your way to pick up?",
-    nextStatusConfirmation:
-      "You confirm you're on the way to pick up the package.",
-  },
-  [DriverOrderStatus.ON_THE_WAY_TO_PICKUP]: {
-    action: "On My Way To Deliver",
-    color: "blue",
-    badge: <Badge color="blue">On The Way To Pick Up</Badge>,
-    nextStatus: DriverOrderStatus.ON_THE_WAY_TO_DELIVER,
-    nextStatusDescription: "Are you on your way to deliver?",
-    nextStatusConfirmation:
-      "You confirm you have picked up the package and you're on the way to deliver the package.",
-  },
-  [DriverOrderStatus.ON_THE_WAY_TO_DELIVER]: {
-    action: "Delivered",
-    color: "purple",
-    badge: <Badge color="purple">On The Way To Deliver</Badge>,
-    nextStatus: DriverOrderStatus.DELIVERED,
-    nextStatusDescription: "Have you delivered the products?",
-    nextStatusConfirmation: "You confirm you have delivered the package.",
-  },
-  [DriverOrderStatus.DELIVERED]: {
-    action: "Delivered",
-    color: "success",
-    badge: <Badge color="success">Delivered</Badge>,
-    nextStatus: null,
-    nextStatusDescription: "You have delivered the products",
-    nextStatusConfirmation: "",
-  },
-};
+// const statusMap: Record<
+//   DriverOrderStatus,
+//   {
+//     action: string;
+//     color: string;
+//     badge: React.ReactNode;
+//     nextStatus: DriverOrderStatus | null;
+//     nextStatusDescription: string;
+//     nextStatusConfirmation: string;
+//   }
+// > = {
+//   [DriverOrderStatus.WAITING]: {
+//     action: "Accept Order",
+//     color: "warning",
+//     badge: <Badge color="warning">Waiting</Badge>,
+//     nextStatus: DriverOrderStatus.ACCEPTED,
+//     nextStatusDescription: "I accept the order",
+//     nextStatusConfirmation: "You confirm to deliver the order on time.",
+//   },
+//   [DriverOrderStatus.ACCEPTED]: {
+//     action: "On My Way To Pick Up",
+//     color: "green",
+//     badge: <Badge color="green">Accepted</Badge>,
+//     nextStatus: DriverOrderStatus.ON_THE_WAY_TO_PICKUP,
+//     nextStatusDescription: "Are you on your way to pick up?",
+//     nextStatusConfirmation:
+//       "You confirm you're on the way to pick up the package.",
+//   },
+//   [DriverOrderStatus.ON_THE_WAY_TO_PICKUP]: {
+//     action: "On My Way To Deliver",
+//     color: "blue",
+//     badge: <Badge color="blue">On The Way To Pick Up</Badge>,
+//     nextStatus: DriverOrderStatus.ON_THE_WAY_TO_DELIVER,
+//     nextStatusDescription: "Are you on your way to deliver?",
+//     nextStatusConfirmation:
+//       "You confirm you have picked up the package and you're on the way to deliver the package.",
+//   },
+//   [DriverOrderStatus.ON_THE_WAY_TO_DELIVER]: {
+//     action: "Delivered",
+//     color: "purple",
+//     badge: <Badge color="purple">On The Way To Deliver</Badge>,
+//     nextStatus: DriverOrderStatus.DELIVERED,
+//     nextStatusDescription: "Have you delivered the products?",
+//     nextStatusConfirmation: "You confirm you have delivered the package.",
+//   },
+//   [DriverOrderStatus.DELIVERED]: {
+//     action: "Delivered",
+//     color: "success",
+//     badge: <Badge color="success">Delivered</Badge>,
+//     nextStatus: null,
+//     nextStatusDescription: "You have delivered the products",
+//     nextStatusConfirmation: "",
+//   },
+// };
 
 const fadeVariants = {
   hidden: { opacity: 0 },
@@ -167,8 +164,7 @@ const WatchLocation: React.FC = () => {
 };
 
 const DriverDashboard = () => {
-  const { watchDriver, fetchCurrentActiveOrders, fetchCompletedOrder } =
-    useDbOperations();
+  const { watchDriver, fetchCompletedTasks } = useDbOperations();
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number] | null>(
     "overview",
   );
@@ -189,37 +185,15 @@ const DriverDashboard = () => {
     return () => unsubscribe();
   }, [watchDriver, user.info.uid]);
 
-  const [activeOrders, setActiveOrders] = useState<
-    { path: string; data: OrderEntity }[]
-  >([]);
-  const [isActiveOrdersLoading, setIsActiveOrdersLoading] = useState(true);
-  useEffect(() => {
-    const unsubscribe = fetchCurrentActiveOrders(
-      user.info.uid,
-      "driver",
-      (data) => {
-        setActiveOrders(data);
-        setIsActiveOrdersLoading(false);
-      },
-    );
-    return unsubscribe;
-  }, [user.info.uid, fetchCurrentActiveOrders]);
-
-  const { data: historyOrders, isLoading: historyOrdersLoading } = useQuery({
+  const { data: historyTasks, isLoading: historyTasksLoading } = useQuery({
     initialData: [],
-    queryKey: ["historyOrders"],
-    queryFn: () => fetchCompletedOrder(user.info.uid, "driver"),
+    queryKey: ["historyTasks"],
+    queryFn: () => fetchCompletedTasks(user.info.uid),
     throwOnError(error, query) {
-      console.warn({ ref: "historyOrders", error, query });
+      console.warn({ ref: "historyTasks", error, query });
       return false;
     },
   });
-
-  const hasUpdatedOrders = activeOrders.some(
-    (order) =>
-      order.data[OrderEntityFields.task]?.driverStatus ===
-      DriverOrderStatus.WAITING,
-  );
 
   if (!driverInfo) {
     return null;
@@ -333,15 +307,14 @@ const DriverDashboard = () => {
               </p>
             </Card>
           </div>
-
-          {/* Active Tasks */}
+          {/* 
           <div className="mb-6">
             <h2 className="mb-3 text-xl font-bold">Current Active Tasks</h2>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {isActiveOrdersLoading && (
+              {isActiveTasksLoading && (
                 <p className="text-xs text-gray-500">Loading active tasks...</p>
               )}
-              {activeOrders.length === 0 && (
+              {activeTasks.length === 0 && (
                 <Card>
                   <div className="py-4 text-center">
                     <p className="text-gray-500">
@@ -350,11 +323,11 @@ const DriverDashboard = () => {
                   </div>
                 </Card>
               )}
-              {activeOrders.slice(0, 2).map((order) => (
-                <Order order={order} viewType="driver" key={order.path} />
+              {activeTasks.slice(0, 2).map((task) => (
+                <Task task={task} viewType="driver" key={task.path} />
               ))}
             </div>
-          </div>
+          </div> */}
 
           {/* Recent History */}
           <div>
@@ -362,29 +335,29 @@ const DriverDashboard = () => {
             <Card>
               <div className="flow-root">
                 <ul className="divide-y divide-gray-200">
-                  {historyOrdersLoading && (
+                  {historyTasksLoading && (
                     <div className="flex items-center justify-center">
                       <Spinner size="md" light={false} />
                       <p className="ml-2 text-xs text-gray-500">Loading...</p>
                     </div>
                   )}
-                  {historyOrders.length === 0 && (
+                  {historyTasks.length === 0 && (
                     <div className="flex flex-col items-center justify-center py-4">
                       <p className="text-xs text-gray-500">
-                        No order history found.
+                        No task history found.
                       </p>
                     </div>
                   )}
 
-                  {historyOrders.slice(0, 5).map((order) => (
-                    <li key={order.path} className="py-3 sm:py-4">
+                  {/* {historyTasks.slice(0, 5).map((task) => (
+                    <li key={task.path} className="py-3 sm:py-4">
                       <div className="flex items-center space-x-4">
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm font-medium text-secondary-950">
-                            {order.data.clientName}
+                            {task.data.clientName}
                           </p>
                           <p className="truncate text-sm text-gray-500">
-                            {order.path}
+                            {task.path}
                           </p>
                           <p className="text-xs text-gray-500">
                             {order.data.createdAt &&
@@ -404,7 +377,7 @@ const DriverDashboard = () => {
                         </div>
                       </div>
                     </li>
-                  ))}
+                  ))} */}
                 </ul>
               </div>
             </Card>
@@ -413,42 +386,16 @@ const DriverDashboard = () => {
 
         <Tabs.Item
           active={activeTab === "active-tasks"}
-          title={
-            <div className="flex items-center">
-              <span>Active Tasks</span>
-              {hasUpdatedOrders && (
-                <Badge color="info" className="ml-2">
-                  New
-                </Badge>
-              )}
-            </div>
-          }
+          title={<Tasks.Title />}
           icon={HiAdjustments}
         >
-          <h2 className="mb-4 text-xl font-bold">Active Tasks</h2>
-          <div className="mb-8 space-y-4">
-            {isActiveOrdersLoading && (
-              <p className="text-xs text-gray-500">Loading active tasks...</p>
-            )}
-            {activeOrders.map((order) => (
-              <Order.Details
-                key={order.path}
-                showInModal={false}
-                order={order}
-                viewType="driver"
-              />
-            ))}
-
-            {activeOrders.length === 0 && (
-              <Card>
-                <div className="py-4 text-center">
-                  <p className="text-gray-500">
-                    No active tasks at the moment.
-                  </p>
-                </div>
-              </Card>
-            )}
-          </div>
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={fadeVariants}
+          >
+            <Tasks />
+          </motion.div>
         </Tabs.Item>
 
         <Tabs.Item
@@ -458,13 +405,13 @@ const DriverDashboard = () => {
         >
           <h2 className="mb-4 text-xl font-bold">Task History</h2>
           <div className="space-y-4">
-            {historyOrdersLoading && (
+            {historyTasksLoading && (
               <div className="flex items-center justify-center">
                 <Spinner size="md" light={false} />
                 <p className="ml-2 text-xs text-gray-500">Loading...</p>
               </div>
             )}
-            {historyOrders.length === 0 && (
+            {historyTasks.length === 0 && (
               <Card>
                 <div className="flex flex-col items-center justify-center py-4">
                   <p className="text-gray-500">No task history at the moment</p>
@@ -474,11 +421,11 @@ const DriverDashboard = () => {
                 </div>
               </Card>
             )}
-            {historyOrders.map((order) => (
-              <Order.Details
-                key={order.path}
+            {historyTasks.map((task) => (
+              <Task.Details
+                key={task.path}
                 showInModal={false}
-                order={order}
+                task={task}
                 viewType="driver"
               />
             ))}

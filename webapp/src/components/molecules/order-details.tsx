@@ -92,13 +92,13 @@ const driverStatusMap: Record<
 
 const StatusBadge: React.FC<{
   status: OrderStatus;
-  // driverStatus: DriverOrderStatus | null;
-  // viewType: AccountType;
+  driverStatus?: DriverOrderStatus | null;
+  viewType: AccountType;
   className?: string;
-}> = ({ status, className }) => {
-  // if (viewType === "driver") {
-  // return driverStatusMap[driverStatus || DriverOrderStatus.WAITING].badge;
-  // }
+}> = ({ status, driverStatus, viewType, className }) => {
+  if (viewType === "driver") {
+    return driverStatusMap[driverStatus || DriverOrderStatus.WAITING].badge;
+  }
 
   let badge = (
     <Badge color="warning" className={className}>
@@ -127,27 +127,36 @@ const StatusBadge: React.FC<{
       );
       break;
   }
-  // switch (driverStatus) {
-  //   case DriverOrderStatus.ACCEPTED:
-  //   case DriverOrderStatus.ON_THE_WAY_TO_PICKUP:
-  //     return (
-  //       <Badge color="green" className={className}>
-  //         Package Accepted By Driver
-  //       </Badge>
-  //     );
-  //   case DriverOrderStatus.ON_THE_WAY_TO_DELIVER:
-  //     return (
-  //       <Badge color="purple" className={className}>
-  //         Package Picked Up & In Route To Delivery
-  //       </Badge>
-  //     );
-  //   case DriverOrderStatus.DELIVERED:
-  //     return (
-  //       <Badge color="success" className={className}>
-  //         Delivered
-  //       </Badge>
-  //     );
-  // }
+  switch (driverStatus) {
+    case DriverOrderStatus.ACCEPTED:
+      badge = (
+        <Badge color="green" className={className}>
+          Package Accepted By Driver
+        </Badge>
+      );
+      break;
+    case DriverOrderStatus.ON_THE_WAY_TO_PICKUP:
+      badge = (
+        <Badge color="blue" className={className}>
+          In Route To Pick Up
+        </Badge>
+      );
+      break;
+    case DriverOrderStatus.ON_THE_WAY_TO_DELIVER:
+      badge = (
+        <Badge color="purple" className={className}>
+          Package Picked Up & In Route To Delivery
+        </Badge>
+      );
+      break;
+    case DriverOrderStatus.DELIVERED:
+      badge = (
+        <Badge color="success" className={className}>
+          Delivered
+        </Badge>
+      );
+      break;
+  }
 
   return badge;
 };
@@ -367,7 +376,11 @@ const OrderDetailsView: React.FC<{
               ORD:{order.path.split("/").pop()?.slice(0, 8)}-****-****
             </h3>
             <div className="mt-1 inline-block space-x-0 space-y-2">
-              <StatusBadge status={order.data.status} className="text-end" />
+              <StatusBadge
+                status={order.data.status}
+                viewType={viewType}
+                className="text-end"
+              />
             </div>
           </div>
           <div className="columns-1 text-right sm:columns-auto">
@@ -515,7 +528,7 @@ const OrderDetailsView: React.FC<{
                     </div>
                     <span className="text-ellipsis text-nowrap break-all text-xs text-gray-500">
                       ID:{" "}
-                      {order.data?.[OrderEntityFields.task]?.driverId.slice(
+                      {order.data?.[OrderEntityFields.task]?.driverId?.slice(
                         0,
                         5,
                       )}
@@ -697,7 +710,8 @@ const OrderDetailsView: React.FC<{
           ] !== DriverOrderStatus.DELIVERED && (
             <div className="mt-3 flex justify-end">
               <GetNextActionButton
-                orderPath={order.path}
+                taskId={order.data[OrderEntityFields.task]?.taskId || ""}
+                orderId={order.path.split("/").pop() || ""}
                 action={
                   driverStatusMap[
                     order.data[OrderEntityFields.task]?.[
@@ -787,7 +801,12 @@ export const Order: React.FC<{
             </div>
           </div>
           <div className="flex flex-col items-end gap-2">
-            <StatusBadge status={order.data.status} className="text-end" />
+            <StatusBadge
+              status={order.data.status}
+              driverStatus={order.data.task?.driverStatus}
+              viewType={viewType}
+              className="text-end"
+            />
             <p className="text-lg font-bold text-secondary-950">
               {viewType !== "driver" && formatPrice(order.data.priceInUSD)}
               {viewType === "admin" && "/"}
@@ -832,7 +851,8 @@ export const Order: React.FC<{
         {viewType === "driver" && (
           <div className="mt-3 flex justify-end">
             <GetNextActionButton
-              orderPath={order.path}
+              taskId={order.data[OrderEntityFields.task]?.taskId || ""}
+              orderId={order.path.split("/").pop() || ""}
               action={
                 driverStatusMap[
                   driverTask?.driverStatus || DriverOrderStatus.WAITING

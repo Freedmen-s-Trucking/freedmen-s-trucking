@@ -15,6 +15,7 @@ import {
   DEFAULT_PLATFORM_SETTINGS,
   VerificationStatus,
   OrderStatus,
+  DriverOrderStatus,
 } from "@freedmen-s-trucking/types";
 import {getDistanceFromGoogle} from "~src/utils/order";
 import {
@@ -181,7 +182,12 @@ export async function groupOrdersIntoTasks(
           group.data.dropoffCenterCoordinate.longitude,
         );
         group.data.orderIdValueMap = group.data.orderIdValueMap || {};
-        group.data.orderIdValueMap[order.id] = order.data;
+        group.data.orderIdValueMap[order.id] = {
+          ...order.data,
+          driverStatus: DriverOrderStatus.WAITING,
+          driverConfirmationCode: null,
+          deliveredOrderConfirmationImage: null,
+        };
 
         addedToExistingGroup = true;
         break;
@@ -206,7 +212,12 @@ export async function groupOrdersIntoTasks(
           pickupCenterGeoHash: getGeoHash(order.data.pickupLocation.latitude, order.data.pickupLocation.longitude),
           dropoffCenterGeoHash: getGeoHash(order.data.deliveryLocation.latitude, order.data.deliveryLocation.longitude),
           orderIdValueMap: {
-            [order.id]: order.data,
+            [order.id]: {
+              ...order.data,
+              driverStatus: DriverOrderStatus.WAITING,
+              driverConfirmationCode: null,
+              deliveredOrderConfirmationImage: null,
+            },
           },
           status: TaskGroupStatus.IDLE,
           driverId: null,

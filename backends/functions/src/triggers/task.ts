@@ -1,6 +1,13 @@
 import {onDocumentUpdated} from "firebase-functions/v2/firestore";
-import {CollectionName, DriverEntity, TaskGroupEntity, TaskGroupEntityFields} from "@freedmen-s-trucking/types";
-import {CollectionReference, getFirestore} from "firebase-admin/firestore";
+import {
+  CollectionName,
+  DriverEntity,
+  OrderEntity,
+  OrderEntityFields,
+  TaskGroupEntity,
+  TaskGroupEntityFields,
+} from "@freedmen-s-trucking/types";
+import {CollectionReference, FieldPath, FieldValue, getFirestore} from "firebase-admin/firestore";
 import {getMessaging} from "firebase-admin/messaging";
 
 const notifyDriverOnTaskGroupUpdate = async (
@@ -71,13 +78,95 @@ const notifyDriverOnTaskGroupUpdate = async (
     });
 };
 
+const updateOrdersDriverOnTaskGroupDriverUpdate = async (
+  before: TaskGroupEntity | undefined,
+  after: TaskGroupEntity | undefined,
+  taskGroupId: string,
+) => {
+  console.debug("updateOrdersDriverOnTaskGroupDriverUpdate");
+  if (!after || !after[TaskGroupEntityFields.orderIds].length) {
+    console.debug("after is falsy or orderIds is empty, exiting.");
+    return;
+  }
+  const newOrderIds =
+    before?.[TaskGroupEntityFields.driverId] !== after[TaskGroupEntityFields.driverId]
+      ? after[TaskGroupEntityFields.orderIds]
+      : after[TaskGroupEntityFields.orderIds].filter(
+          (orderId) => !before || !before[TaskGroupEntityFields.orderIds].includes(orderId),
+        );
+
+  console.debug("newOrderIds", newOrderIds);
+  if (!newOrderIds.length) {
+    console.debug("no new order ids, exiting.");
+    return;
+  }
+
+  let driver: DriverEntity | undefined;
+  if (after[TaskGroupEntityFields.driverId]) {
+    const driverCollection = getFirestore().collection(CollectionName.DRIVERS) as CollectionReference<
+      DriverEntity,
+      DriverEntity
+    >;
+    const driverSnapshot = await driverCollection.doc(after[TaskGroupEntityFields.driverId]).get();
+    driver = driverSnapshot.data();
+  } else {
+    driver = undefined;
+  }
+
+  console.debug("assigned driver", driver);
+
+  const orderIds = after[TaskGroupEntityFields.orderIds];
+  const firestore = getFirestore();
+  const orderCollection = firestore.collection(CollectionName.ORDERS) as CollectionReference<OrderEntity, OrderEntity>;
+  const orderSnapshots = await orderCollection.where(FieldPath.documentId(), "in", orderIds).get();
+  const orders = orderSnapshots.docs;
+
+  await Promise.all(
+    orders.map((order) => {
+      const orderData = order.data();
+      if (!orderData) {
+        console.error(`Order #${order.id} not found`);
+        return;
+      }
+      console.debug(`updating order #${order.id}`);
+
+      const orderRef = orderCollection.doc(order.id);
+      const taskOrderDetails = after[TaskGroupEntityFields.orderIdValueMap][order.id];
+      return orderRef.update({
+        assignedDriverId: driver?.uid || null,
+        task: !driver
+          ? null
+          : ({
+              driverId: driver.uid,
+              driverName: driver.displayName,
+              driverEmail: driver.email || "",
+              driverPhone: driver.phoneNumber || "",
+              driverPhotoURL: driver.photoURL || null,
+              driverUploadedProfileStoragePath: driver.uploadedProfileStoragePath || null,
+              deliveryFee: orderData?.[OrderEntityFields.driverFeesInUSD],
+              driverStatus: taskOrderDetails.driverStatus || null,
+              driverConfirmationCode: taskOrderDetails.driverConfirmationCode || null,
+              deliveredOrderConfirmationImage: taskOrderDetails.deliveredOrderConfirmationImage || null,
+              driverPositions: taskOrderDetails.driverPositions || {},
+              payoutPaymentRef: taskOrderDetails.payoutPaymentRef || null,
+              taskId: taskGroupId,
+            } satisfies OrderEntity["task"]),
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+    }),
+  );
+};
+
 export const taskGroupUpdateTrigger = onDocumentUpdated(
   `${CollectionName.TASK_GROUPS}/{taskGroupId}`,
   async ({data, params}) => {
     const before = data?.before?.data?.() as TaskGroupEntity | undefined;
     const after = data?.after?.data?.() as TaskGroupEntity | undefined;
     const taskGroupId = params.taskGroupId;
-    const waterFall = [notifyDriverOnTaskGroupUpdate(before, after, taskGroupId)];
+    const waterFall = [
+      updateOrdersDriverOnTaskGroupDriverUpdate(before, after, taskGroupId),
+      notifyDriverOnTaskGroupUpdate(before, after, taskGroupId),
+    ];
 
     return Promise.all(waterFall);
   },

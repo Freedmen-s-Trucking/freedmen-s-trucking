@@ -10,6 +10,7 @@ export {httpServer} from "./http-server/index";
 // Export background triggers
 export {driverUpdateTrigger} from "./triggers/driver";
 export {orderUpdateTrigger} from "./triggers/order";
+export {taskGroupUpdateTrigger} from "./triggers/task";
 
 // Export schedulers
 export {scheduleBackgroundCheck} from "./schedules/driver-background-check-scheduler";

@@ -1,8 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useGeolocated } from "react-geolocated";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useAuth } from "~/hooks/use-auth";
-import { useDbOperations } from "~/hooks/use-firestore";
 import { Modal, Button, Spinner, Tooltip } from "flowbite-react";
 import { Camera } from "lucide-react";
 import { PrimaryButton, SecondaryButton, TextInput } from "~/components/atoms";
@@ -30,10 +28,12 @@ function dataURLtoBlob(dataURL: string) {
 }
 
 const GetNextActionButton = ({
-  orderPath,
+  taskId,
+  orderId,
   action,
 }: {
-  orderPath: string;
+  taskId: string;
+  orderId: string;
   action: {
     action: string;
     color: string;
@@ -43,9 +43,7 @@ const GetNextActionButton = ({
     nextStatusConfirmation: string;
   };
 }) => {
-  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const { updateOrderStatus } = useDbOperations();
   const [showStatusChangeModal, setShowStatusChangeModal] = useState(false);
   const [deliveryCode, setDeliveryCode] = useState<string>();
   const [error, setError] = useState<string | null>(null);
@@ -255,6 +253,7 @@ const GetNextActionButton = ({
         },
       });
 
+    const serverRequest = useServerRequest();
     const { uploadOrderPackageDelivered } = useStorageOperations();
     const { mutate: moveToNextStatus } = useMutation({
       mutationFn: async ({ deliveryCode }: { deliveryCode: string }) => {
@@ -303,33 +302,33 @@ const GetNextActionButton = ({
             type: blobImg.type,
           });
 
-          const res = await uploadOrderPackageDelivered(
-            orderPath.split("/").pop() || "",
-            file,
-          );
+          const res = await uploadOrderPackageDelivered(orderId, file);
 
           deliveredOrderConfirmationImagePath = res;
         }
 
-        await updateOrderStatus({
-          userId: user.info.uid,
-          orderPath,
-          driverStatus: action.nextStatus,
-          coords: {
-            latitude: coords.latitude,
-            longitude: coords.longitude,
+        await serverRequest(`/task-group/update-order-status`, {
+          method: "POST",
+          body: {
+            taskId,
+            orderId,
+            driverStatus: action.nextStatus,
+            coords: {
+              latitude: coords.latitude,
+              longitude: coords.longitude,
+            },
+            ...(!!needsDeliveryPhotoAndCode && {
+              deliveredOrderConfirmationImage:
+                deliveredOrderConfirmationImagePath || null,
+              driverConfirmationCode: deliveryCode,
+            }),
           },
-          ...(!!needsDeliveryPhotoAndCode && {
-            deliveredOrderConfirmationImage:
-              deliveredOrderConfirmationImagePath || null,
-            driverConfirmationCode: deliveryCode,
-          }),
         });
 
         return true;
       },
       onMutate: () => {
-        console.log("Moving to next status for order", orderPath);
+        console.log("Moving to next status for order", orderId);
         setIsLoading(true);
       },
       onSuccess: (data) => {
@@ -351,7 +350,6 @@ const GetNextActionButton = ({
       },
     });
 
-    const serverRequest = useServerRequest();
     const submitStatusChange = async (ev: React.FormEvent<HTMLFormElement>) => {
       setError(null);
       ev.preventDefault();
@@ -372,7 +370,7 @@ const GetNextActionButton = ({
             method: "POST",
             body: {
               deliveryCode,
-              orderId: orderPath.split("/").pop() || "",
+              orderId,
             },
           },
         );
@@ -563,7 +561,7 @@ const GetNextActionButton = ({
         <Button
           color={action.color}
           size="sm"
-          className="disabled:opacity-100 [&>span]:flex [&>span]:flex-row [&>span]:items-center [&>span]:justify-center [&>span]:gap-2"
+          className="disabled:opacity-80 [&>span]:flex [&>span]:flex-row [&>span]:items-center [&>span]:justify-center [&>span]:gap-2"
           disabled={isLoading || !action.nextStatus}
           onClick={() => setShowStatusChangeModal(true)}
         >

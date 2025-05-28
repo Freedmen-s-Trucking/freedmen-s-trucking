@@ -2,6 +2,7 @@ import { type } from "arktype";
 
 import {
   driverEntity,
+  DriverOrderStatus,
   newOrderEntity,
   OrderEntityFields,
   OrderPriority,
@@ -150,3 +151,14 @@ export const apiResProcessIdentityVerificationWithAuthenticate = driverEntity
 
 export type ApiResProcessIdentityVerificationWithAuthenticate =
   typeof apiResProcessIdentityVerificationWithAuthenticate.infer;
+
+export const apiReqUpdateOrderStatus = type({
+  taskId: "string",
+  orderId: "string",
+  driverStatus: type.valueOf(DriverOrderStatus),
+  coords: coordinateType.optional(),
+  driverConfirmationCode: "string?",
+  deliveredOrderConfirmationImage: "string | null?",
+});
+
+export type ApiReqUpdateOrderStatus = typeof apiReqUpdateOrderStatus.infer;

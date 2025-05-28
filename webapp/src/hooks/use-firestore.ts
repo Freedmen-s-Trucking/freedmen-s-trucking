@@ -15,15 +15,12 @@ import {
   query,
   serverTimestamp,
   setDoc,
-  updateDoc,
   where,
   WithFieldValue,
-  // or,
-  // and,
+  orderBy,
 } from "firebase/firestore";
 import {
   DriverEntity,
-  DriverOrderStatus,
   EntityWithPath,
   OrderEntity,
   OrderEntityFields,
@@ -38,10 +35,10 @@ import {
   type,
   userEntity,
   driverEntity,
-  Coordinate,
   platformSettingsEntity,
-  coordinateType,
   TaskGroupEntity,
+  TaskGroupEntityFields,
+  TaskGroupStatus,
 } from "@freedmen-s-trucking/types";
 import { validateOrFail } from "~/utils/functions";
 import { driverEntityConverter } from "~/utils/firestore";
@@ -52,76 +49,6 @@ const useFirestore = () => {
     throw new Error("useFirestore must be used within a FireStoreProvider");
   }
   return context;
-};
-
-const orderDbOperations = (db: Firestore) => {
-  /**
-   * Update order.
-   */
-  const updateOrderStatus = async (params: {
-    userId: string;
-    orderPath: string;
-    driverStatus: DriverOrderStatus;
-    coords: Coordinate | undefined;
-    driverConfirmationCode?: string;
-    deliveredOrderConfirmationImage?: string | null;
-  }) => {
-    const {
-      userId,
-      orderPath,
-      driverStatus,
-      coords,
-      driverConfirmationCode,
-      deliveredOrderConfirmationImage,
-    } = validateOrFail(
-      params,
-      type({
-        userId: "string",
-        orderPath: "string",
-        driverStatus: type.valueOf(DriverOrderStatus),
-        coords: coordinateType.optional(),
-        driverConfirmationCode: "string?",
-        deliveredOrderConfirmationImage: "string | null ?",
-      }),
-      "FirestoreError::updateOrderStatus",
-    );
-    const orderId = orderPath.split("/").pop();
-    const docRef = doc(collection(db, CollectionName.ORDERS), orderId);
-    const docSnapshot = await getDoc(docRef);
-    if (!docSnapshot.exists()) {
-      throw new Error("Order not found");
-    }
-    const prevOrder = docSnapshot.data() as OrderEntity;
-    if (userId !== prevOrder[OrderEntityFields.task]?.driverId) {
-      throw new Error("Unauthorized");
-    }
-
-    if (
-      driverStatus === DriverOrderStatus.DELIVERED &&
-      (!driverConfirmationCode || !deliveredOrderConfirmationImage)
-    ) {
-      throw new Error("Invalid order status");
-    }
-    // TODO: Validate status
-    await updateDoc(docRef, {
-      [`${OrderEntityFields.task}.${OrderEntityFields.driverStatus}`]:
-        driverStatus,
-      ...(!!driverConfirmationCode && {
-        [`${OrderEntityFields.task}.${OrderEntityFields.driverConfirmationCode}`]:
-          driverConfirmationCode,
-      }),
-      ...(!!deliveredOrderConfirmationImage && {
-        [`${OrderEntityFields.task}.${OrderEntityFields.deliveredOrderConfirmationImage}`]:
-          deliveredOrderConfirmationImage,
-      }),
-      [`${OrderEntityFields.task}.${OrderEntityFields.updatedAt}`]:
-        serverTimestamp(),
-      [`${OrderEntityFields.task}.${OrderEntityFields.driverPositions}.${driverStatus}`]:
-        coords,
-    });
-  };
-
-  return { updateOrderStatus: updateOrderStatus };
 };
 
 const userDbOperations = (db: Firestore) => {
@@ -374,6 +301,78 @@ const driverDbOperations = (db: Firestore) => {
     });
     return result;
   };
+  /**
+   * Fetches active orders user orders into the database.
+   */
+  const fetchCurrentActiveTasks = (
+    uid: string,
+    onValue: (tasks: { path: string; data: TaskGroupEntity }[]) => void,
+  ) => {
+    validateOrFail(
+      { uid },
+      type({
+        uid: "string",
+      }),
+      "FirestoreError::fetchCurrentActiveTasks",
+    );
+    const q = query(
+      collection(db, CollectionName.TASK_GROUPS),
+      where(TaskGroupEntityFields.driverId, "==", uid),
+      where(TaskGroupEntityFields.status, "!=", TaskGroupStatus.COMPLETED),
+      limit(10),
+      orderBy(TaskGroupEntityFields.createdAt, "desc"),
+    );
+
+    return onSnapshot(q, (snapshot) => {
+      const result = <{ path: string; data: TaskGroupEntity }[]>[];
+      snapshot.forEach((doc) => {
+        if (!doc.exists()) return;
+        result.push({
+          path: doc.ref.path,
+          data: doc.data() as TaskGroupEntity,
+        });
+      });
+      onValue(result);
+    });
+  };
+
+  /**
+   * Fetches recent user orders into the database.
+   */
+  const fetchCompletedTasks = async (uid: string) => {
+    validateOrFail(
+      { uid },
+      type({
+        uid: "string",
+      }),
+      "FirestoreError::fetchCompletedTasks",
+    );
+    const q = query(
+      collection(db, CollectionName.TASK_GROUPS),
+      where(
+        TaskGroupEntityFields.driverId satisfies keyof TaskGroupEntity,
+        "==",
+        uid,
+      ),
+      where(
+        TaskGroupEntityFields.status satisfies keyof TaskGroupEntity,
+        "==",
+        TaskGroupStatus.COMPLETED,
+      ),
+      limit(20),
+      orderBy(TaskGroupEntityFields.createdAt, "desc"),
+    );
+    const res = await getDocs<TaskGroupEntity, TaskGroupEntity>(
+      q as Query<TaskGroupEntity, TaskGroupEntity>,
+    );
+    const result = <{ path: string; data: TaskGroupEntity }[]>[];
+
+    res.forEach((doc) => {
+      if (!doc.exists()) return;
+      result.push({ path: doc.ref.path, data: doc.data() });
+    });
+    return result;
+  };
 
   return {
     updateDriver: updateDriver,
@@ -381,6 +380,8 @@ const driverDbOperations = (db: Firestore) => {
     fetchCompletedOrder,
     fetchCurrentActiveOrders,
     watchDriver,
+    fetchCompletedTasks,
+    fetchCurrentActiveTasks,
   };
 };
 
@@ -586,8 +587,6 @@ const adminDbOperations = (db: Firestore) => {
 export const useDbOperations = () => {
   const db = useFirestore();
 
-  const { updateOrderStatus } = useMemo(() => orderDbOperations(db), [db]);
-
   const { insertUser, createUser, getUser } = useMemo(
     () => userDbOperations(db),
     [db],
@@ -597,6 +596,8 @@ export const useDbOperations = () => {
     getDriver,
     fetchCompletedOrder,
     fetchCurrentActiveOrders,
+    fetchCompletedTasks,
+    fetchCurrentActiveTasks,
     watchDriver,
   } = useMemo(() => driverDbOperations(db), [db]);
 
@@ -620,7 +621,6 @@ export const useDbOperations = () => {
     watchDriver,
     updateDriver: updateDriver,
     getDriver,
-    updateOrderStatus: updateOrderStatus,
     updatePlatformSettings: updatePlatformSettings,
     fetchOrders,
     countOrderOfUser,
@@ -629,5 +629,7 @@ export const useDbOperations = () => {
     watchPlatformOverview,
     fetchPayments,
     fetchPlatformSettings,
+    fetchCompletedTasks,
+    fetchCurrentActiveTasks,
   };
 };

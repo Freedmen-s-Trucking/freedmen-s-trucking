@@ -458,14 +458,15 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
     }
   };
 
-  const [consents, setConsents] = useState({
+  const [isSmsCtaAccepted, setIsSmsCtaAccepted] = useState(false);
+  const [authenticateConsents, setAuthenticateConsents] = useState({
     isBackgroundDisclosureAccepted: false,
     GLBPurposeAndDPPAPurpose: false,
     FCRAPurpose: false,
   });
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target;
-    setConsents((prevConsents) => ({
+    setAuthenticateConsents((prevConsents) => ({
       ...prevConsents,
       [name]: checked,
     }));
@@ -509,7 +510,8 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
         driverInsuranceVerificationStatus: "pending",
         driverInsuranceVerificationIssues: [],
         driverInsuranceStoragePath: driverInsurancePath,
-        consents: consents,
+        isSmsCtaAccepted,
+        consents: authenticateConsents,
         vehicles: [
           {
             type: driverVehicle!,
@@ -553,7 +555,7 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
               dob: birthDate.toISOString(),
               ...(!!phoneNumber && { phoneNumber }),
             },
-            consents: consents,
+            consents: authenticateConsents,
             medallion: {
               redirectURL: PUBLIC_WEBAPP_URL?.startsWith("https")
                 ? PUBLIC_WEBAPP_URL
@@ -782,10 +784,10 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
             </label>
           )}
         </div>
-        <label className="mt-4 inline-flex items-center gap-2">
+        <label className="mt-4 inline-flex items-center gap-2 text-sm">
           <Checkbox
             name="isBackgroundDisclosureAccepted"
-            checked={consents.isBackgroundDisclosureAccepted}
+            checked={authenticateConsents.isBackgroundDisclosureAccepted}
             className="border-primary-100 checked:bg-secondary-800"
             onChange={handleChange}
             required
@@ -795,10 +797,10 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
             <u>Background Check</u>.
           </Tooltip>
         </label>
-        <label className="inline-flex items-center gap-2">
+        <label className="inline-flex items-center gap-2 text-sm">
           <Checkbox
             name="GLBPurposeAndDPPAPurpose"
-            checked={consents.GLBPurposeAndDPPAPurpose}
+            checked={authenticateConsents.GLBPurposeAndDPPAPurpose}
             onChange={handleChange}
             className="checked:bg-secondary-800"
             required
@@ -813,10 +815,10 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
           </Tooltip>
           .
         </label>
-        <label className="inline-flex items-center gap-2">
+        <label className="inline-flex items-center gap-2 text-sm">
           <Checkbox
             name="FCRAPurpose"
-            checked={consents.FCRAPurpose}
+            checked={authenticateConsents.FCRAPurpose}
             className="checked:bg-secondary-800"
             onChange={handleChange}
             required
@@ -826,6 +828,17 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
             <u>FCRA</u>
           </Tooltip>
           .
+        </label>
+        <label className="mt-4 inline-flex items-start gap-2 text-sm">
+          <Checkbox
+            name="isSmsCtaAccepted"
+            checked={isSmsCtaAccepted}
+            className="mt-1 border-primary-100 checked:bg-secondary-800"
+            onChange={(e) => setIsSmsCtaAccepted(e.target.checked)}
+            required
+          />
+          I agree to receive text messages related to deliveries, payouts,
+          onboarding, and account activity from Freedmen's Trucking.
         </label>
         {error && <p className="py-2 text-xs text-red-500">{error}</p>}
         <PrimaryButton

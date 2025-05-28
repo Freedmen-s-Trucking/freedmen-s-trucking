@@ -122,7 +122,6 @@ const updatePlatformOverviewOnDriverVerificationStatusChange = async (
 //           [OrderEntityFields.driverStatus]: DriverOrderStatus.WAITING,
 //           [OrderEntityFields.createdAt]: FieldValue.serverTimestamp(),
 //           [OrderEntityFields.updatedAt]: FieldValue.serverTimestamp(),
-//           [OrderEntityFields.deliveryScreenshotPath]: null,
 //         } as WithFieldValue<OrderEntity[`task-${string}`]>,
 //       } as PartialWithFieldValue<OrderEntity>);
 

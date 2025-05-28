@@ -85,11 +85,11 @@ const payOutDriversOnDeliveryCompleted = async (
   if (!after || aStatus !== OrderStatus.COMPLETED) {
     return;
   }
-  const completedTasks: Exclude<OrderEntity["task"], undefined>[] = [after?.[OrderEntityFields.task]]
+  const completedTasks: Exclude<OrderEntity["task"], undefined | null>[] = [after?.[OrderEntityFields.task]]
     .map((task) => {
       return task?.driverStatus === DriverOrderStatus.DELIVERED ? task : null;
     })
-    .filter((task) => task !== null);
+    .filter((task) => !!task);
 
   const firestore = getFirestore();
   const waterFall = [];

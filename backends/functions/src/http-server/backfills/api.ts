@@ -58,16 +58,16 @@ async function backfillsOrders() {
 
       if (
         updateOnOrder[OrderEntityFields.task] &&
-        !updateOnOrder[OrderEntityFields.task][OrderEntityFields.photoURL] &&
-        !updateOnOrder[OrderEntityFields.task][OrderEntityFields.uploadedProfileStoragePath]
+        !updateOnOrder[OrderEntityFields.task][OrderEntityFields.driverPhotoURL] &&
+        !updateOnOrder[OrderEntityFields.task][OrderEntityFields.driverUploadedProfileStoragePath]
       ) {
         const driver = await firestore.collection(CollectionName.DRIVERS).doc(driverId).get();
         const driverData = driver.data() as DriverEntity | undefined;
         if (driverData?.photoURL) {
-          updateOnOrder[OrderEntityFields.task][OrderEntityFields.photoURL] = driverData?.photoURL;
+          updateOnOrder[OrderEntityFields.task][OrderEntityFields.driverPhotoURL] = driverData?.photoURL;
         }
         if (driverData?.uploadedProfileStoragePath) {
-          updateOnOrder[OrderEntityFields.task][OrderEntityFields.uploadedProfileStoragePath] =
+          updateOnOrder[OrderEntityFields.task][OrderEntityFields.driverUploadedProfileStoragePath] =
             driverData?.uploadedProfileStoragePath;
         }
       }

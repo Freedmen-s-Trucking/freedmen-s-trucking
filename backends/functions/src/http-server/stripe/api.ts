@@ -182,7 +182,6 @@ router.post("/webhook", async (c) => {
         //       [OrderEntityFields.driverStatus]: DriverOrderStatus.WAITING,
         //       [OrderEntityFields.createdAt]: FieldValue.serverTimestamp(),
         //       [OrderEntityFields.updatedAt]: FieldValue.serverTimestamp(),
-        //       [OrderEntityFields.deliveryScreenshotPath]: null,
         //     },
         [OrderEntityFields.createdAt]: FieldValue.serverTimestamp(),
         [OrderEntityFields.updatedAt]: FieldValue.serverTimestamp(),
