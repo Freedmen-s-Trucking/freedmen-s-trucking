@@ -8,5 +8,5 @@ export default defineConfig({
     preset: "2023",
   },
   preset,
-  images: ["public/logo.webp"],
+  images: ["public/icons/icon-512x512.png"],
 });
