@@ -643,12 +643,6 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
             onChange={onPhoneNumberChanged}
             // className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
           />
-          <span className="text-xs text-secondary-500">
-            Note: By submitting your phone number, you agree to receive
-            recurring delivery updates, onboarding alerts, and payout
-            notifications via SMS from Freedmen's Trucking. Message frequency
-            varies. Msg & data rates may apply. Reply STOP to unsubscribe.
-          </span>
         </label>
         <span className="block text-sm font-medium text-secondary-800">
           Vehicle Type
@@ -843,8 +837,10 @@ const AdditionalInfo: React.FC<{ onAdditionalInfoAdded: () => void }> = ({
             onChange={(e) => setIsSmsCtaAccepted(e.target.checked)}
             required
           />
-          I agree to receive text messages related to deliveries, payouts,
-          onboarding, and account activity from Freedmen's Trucking.
+          By submitting your phone number, you agree to receive recurring
+          delivery updates, onboarding alerts, and payout notifications via SMS
+          from Freedmen's Trucking. Message frequency varies. Msg & data rates
+          may apply. Reply STOP to unsubscribe.
         </label>
         {error && <p className="py-2 text-xs text-red-500">{error}</p>}
         <PrimaryButton
