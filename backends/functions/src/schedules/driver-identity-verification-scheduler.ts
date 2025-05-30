@@ -9,7 +9,7 @@ import {ENV_PUBLIC_WEBAPP_URL} from "~src/utils/envs";
 /**
  * Runs every 5mins to check for drivers with pending identity verification and verify them using authenticate API.
  */
-export const scheduleDriverIdentityVerification = onSchedule("*/5 * * * *", async () => {
+export const scheduleDriverIdentityVerification = onSchedule("0 11 * * *", async () => {
   console.log("Running driver identity verification scheduler");
   const firestore = getFirestore();
   const driverCollection = firestore.collection(CollectionName.DRIVERS) as CollectionReference<

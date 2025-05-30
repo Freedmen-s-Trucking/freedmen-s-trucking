@@ -30,7 +30,7 @@ const messaging = getMessaging(firebaseApp);
 onBackgroundMessage(messaging, (payload) => {
   console.log("Background message received:", payload);
 
-  fetch("https://webhook.site/7765be0e-9db1-44b9-9a0b-552caef1c222", {
+  fetch("/api/v1/firebase/background-message", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -74,11 +74,11 @@ self.addEventListener("push", function (e) {
     console.error("Failed to parse push message data:", e);
     data = {
       title: "New message",
-      body: "You have a new notification",
+      body: dataStr,
     };
   }
 
-  fetch("https://webhook.site/7765be0e-9db1-44b9-9a0b-552caef1c222", {
+  fetch("/api/v1/firebase/push-message", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -96,27 +96,3 @@ self.addEventListener("push", function (e) {
     }),
   );
 });
-
-// // Add PWA caching
-// const CACHE_NAME = 'my-pwa-cache-v1';
-// const urlsToCache = [
-//   '/',
-//   '/index.html',
-//   '/styles/main.css',
-//   '/scripts/app.js',
-//   '/images/logo.png'
-// ];
-
-// self.addEventListener('install', (event) => {
-//   event.waitUntil(
-//     caches.open(CACHE_NAME)
-//       .then((cache) => cache.addAll(urlsToCache))
-//   );
-// });
-
-// self.addEventListener('fetch', (event) => {
-//   event.respondWith(
-//     caches.match(event.request)
-//       .then((response) => response || fetch(event.request))
-//   );
-// });

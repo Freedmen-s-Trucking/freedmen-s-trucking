@@ -7,7 +7,7 @@ import {isResponseError, ResponseError} from "up-fetch";
 /**
  * Runs every 5mins to check for drivers with pending background checks
  */
-export const scheduleBackgroundCheck = onSchedule("*/5 * * * *", async () => {
+export const scheduleBackgroundCheck = onSchedule("0 11 * * *", async () => {
   console.log("Running scheduler for background check");
   const firestore = getFirestore();
   const driverCollection = firestore.collection(CollectionName.DRIVERS) as CollectionReference<

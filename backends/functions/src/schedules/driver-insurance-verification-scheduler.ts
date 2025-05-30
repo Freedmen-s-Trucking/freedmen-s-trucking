@@ -56,7 +56,7 @@ You're in good hands.`;
 /**
  * Runs every 5mins to check for drivers with pending insurance verification and verify them using authenticate API.
  */
-export const scheduleDriverInsuranceVerification = onSchedule("*/5 * * * *", async () => {
+export const scheduleDriverInsuranceVerification = onSchedule("0 11 * * *", async () => {
   try {
     console.log("Running scheduler for insurance verification");
     const firestore = getFirestore();
