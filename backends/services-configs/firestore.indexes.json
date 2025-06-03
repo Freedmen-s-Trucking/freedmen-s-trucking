@@ -5,6 +5,28 @@
       "queryScope": "COLLECTION",
       "fields": [
         {
+          "fieldPath": "driverInsuranceVerificationStatus",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "driverLicenseVerificationStatus",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "verificationStatus",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "latestLocation.geoHash",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "drivers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
           "fieldPath": "driverLicenseVerificationStatus",
           "order": "ASCENDING"
         },
@@ -28,6 +50,20 @@
         },
         {
           "fieldPath": "activeTasks",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "drivers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "verificationStatus",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "latestLocation.geoHash",
           "order": "ASCENDING"
         }
       ]
